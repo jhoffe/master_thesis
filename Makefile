@@ -49,6 +49,10 @@ create_environment:
 	@echo ">>> New uv virtual environment created. Activate with:"
 	@echo ">>> Windows: .\\\\.venv\\\\Scripts\\\\activate"
 	@echo ">>> Unix/macOS: source ./.venv/bin/activate"
+
+.PHONY: download_coral
+download_coral:
+	uv run hf download CoRal-project/coral-v2 --repo-type dataset --local-dir data/raw/coral_v2
 	
 
 
