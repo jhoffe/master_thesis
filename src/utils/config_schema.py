@@ -1,0 +1,45 @@
+from enum import Enum
+from pydantic.dataclasses import dataclass
+from pydantic.types import DirectoryPath, PositiveFloat, PositiveInt
+import dataclasses
+
+
+class Metric(str, Enum):
+    CER = "cer"
+    WER = "wer"
+
+
+@dataclass
+class EvaluationConfigSchema:
+    # Evaluation dataset parameters
+    dataset_id: str
+    dataset_subset: str
+    eval_split_name: str
+    text_column: str
+    audio_column: str
+    model_id: str
+
+    cache_dir: DirectoryPath | None = None
+
+    # Filtering of the dataset
+    min_seconds_per_example: PositiveFloat = 0.5
+    max_seconds_per_example: PositiveFloat = 10
+
+    # Processing of the dataset
+    clean_text: bool = True
+    lower_case: bool = True
+    characters_to_keep: str = "abcdefghijklmnopqrstuvwxyzæøå0123456789éü"
+
+    # Evaluation parameters
+    no_lm: bool = False  # This is only relevant for Wav2Vec 2.0 models
+    sampling_rate: PositiveInt = 16_000
+    metrics: list[Metric] = dataclasses.field(default_factory=lambda: [Metric.WER, Metric.CER])
+    batch_size: PositiveInt = 16
+    store_results: bool = True
+
+    debug: bool = False
+
+
+@dataclass
+class ConfigSchema:
+    eval: EvaluationConfigSchema

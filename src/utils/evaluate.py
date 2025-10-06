@@ -1,15 +1,12 @@
 """Evaluation of ASR models."""
 
-import itertools as it
 import logging
-from collections import defaultdict
 
-import numpy as np
+from dotenv import load_dotenv
+from evaluate.loading import load as load_metric
+from omegaconf import DictConfig
 import pandas as pd
 import torch
-from datasets import Dataset
-from dotenv import load_dotenv
-from omegaconf import DictConfig
 from transformers import (
     AutomaticSpeechRecognitionPipeline,
     Wav2Vec2ForCTC,
@@ -17,16 +14,18 @@ from transformers import (
     pipeline,
 )
 
+from utils.config_schema import EvaluationConfigSchema
+
 from .compute_metrics import compute_metrics_of_dataset_using_pipeline
 from .data import load_dataset_for_evaluation
-from evaluate.loading import load as load_metric
 
 load_dotenv()
 
 
 logger = logging.getLogger(__package__)
 
-def evaluate(config: DictConfig) -> pd.DataFrame:
+
+def evaluate(config: EvaluationConfigSchema) -> pd.DataFrame:
     """Evaluate a model on the CoRal evaluation dataset.
 
     Args:
@@ -36,15 +35,14 @@ def evaluate(config: DictConfig) -> pd.DataFrame:
     Returns:
         A DataFrame with the evaluation scores.
     """
-    assert config.model_id is not None, (
-        "`model_id` must be set to perform an evaluation!"
-    )
+    assert config.model_id is not None, "`model_id` must be set to perform an evaluation!"
 
     logger.info("Loading the dataset...")
     dataset = load_dataset_for_evaluation(config=config)
 
-    # Only take the first 25 samples for quick testing
-    dataset = dataset.select(range(100))
+    if config.debug:
+        logger.info("Debug mode is on, using only 5 examples from the dataset...")
+        dataset = dataset.select(range(5))
 
     logger.info(f"Loading the {config.model_id!r} ASR model...")
     transcriber = load_asr_pipeline(model_id=config.model_id, no_lm=config.no_lm)
@@ -64,14 +62,11 @@ def evaluate(config: DictConfig) -> pd.DataFrame:
     wer_metric = load_metric("wer")
     cer_metric = load_metric("cer")
 
-    wer = wer_metric.compute(
-        predictions=preds, references=labels)
+    wer = wer_metric.compute(predictions=preds, references=labels)
     print(f"WER: {wer}")
 
-    cer = cer_metric.compute(
-        predictions=preds, references=labels)
+    cer = cer_metric.compute(predictions=preds, references=labels)
     print(f"CER: {cer}")
-
 
 
 #    logger.info(
@@ -89,6 +84,7 @@ def evaluate(config: DictConfig) -> pd.DataFrame:
 #        metric_names=config.metrics,
 #    )
 #    return score_df
+
 
 def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionPipeline:
     """Load the ASR pipeline.
@@ -115,16 +111,14 @@ def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionP
         processor = Wav2Vec2Processor.from_pretrained(model_id)
         transcriber = pipeline(
             task="automatic-speech-recognition",
-                model=model,
-                tokenizer=processor.tokenizer,
-                feature_extractor=processor.feature_extractor,
-                device=device,
-                dtype=torch.float16 if device.type != "cpu" else torch.float32,
-            )
-    else:
-        transcriber = pipeline(
-            task="automatic-speech-recognition", model=model_id, device=device
+            model=model,
+            tokenizer=processor.tokenizer,
+            feature_extractor=processor.feature_extractor,
+            device=device,
+            dtype=torch.float16 if device.type != "cpu" else torch.float32,
         )
+    else:
+        transcriber = pipeline(task="automatic-speech-recognition", model=model_id, device=device)
 
     assert isinstance(transcriber, AutomaticSpeechRecognitionPipeline)
     return transcriber

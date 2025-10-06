@@ -5,16 +5,13 @@ Usage:
 """
 
 import logging
-from pathlib import Path
-from shutil import rmtree
 
-import hydra
-import pandas as pd
 from dotenv import load_dotenv
-from omegaconf import DictConfig
+import hydra
+from hydra.core.config_store import ConfigStore
 
+from utils.config_schema import ConfigSchema
 from utils.evaluate import evaluate
-
 
 load_dotenv()
 
@@ -26,9 +23,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("coral_evaluation")
 
+cs = ConfigStore.instance()
+cs.store(name="evaluation_config_schema", node=ConfigSchema)
 
-@hydra.main(config_path="../../config", config_name="evaluation_roest", version_base=None)
-def main(config: DictConfig) -> None:
+
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def main(config: ConfigSchema) -> None:
     """Evaluate a speech model on a dataset.
 
     Args:
@@ -37,11 +37,10 @@ def main(config: DictConfig) -> None:
     """
     logger.info("Starting evaluation...")
 
-    results_df = evaluate(config=config)
+    results_df = evaluate(config=config.eval)
 
     logger.info("Evaluation complete.")
 
 
-    
 if __name__ == "__main__":
     main()

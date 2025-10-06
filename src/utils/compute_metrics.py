@@ -1,25 +1,19 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
 
-import logging
-import os
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import DefaultDict
 
-import numpy as np
 from datasets import Dataset
 from evaluate.loading import load as load_metric
-from numpy.typing import NDArray
 from tqdm.auto import tqdm
 from transformers import (
     AutomaticSpeechRecognitionPipeline,
-    EvalPrediction,
-    PreTrainedTokenizerBase,
-    Wav2Vec2ProcessorWithLM,
 )
 from transformers.pipelines.pt_utils import KeyDataset
 
 from .data import DEFAULT_CONVERSION_DICT, process_example
+
 
 def compute_metrics_of_dataset_using_pipeline(
     dataset: Dataset,

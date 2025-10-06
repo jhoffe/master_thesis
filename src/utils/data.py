@@ -1,11 +1,11 @@
 """Functions related to the data loading and processing."""
 
-import logging
-import os
-import re
 from collections.abc import Callable, Iterable, Sized
 from functools import partial
+import logging
+import os
 from pathlib import Path
+import re
 from typing import Any
 from unicodedata import normalize
 
@@ -15,18 +15,12 @@ from datasets import (
     DatasetDict,
     IterableDataset,
     IterableDatasetDict,
-    NamedSplit,
-    interleave_datasets,
     load_dataset,
 )
 from omegaconf import DictConfig
 
 from .project_types import Data
-from .utils import (
-    NUMERAL_REGEX,
-    convert_numeral_to_words
-)
-
+from .utils import NUMERAL_REGEX, convert_iterable_dataset_to_dataset, convert_numeral_to_words
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +65,7 @@ DEFAULT_CONVERSION_DICT = {
     "\u200b": " ",  # Empty whitespace symbol
 }
 
+
 def load_dataset_for_evaluation(config: DictConfig) -> Dataset:
     """Load the evaluation dataset.
 
@@ -86,14 +81,16 @@ def load_dataset_for_evaluation(config: DictConfig) -> Dataset:
     dataset_subset = config.dataset_subset
 
     logger.info(
-        f"Loading the {config.eval_split_name!r} split of the {dataset_id} "
-        "dataset..."
+        f"Loading the {config.eval_split_name!r} split of the subset {dataset_subset} from {dataset_id} dataset..."
     )
 
     if config.cache_dir:
         eval_dataset_path = (
-            Path(config.cache_dir) / "test-sets" / dataset_id.replace("/", "--")
+            Path(config.cache_dir)
+            / "test-sets"
+            / (dataset_id.replace("/", "--") + f"-{dataset_subset}-{config.eval_split_name}")
         )
+
         if eval_dataset_path.exists():
             return Dataset.load_from_disk(dataset_path=eval_dataset_path)
 
@@ -103,14 +100,23 @@ def load_dataset_for_evaluation(config: DictConfig) -> Dataset:
         split=config.eval_split_name,
         token=os.getenv("HF_AUTH_TOKEN", True),
         cache_dir=config.cache_dir,
+        streaming=True,
     )
+    assert isinstance(dataset, IterableDataset)
+
+    dataset = convert_iterable_dataset_to_dataset(
+        iterable_dataset=dataset,
+        split_name=config.eval_split_name,
+        cache_dir=config.cache_dir,
+    )
+
     assert isinstance(dataset, Dataset)
-    # filter the dataset 
+    # filter the dataset
     dataset = filter_dataset(
         dataset=dataset,
         audio_column=config.audio_column,
         min_seconds_per_example=config.min_seconds_per_example,
-        max_seconds_per_example=config.max_seconds_per_example
+        max_seconds_per_example=config.max_seconds_per_example,
     )
     dataset = dataset.cast_column(
         column=config.audio_column, feature=Audio(sampling_rate=config.sampling_rate)
@@ -130,6 +136,7 @@ def load_dataset_for_evaluation(config: DictConfig) -> Dataset:
         dataset.save_to_disk(dataset_path=eval_dataset_path)
 
     return dataset
+
 
 def filter_dataset(
     dataset: Data,
@@ -167,9 +174,7 @@ def filter_dataset(
         max_seconds_per_example=max_seconds_per_example,
     )
     if isinstance(dataset, Dataset | DatasetDict):
-        filtered = dataset.filter(
-            function=filter_fn, num_proc=num_proc, desc="Filtering dataset"
-        )
+        filtered = dataset.filter(function=filter_fn, num_proc=num_proc, desc="Filtering dataset")
     else:
         filtered = dataset.filter(function=filter_fn)
 
@@ -358,9 +363,7 @@ def process_example(
             if lower_case:
                 characters_to_keep = characters_to_keep.lower()
             else:
-                characters_to_keep = (
-                    characters_to_keep.upper() + characters_to_keep.lower()
-                )
+                characters_to_keep = characters_to_keep.upper() + characters_to_keep.lower()
             non_standard_characters_regex = re.compile(
                 f"[^{re.escape(characters_to_keep + ' |')}]"
             )
