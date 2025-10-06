@@ -1,2 +1,6 @@
 defaults:
   - eval: wav2vec2-roest-315m-v2
+
+hydra:
+  run:
+    dir: ./experiments/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}

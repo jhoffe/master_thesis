@@ -18,6 +18,7 @@ from datasets import (
     load_dataset,
 )
 from omegaconf import DictConfig
+from utils.config_schema import EvaluationConfigSchema
 
 from .project_types import Data
 from .utils import NUMERAL_REGEX, convert_iterable_dataset_to_dataset, convert_numeral_to_words
@@ -66,7 +67,7 @@ DEFAULT_CONVERSION_DICT = {
 }
 
 
-def load_dataset_for_evaluation(config: DictConfig) -> Dataset:
+def load_dataset_for_evaluation(config: EvaluationConfigSchema) -> Dataset:
     """Load the evaluation dataset.
 
     Args:

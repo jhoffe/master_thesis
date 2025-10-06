@@ -25,7 +25,7 @@ load_dotenv()
 logger = logging.getLogger(__package__)
 
 
-def evaluate(config: EvaluationConfigSchema) -> pd.DataFrame:
+def evaluate(config: EvaluationConfigSchema) -> dict[str, float]:
     """Evaluate a model on the CoRal evaluation dataset.
 
     Args:
@@ -63,27 +63,9 @@ def evaluate(config: EvaluationConfigSchema) -> pd.DataFrame:
     cer_metric = load_metric("cer")
 
     wer = wer_metric.compute(predictions=preds, references=labels)
-    print(f"WER: {wer}")
-
     cer = cer_metric.compute(predictions=preds, references=labels)
-    print(f"CER: {cer}")
 
-
-#    logger.info(
-#        "Converting the dataset to a dataframe computing the scores for each "
-#        "metadata category..."
-#    )
-#    df = convert_evaluation_dataset_to_df(
-#        dataset=dataset, sub_dialect_to_dialect_mapping=config.sub_dialect_to_dialect
-#   )
-#    for metric_name in config.metrics:
-#        df[metric_name] = all_scores[metric_name]
-#    score_df = get_score_df(
-#        df=df,
-#        categories=["age_group", "gender", "dialect"],
-#        metric_names=config.metrics,
-#    )
-#    return score_df
+    return {"wer": wer, "cer": cer}
 
 
 def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionPipeline:

@@ -19,3 +19,6 @@ sync:
 
 transfer:
     rsync -av --relative --files-from=<(git ls-files --others --cached --exclude-standard --error-unmatch 2>/dev/null | xargs -r ls -d 2>/dev/null) ./ ${HPC_HOST}:${HPC_PATH}
+
+submit-eval: activate-venv transfer
+    python jobs/submit_evaluation.py

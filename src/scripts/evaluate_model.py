@@ -4,11 +4,13 @@ Usage:
     python src/scripts/evaluate_model.py [key=value] [key=value] ...
 """
 
+import json
 import logging
 
 from dotenv import load_dotenv
 import hydra
 from hydra.core.config_store import ConfigStore
+from hydra.core.hydra_config import HydraConfig
 
 from utils.config_schema import ConfigSchema
 from utils.evaluate import evaluate
@@ -37,7 +39,14 @@ def main(config: ConfigSchema) -> None:
     """
     logger.info("Starting evaluation...")
 
-    results_df = evaluate(config=config.eval)
+    results = evaluate(config=config.eval)
+
+    hydra_output_dir = HydraConfig.get().runtime.output_dir
+
+    logger.info(f"Saving results to {hydra_output_dir}/results.json...")
+
+    with open(f"{hydra_output_dir}/results.json", "w") as f:
+        json.dump(results, f, indent=4)
 
     logger.info("Evaluation complete.")
 
