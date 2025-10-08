@@ -1,5 +1,6 @@
 defaults:
-  - eval: wav2vec2-roest-315m-v2
+  - dataset: coral
+  - eval: wav2vec2
 
 hydra:
   run:

@@ -1,24 +1,13 @@
-# Evaluation dataset parameters
-dataset_id: 'CoRal-project/coral-v2'
-dataset_subset: 'read_aloud'
-eval_split_name: test
-text_column: text
-audio_column: audio
-cache_dir: './data/huggingface/datasets'
-
-# Filtering of the dataset
-min_seconds_per_example: 0.5
-max_seconds_per_example: 10
-
-# Processing of the dataset
-clean_text: true
-lower_case: true
-characters_to_keep: 'abcdefghijklmnopqrstuvwxyzæøå0123456789éü'
-
 debug: false
 
+text_column: text
+audio_column: audio
+
+characters_to_keep: 'abcdefghijklmnopqrstuvwxyzæøå0123456789éü'
+
+no_lm: true
+
 # Evaluation parameters
-sampling_rate: 16_000
 metrics:
   - cer
   - wer

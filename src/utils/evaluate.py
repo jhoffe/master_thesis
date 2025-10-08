@@ -14,7 +14,7 @@ from transformers import (
     pipeline,
 )
 
-from utils.config_schema import EvaluationConfigSchema
+from utils.config_schema import ConfigSchema, EvaluationConfigSchema
 
 from .compute_metrics import compute_metrics_of_dataset_using_pipeline
 from .data import load_dataset_for_evaluation
@@ -25,7 +25,7 @@ load_dotenv()
 logger = logging.getLogger(__package__)
 
 
-def evaluate(config: EvaluationConfigSchema) -> dict[str, float]:
+def evaluate(config: ConfigSchema) -> dict[str, float]:
     """Evaluate a model on the CoRal evaluation dataset.
 
     Args:
@@ -35,27 +35,25 @@ def evaluate(config: EvaluationConfigSchema) -> dict[str, float]:
     Returns:
         A DataFrame with the evaluation scores.
     """
-    assert config.model_id is not None, "`model_id` must be set to perform an evaluation!"
-
     logger.info("Loading the dataset...")
     dataset = load_dataset_for_evaluation(config=config)
 
-    if config.debug:
+    if config.eval.debug:
         logger.info("Debug mode is on, using only 5 examples from the dataset...")
         dataset = dataset.select(range(5))
 
-    logger.info(f"Loading the {config.model_id!r} ASR model...")
-    transcriber = load_asr_pipeline(model_id=config.model_id, no_lm=config.no_lm)
+    logger.info(f"Loading the {config.eval.model_id!r} ASR model...")
+    transcriber = load_asr_pipeline(model_id=config.eval.model_id, no_lm=config.eval.no_lm)
 
     logger.info("Computing the scores...")
     preds, labels, all_scores = compute_metrics_of_dataset_using_pipeline(
         dataset=dataset,
         transcriber=transcriber,
-        metric_names=config.metrics,
-        characters_to_keep=config.characters_to_keep,
-        text_column=config.text_column,
-        audio_column=config.audio_column,
-        batch_size=config.batch_size,
+        metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
+        characters_to_keep=config.eval.characters_to_keep,
+        text_column=config.eval.text_column,
+        audio_column=config.eval.audio_column,
+        batch_size=config.eval.batch_size,
     )
 
     # Hugging Face evaluate WER metric

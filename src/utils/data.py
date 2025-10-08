@@ -18,7 +18,7 @@ from datasets import (
     load_dataset,
 )
 from omegaconf import DictConfig
-from utils.config_schema import EvaluationConfigSchema
+from utils.config_schema import ConfigSchema, DatasetConfigSchema, EvaluationConfigSchema
 
 from .project_types import Data
 from .utils import NUMERAL_REGEX, convert_iterable_dataset_to_dataset, convert_numeral_to_words
@@ -67,7 +67,7 @@ DEFAULT_CONVERSION_DICT = {
 }
 
 
-def load_dataset_for_evaluation(config: EvaluationConfigSchema) -> Dataset:
+def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     """Load the evaluation dataset.
 
     Args:
@@ -78,18 +78,21 @@ def load_dataset_for_evaluation(config: EvaluationConfigSchema) -> Dataset:
         A DatasetDict containing the validation and test datasets.
     """
 
-    dataset_id = config.dataset_id
-    dataset_subset = config.dataset_subset
+    dataset_id = config.dataset.dataset_id
+    dataset_subset = config.dataset.dataset_subset
 
     logger.info(
-        f"Loading the {config.eval_split_name!r} split of the subset {dataset_subset} from {dataset_id} dataset..."
+        f"Loading the {config.dataset.eval_split_name!r} split of the subset {dataset_subset} from {dataset_id} dataset..."
     )
 
-    if config.cache_dir:
+    if config.dataset.cache_dir:
         eval_dataset_path = (
-            Path(config.cache_dir)
+            Path(config.dataset.cache_dir)
             / "test-sets"
-            / (dataset_id.replace("/", "--") + f"-{dataset_subset}-{config.eval_split_name}")
+            / (
+                dataset_id.replace("/", "--")
+                + f"-{dataset_subset}-{config.dataset.eval_split_name}"
+            )
         )
 
         if eval_dataset_path.exists():
@@ -98,43 +101,44 @@ def load_dataset_for_evaluation(config: EvaluationConfigSchema) -> Dataset:
     dataset = load_dataset(
         path=dataset_id,
         name=dataset_subset,
-        split=config.eval_split_name,
+        split=config.dataset.eval_split_name,
         token=os.getenv("HF_AUTH_TOKEN", True),
-        cache_dir=config.cache_dir,
+        cache_dir=str(config.dataset.cache_dir) if config.dataset.cache_dir else None,
         streaming=True,
     )
     assert isinstance(dataset, IterableDataset)
 
     dataset = convert_iterable_dataset_to_dataset(
         iterable_dataset=dataset,
-        split_name=config.eval_split_name,
-        cache_dir=config.cache_dir,
+        split_name=config.dataset.eval_split_name,
+        cache_dir=config.dataset.cache_dir,
     )
 
     assert isinstance(dataset, Dataset)
     # filter the dataset
     dataset = filter_dataset(
         dataset=dataset,
-        audio_column=config.audio_column,
-        min_seconds_per_example=config.min_seconds_per_example,
-        max_seconds_per_example=config.max_seconds_per_example,
+        audio_column=config.eval.audio_column,
+        min_seconds_per_example=config.dataset.min_seconds_per_example,
+        max_seconds_per_example=config.dataset.max_seconds_per_example,
     )
     dataset = dataset.cast_column(
-        column=config.audio_column, feature=Audio(sampling_rate=config.sampling_rate)
+        column=config.eval.audio_column,
+        feature=Audio(sampling_rate=config.dataset.sampling_rate),
     )
     dataset = process_dataset(
         dataset=dataset,
-        clean_text=config.clean_text,
-        lower_case=config.lower_case,
-        characters_to_keep=config.characters_to_keep,
-        text_column=config.text_column,
-        audio_column=config.audio_column,
+        clean_text=config.dataset.clean_text,
+        lower_case=config.dataset.lower_case,
+        characters_to_keep=config.eval.characters_to_keep,
+        text_column=config.eval.text_column,
+        audio_column=config.eval.audio_column,
         remove_input_dataset_columns=False,
         convert_numerals=True,
     )
 
-    if config.cache_dir:
-        dataset.save_to_disk(dataset_path=eval_dataset_path)
+    if config.dataset.cache_dir:
+        dataset.save_to_disk(dataset_path=eval_dataset_path)  # pyright: ignore[reportPossiblyUnboundVariable]
 
     return dataset
 

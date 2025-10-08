@@ -3,5 +3,5 @@ defaults:
 
 # Evaluation parameters
 model_id: 'openai/whisper-tiny'
-no_lm: false # This is only relevant for Wav2Vec 2.0 models
+no_lm: true # This is only relevant for Wav2Vec 2.0 models
 batch_size: 1

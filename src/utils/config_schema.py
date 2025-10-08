@@ -11,28 +11,15 @@ class Metric(str, Enum):
 
 @dataclass
 class EvaluationConfigSchema:
-    # Evaluation dataset parameters
-    dataset_id: str
-    dataset_subset: str
-    eval_split_name: str
-    text_column: str
-    audio_column: str
     model_id: str
 
-    cache_dir: DirectoryPath | None = None
+    text_column: str = "text"
+    audio_column: str = "audio"
 
-    # Filtering of the dataset
-    min_seconds_per_example: PositiveFloat = 0.5
-    max_seconds_per_example: PositiveFloat = 10
-
-    # Processing of the dataset
-    clean_text: bool = True
-    lower_case: bool = True
     characters_to_keep: str = "abcdefghijklmnopqrstuvwxyzæøå0123456789éü"
 
     # Evaluation parameters
     no_lm: bool = False  # This is only relevant for Wav2Vec 2.0 models
-    sampling_rate: PositiveInt = 16_000
     metrics: list[Metric] = dataclasses.field(default_factory=lambda: [Metric.WER, Metric.CER])
     batch_size: PositiveInt = 16
     store_results: bool = True
@@ -41,5 +28,24 @@ class EvaluationConfigSchema:
 
 
 @dataclass
+class DatasetConfigSchema:
+    dataset_id: str
+    dataset_subset: str
+    eval_split_name: str
+
+    cache_dir: DirectoryPath | None = None
+
+    # Filtering of the dataset
+    min_seconds_per_example: PositiveFloat = 0.5
+    max_seconds_per_example: PositiveInt = 10
+
+    # Processing of the dataset
+    clean_text: bool = True
+    lower_case: bool = True
+    sampling_rate: PositiveInt = 16_000
+
+
+@dataclass
 class ConfigSchema:
+    dataset: DatasetConfigSchema
     eval: EvaluationConfigSchema

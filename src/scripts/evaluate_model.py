@@ -39,7 +39,7 @@ def main(config: ConfigSchema) -> None:
     """
     logger.info("Starting evaluation...")
 
-    results = evaluate(config=config.eval)
+    results = evaluate(config=config)
 
     hydra_output_dir = HydraConfig.get().runtime.output_dir
 
