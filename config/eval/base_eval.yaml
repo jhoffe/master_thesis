@@ -7,6 +7,9 @@ characters_to_keep: 'abcdefghijklmnopqrstuvwxyzæøå0123456789éü'
 
 no_lm: true
 
+task: null
+language: null
+
 # Evaluation parameters
 metrics:
   - cer

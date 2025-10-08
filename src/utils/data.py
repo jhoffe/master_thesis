@@ -116,12 +116,12 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
 
     assert isinstance(dataset, Dataset)
     # filter the dataset
-    dataset = filter_dataset(
-        dataset=dataset,
-        audio_column=config.eval.audio_column,
-        min_seconds_per_example=config.dataset.min_seconds_per_example,
-        max_seconds_per_example=config.dataset.max_seconds_per_example,
-    )
+    # dataset = filter_dataset(
+    #     dataset=dataset,
+    #     audio_column=config.eval.audio_column,
+    #     min_seconds_per_example=config.dataset.min_seconds_per_example,
+    #     max_seconds_per_example=config.dataset.max_seconds_per_example,
+    # )
     dataset = dataset.cast_column(
         column=config.eval.audio_column,
         feature=Audio(sampling_rate=config.dataset.sampling_rate),

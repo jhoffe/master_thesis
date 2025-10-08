@@ -1,6 +1,7 @@
 """Evaluation of ASR models."""
 
 import logging
+import uuid
 
 from dotenv import load_dotenv
 from evaluate.loading import load as load_metric
@@ -43,7 +44,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         dataset = dataset.select(range(5))
 
     logger.info(f"Loading the {config.eval.model_id!r} ASR model...")
-    transcriber = load_asr_pipeline(model_id=config.eval.model_id, no_lm=config.eval.no_lm)
+    transcriber = load_asr_pipeline(config.eval)
 
     logger.info("Computing the scores...")
     preds, labels, all_scores = compute_metrics_of_dataset_using_pipeline(
@@ -54,11 +55,12 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         text_column=config.eval.text_column,
         audio_column=config.eval.audio_column,
         batch_size=config.eval.batch_size,
+        target_lang=config.eval.language,
     )
 
     # Hugging Face evaluate WER metric
-    wer_metric = load_metric("wer")
-    cer_metric = load_metric("cer")
+    wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
+    cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
 
     wer = wer_metric.compute(predictions=preds, references=labels)
     cer = cer_metric.compute(predictions=preds, references=labels)
@@ -66,7 +68,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     return {"wer": wer, "cer": cer}
 
 
-def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionPipeline:
+def load_asr_pipeline(config: EvaluationConfigSchema) -> AutomaticSpeechRecognitionPipeline:
     """Load the ASR pipeline.
 
     Args:
@@ -86,9 +88,9 @@ def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionP
     else:
         device = torch.device("cpu")
 
-    if no_lm:
-        model = Wav2Vec2ForCTC.from_pretrained(model_id)
-        processor = Wav2Vec2Processor.from_pretrained(model_id)
+    if config.no_lm:
+        model = Wav2Vec2ForCTC.from_pretrained(config.model_id)
+        processor = Wav2Vec2Processor.from_pretrained(config.model_id)
         transcriber = pipeline(
             task="automatic-speech-recognition",
             model=model,
@@ -98,7 +100,13 @@ def load_asr_pipeline(model_id: str, no_lm: bool) -> AutomaticSpeechRecognitionP
             dtype=torch.float16 if device.type != "cpu" else torch.float32,
         )
     else:
-        transcriber = pipeline(task="automatic-speech-recognition", model=model_id, device=device)
+        arguments = {
+            "task": "automatic-speech-recognition",
+            "model": config.model_id,
+            "device": device,
+        }
+
+        transcriber = pipeline(**arguments)
 
     assert isinstance(transcriber, AutomaticSpeechRecognitionPipeline)
     return transcriber

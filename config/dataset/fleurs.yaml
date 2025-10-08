@@ -1,0 +1,5 @@
+defaults:
+  - base_dataset
+
+dataset_id: 'google/fleurs'
+dataset_subset: 'da_dk'

@@ -23,6 +23,7 @@ def compute_metrics_of_dataset_using_pipeline(
     text_column: str,
     audio_column: str,
     batch_size: int,
+    target_lang: str | None = None,
 ) -> tuple[list[str], list[str], dict[str, list[float]]]:
     """Compute the metrics for the dataset using a pipeline.
 
@@ -66,7 +67,9 @@ def compute_metrics_of_dataset_using_pipeline(
             transcriber(
                 KeyDataset(dataset=dataset, key=audio_column),  # type: ignore[arg-type]
                 batch_size=batch_size,
-                generate_kwargs=dict(language="danish", task="transcribe"),
+                generate_kwargs=dict(language="danish", task="transcribe")
+                if target_lang is None
+                else dict(tgt_lang=target_lang),
             )
         ):
             prediction = process_example(
@@ -82,9 +85,7 @@ def compute_metrics_of_dataset_using_pipeline(
             )["text"]
 
             scores = {
-                metric_name: metric.compute(
-                    predictions=[prediction], references=[labels[idx]]
-                )
+                metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
                 for metric_name, metric in metrics.items()
             }
             assert all(isinstance(score, float) for score in scores.values()), (

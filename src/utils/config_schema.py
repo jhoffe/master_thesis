@@ -24,6 +24,9 @@ class EvaluationConfigSchema:
     batch_size: PositiveInt = 16
     store_results: bool = True
 
+    task: str | None = None
+    language: str | None = None
+
     debug: bool = False
 
 
