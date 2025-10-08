@@ -39,6 +39,7 @@ class DatasetConfigSchema:
     cache_dir: DirectoryPath | None = None
 
     # Filtering of the dataset
+    filter: bool = False
     min_seconds_per_example: PositiveFloat = 0.5
     max_seconds_per_example: PositiveInt = 10
 

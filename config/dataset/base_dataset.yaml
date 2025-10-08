@@ -3,6 +3,7 @@ eval_split_name: test
 cache_dir: './data/huggingface/datasets'
 
 # Filtering of the dataset
+filter: false
 min_seconds_per_example: 0.5
 max_seconds_per_example: 10
 

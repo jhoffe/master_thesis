@@ -86,14 +86,7 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     )
 
     if config.dataset.cache_dir:
-        eval_dataset_path = (
-            Path(config.dataset.cache_dir)
-            / "test-sets"
-            / (
-                dataset_id.replace("/", "--")
-                + f"-{dataset_subset}-{config.dataset.eval_split_name}"
-            )
-        )
+        eval_dataset_path = make_path(config, dataset_id, dataset_subset)
 
         if eval_dataset_path.exists():
             return Dataset.load_from_disk(dataset_path=eval_dataset_path)
@@ -114,14 +107,19 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
         cache_dir=config.dataset.cache_dir,
     )
 
+    logger.info(f"Dataset converted with {len(dataset):,} samples.")
+
     assert isinstance(dataset, Dataset)
     # filter the dataset
-    # dataset = filter_dataset(
-    #     dataset=dataset,
-    #     audio_column=config.eval.audio_column,
-    #     min_seconds_per_example=config.dataset.min_seconds_per_example,
-    #     max_seconds_per_example=config.dataset.max_seconds_per_example,
-    # )
+    if config.dataset.filter:
+        dataset = filter_dataset(
+            dataset=dataset,
+            audio_column=config.eval.audio_column,
+            min_seconds_per_example=config.dataset.min_seconds_per_example,
+            max_seconds_per_example=config.dataset.max_seconds_per_example,
+        )
+        logger.info(f"Filtered dataset has {len(dataset):,} samples.")
+
     dataset = dataset.cast_column(
         column=config.eval.audio_column,
         feature=Audio(sampling_rate=config.dataset.sampling_rate),
@@ -141,6 +139,18 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
         dataset.save_to_disk(dataset_path=eval_dataset_path)  # pyright: ignore[reportPossiblyUnboundVariable]
 
     return dataset
+
+
+def make_path(config, dataset_id, dataset_subset):
+    return (
+        Path(config.dataset.cache_dir)
+        / "test-sets"
+        / (
+            dataset_id.replace("/", "--")
+            + f"-{dataset_subset}-{config.dataset.eval_split_name}"
+            + ("-filtered" if config.dataset.filter else "-unfiltered")
+        )
+    )
 
 
 def filter_dataset(
@@ -189,10 +199,6 @@ def filter_dataset(
     else:
         for split_name in dataset.keys():
             dataset[split_name].info.features = filtered[split_name].info.features
-
-    if isinstance(dataset, Sized):
-        num_samples_removed = num_samples_before - len(dataset)
-        logger.info(f"Removed {num_samples_removed:,} samples from the dataset")
 
     return filtered
 
