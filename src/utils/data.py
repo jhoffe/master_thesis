@@ -1,8 +1,7 @@
 """Functions related to the data loading and processing."""
 
-from collections.abc import Callable, Iterable, Sized
+from collections.abc import Callable, Iterable
 from functools import partial
-import logging
 import os
 from pathlib import Path
 import re
@@ -17,13 +16,12 @@ from datasets import (
     IterableDatasetDict,
     load_dataset,
 )
+from loguru import logger
 
 from utils.config_schema import ConfigSchema
 
 from .project_types import Data
 from .utils import NUMERAL_REGEX, convert_iterable_dataset_to_dataset, convert_numeral_to_words
-
-logger = logging.getLogger(__name__)
 
 # Dictionary that contains characters to be converted (from the key to the value). Some
 # values contain spaces to ensure that they're separated from other characters, and

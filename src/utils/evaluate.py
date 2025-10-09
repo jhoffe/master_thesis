@@ -1,11 +1,11 @@
 """Evaluation of ASR models."""
 
-import logging
 import uuid
 
 from dotenv import load_dotenv
 from evaluate.loading import load as load_metric
 from hydra.core.hydra_config import HydraConfig
+from loguru import logger
 import pandas as pd
 import torch
 from transformers import (
@@ -22,9 +22,6 @@ from .compute_metrics import compute_metrics_of_dataset_using_pipeline
 from .data import load_dataset_for_evaluation
 
 load_dotenv()
-
-
-logger = logging.getLogger(__package__)
 
 
 def evaluate(config: ConfigSchema) -> dict[str, float]:

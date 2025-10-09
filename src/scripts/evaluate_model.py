@@ -5,24 +5,17 @@ Usage:
 """
 
 import json
-import logging
 
 from dotenv import load_dotenv
 import hydra
 from hydra.core.config_store import ConfigStore
 from hydra.core.hydra_config import HydraConfig
+from loguru import logger
 
 from utils.config_schema import ConfigSchema
 from utils.evaluate import evaluate
 from utils.ignore_warnings import ignore_warnings
 from utils.wandb_setup import WandbSetup
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s ⋅ %(name)s ⋅ %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("coral_evaluation")
 
 cs = ConfigStore.instance()
 cs.store(name="config_schema", node=ConfigSchema)

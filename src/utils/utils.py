@@ -1,7 +1,6 @@
 """General utility functions."""
 
 import collections.abc as c
-import logging
 import multiprocessing as mp
 from pathlib import Path
 import re
@@ -13,11 +12,10 @@ from datasets import (
     disable_progress_bar,
     enable_progress_bar,
 )
+from loguru import logger
 from tqdm.auto import tqdm
 
 NUMERAL_REGEX = re.compile(r"\b(0|[1-9]\d{0,2}(?:(?:\.\d{3})*|\d*)(?:,\d+)?)\b")
-
-logger = logging.getLogger(__package__)
 
 
 def convert_numeral_to_words(numeral: str, inside_larger_numeral: bool = False) -> str:
