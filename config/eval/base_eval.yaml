@@ -8,4 +8,4 @@ store_results: true
 
 num_workers: 4
 
-batch_size: 32
+batch_size: 16

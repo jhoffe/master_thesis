@@ -22,7 +22,7 @@ def run_for_model(
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
         num_cores=8,
-        walltime="02:00",
+        walltime="01:00",
         memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
