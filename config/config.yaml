@@ -1,9 +1,10 @@
 defaults:
   - dataset: coral
-  - eval: roest-wav2vec2-315m-v2
+  - model: whisper-tiny
+  - eval: base_eval
 
 enable_wandb: true
 
 hydra:
   run:
-    dir: ./experiments/${hydra.job.name}/${eval.name}_${dataset.name}_${dataset.dataset_subset}_${dataset.eval_split_name}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: ./experiments/${hydra.job.name}/${model.name}_${dataset.name}_${dataset.dataset_subset}_${dataset.eval_split_name}/${now:%Y-%m-%d_%H-%M-%S}

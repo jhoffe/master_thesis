@@ -1,8 +1,7 @@
 defaults:
-  - base_eval
+  - base_model
 
 name: 'wav2vec2-xls-r-2b'
 
 # Evaluation parameters
 model_id: 'facebook/wav2vec2-xls-r-2b'
-batch_size: 1

@@ -13,3 +13,8 @@ lower_case: true
 sampling_rate: 16_000
 
 id_column: null
+
+text_column: text
+audio_column: audio
+
+characters_to_keep: 'abcdefghijklmnopqrstuvwxyzæøå0123456789éü'

@@ -40,7 +40,7 @@ def main(config: ConfigSchema) -> None:
     with WandbSetup(
         config=config,
         job_type="evaluation",
-        tags=(config.eval.name, config.dataset.name),
+        tags=(config.model.name, config.dataset.name),
     ):
         logger.info("Starting evaluation...")
 

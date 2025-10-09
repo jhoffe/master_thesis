@@ -1,17 +1,9 @@
 debug: false
 
-text_column: text
-audio_column: audio
-
-characters_to_keep: 'abcdefghijklmnopqrstuvwxyzæøå0123456789éü'
-
-no_lm: false
-
-task: null
-language: null
-
 # Evaluation parameters
 metrics:
   - cer
   - wer
 store_results: true
+
+batch_size: 1

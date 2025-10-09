@@ -1,8 +1,7 @@
 defaults:
-  - base_eval
+  - base_model
 
 name: 'hviske-v2'
 
 # Evaluation parameters
 model_id: 'syvai/hviske-v2'
-batch_size: 1

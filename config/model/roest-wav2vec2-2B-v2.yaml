@@ -1,9 +1,8 @@
 defaults:
-  - base_eval
+  - base_model
 
 name: 'roest-wav2vec2-2B-v2'
 
 # Evaluation parameters
 model_id: 'CoRal-project/roest-wav2vec2-2B-v2'
 no_lm: true # This is only relevant for Wav2Vec 2.0 models
-batch_size: 1

@@ -1,8 +1,7 @@
 defaults:
-  - base_eval
+  - base_model
 
 name: 'whisper-large-v3-turbo'
 
 # Evaluation parameters
 model_id: 'openai/whisper-large-v3-turbo'
-batch_size: 1

@@ -6,3 +6,6 @@ name: 'fleurs'
 dataset_id: 'google/fleurs'
 dataset_subset: 'da_dk'
 id_column: 'id'
+
+text_column: raw_transcription
+audio_column: audio

@@ -115,23 +115,23 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     if config.dataset.filter:
         dataset = filter_dataset(
             dataset=dataset,
-            audio_column=config.eval.audio_column,
+            audio_column=config.dataset.audio_column,
             min_seconds_per_example=config.dataset.min_seconds_per_example,
             max_seconds_per_example=config.dataset.max_seconds_per_example,
         )
         logger.info(f"Filtered dataset has {len(dataset):,} samples.")
 
     dataset = dataset.cast_column(
-        column=config.eval.audio_column,
+        column=config.dataset.audio_column,
         feature=Audio(sampling_rate=config.dataset.sampling_rate),
     )
     dataset = process_dataset(
         dataset=dataset,
         clean_text=config.dataset.clean_text,
         lower_case=config.dataset.lower_case,
-        characters_to_keep=config.eval.characters_to_keep,
-        text_column=config.eval.text_column,
-        audio_column=config.eval.audio_column,
+        characters_to_keep=config.dataset.characters_to_keep,
+        text_column=config.dataset.text_column,
+        audio_column=config.dataset.audio_column,
         remove_input_dataset_columns=False,
         convert_numerals=True,
     )
@@ -181,7 +181,6 @@ def filter_dataset(
     Returns:
         The filtered dataset.
     """
-    num_samples_before = len(dataset) if isinstance(dataset, Sized) else 0
 
     filter_fn = partial(
         filter_example,

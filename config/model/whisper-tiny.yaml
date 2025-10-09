@@ -1,8 +1,7 @@
 defaults:
-  - base_eval
+  - base_model
 
 name: 'whisper-tiny'
 
 # Evaluation parameters
 model_id: 'openai/whisper-tiny'
-batch_size: 1

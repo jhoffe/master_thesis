@@ -16,7 +16,7 @@ from transformers import (
 )
 import wandb
 
-from utils.config_schema import ConfigSchema, EvaluationConfigSchema
+from utils.config_schema import ConfigSchema, ModelConfigSchema
 
 from .compute_metrics import compute_metrics_of_dataset_using_pipeline
 from .data import load_dataset_for_evaluation
@@ -44,19 +44,19 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         logger.info("Debug mode is on, using only 5 examples from the dataset...")
         dataset = dataset.select(range(5))
 
-    logger.info(f"Loading the {config.eval.model_id!r} ASR model...")
-    transcriber = load_asr_pipeline(config.eval)
+    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    transcriber = load_asr_pipeline(config.model)
 
     logger.info("Computing the scores...")
     preds, labels, results = compute_metrics_of_dataset_using_pipeline(
         dataset=dataset,
         transcriber=transcriber,
         metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
-        characters_to_keep=config.eval.characters_to_keep,
-        text_column=config.eval.text_column,
-        audio_column=config.eval.audio_column,
+        characters_to_keep=config.dataset.characters_to_keep,
+        text_column=config.dataset.text_column,
+        audio_column=config.dataset.audio_column,
         batch_size=config.eval.batch_size,
-        target_lang=config.eval.language,
+        target_lang=config.model.language,
         id_column=config.dataset.id_column,
         sampling_rate=config.dataset.sampling_rate,
     )
@@ -85,7 +85,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     return {"wer": wer, "cer": cer}
 
 
-def load_asr_pipeline(config: EvaluationConfigSchema) -> AutomaticSpeechRecognitionPipeline:
+def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPipeline:
     """Load the ASR pipeline.
 
     Args:
@@ -111,8 +111,8 @@ def load_asr_pipeline(config: EvaluationConfigSchema) -> AutomaticSpeechRecognit
         transcriber = pipeline(
             task="automatic-speech-recognition",
             model=model,
-            tokenizer=processor.tokenizer,
-            feature_extractor=processor.feature_extractor,
+            tokenizer=processor.tokenizer,  # type: ignore
+            feature_extractor=processor.feature_extractor,  # type: ignore
             device=device,
             dtype=torch.float16 if device.type != "cpu" else torch.float32,
         )

@@ -15,25 +15,23 @@ class Metric(str, Enum):
 
 @dataclass(frozen=True)
 class EvaluationConfigSchema:
-    name: str
-
-    model_id: str
-
-    text_column: str = "text"
-    audio_column: str = "audio"
-
-    characters_to_keep: str = "abcdefghijklmnopqrstuvwxyzæøå0123456789éü"
-
-    # Evaluation parameters
-    no_lm: bool = False  # This is only relevant for Wav2Vec 2.0 models
     metrics: list[Metric] = dataclasses.field(default_factory=lambda: [Metric.WER, Metric.CER])
     batch_size: PositiveInt = 16
     store_results: bool = True
 
+    debug: bool = False
+
+
+@dataclass(frozen=True)
+class ModelConfigSchema:
+    name: str
+
+    model_id: str
+
+    # Evaluation parameters
+    no_lm: bool = False  # This is only relevant for Wav2Vec 2.0 models
     task: str | None = None
     language: str | None = None
-
-    debug: bool = False
 
 
 @dataclass(frozen=True)
@@ -47,6 +45,11 @@ class DatasetConfigSchema:
     cache_dir: DirectoryPath | None = None
 
     id_column: str | None = None
+
+    text_column: str = "text"
+    audio_column: str = "audio"
+
+    characters_to_keep: str = "abcdefghijklmnopqrstuvwxyzæøå0123456789éü"
 
     # Filtering of the dataset
     filter: bool = False
@@ -64,6 +67,7 @@ class ConfigSchema:
     """Configuration schema for the evaluation script."""
 
     dataset: DatasetConfigSchema
+    model: ModelConfigSchema
     eval: EvaluationConfigSchema
 
     enable_wandb: bool = True
