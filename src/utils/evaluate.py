@@ -40,6 +40,8 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     logger.info("Loading the dataset...")
     dataset = load_dataset_for_evaluation(config=config)
 
+    dataset.
+
     if config.eval.debug:
         logger.info("Debug mode is on, using only 5 examples from the dataset...")
         dataset = dataset.select(range(5))
@@ -56,6 +58,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         text_column=config.dataset.text_column,
         audio_column=config.dataset.audio_column,
         batch_size=config.eval.batch_size,
+        num_workers=config.eval.num_workers,
         target_lang=config.model.language,
         id_column=config.dataset.id_column,
         sampling_rate=config.dataset.sampling_rate,

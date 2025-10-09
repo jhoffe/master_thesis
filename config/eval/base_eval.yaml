@@ -6,4 +6,6 @@ metrics:
   - wer
 store_results: true
 
-batch_size: 1
+num_workers: 4
+
+batch_size: 8

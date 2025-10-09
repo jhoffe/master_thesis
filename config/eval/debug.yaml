@@ -2,3 +2,5 @@ defaults:
   - base_eval
 
 debug: true
+num_workers: 1
+batch_size: 1

@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import os
+from time import sleep
 from typing import Any
 
 from dotenv import load_dotenv
 from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
-from utils import data
 
 
-def run_for_model(dataset_arg: str, eval_arg: str, experiment_args: dict[str, Any]) -> str | None:
-    job_name = f"eval-{eval_arg}-{dataset_arg}"
+def run_for_model(
+    dataset_arg: str,
+    model_arg: str,
+    experiment_args: dict[str, Any] | None = None,
+) -> str | None:
+    job_name = f"eval-{model_arg}-{dataset_arg}"
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
@@ -35,11 +39,12 @@ def run_for_model(dataset_arg: str, eval_arg: str, experiment_args: dict[str, An
         command = [
             "python",
             "src/scripts/evaluate_model.py",
-            "eval=" + eval_arg,
+            "model=" + model_arg,
             "dataset=" + dataset_arg,
         ]
 
-        command.extend(f"++{k}={v}" for k, v in experiment_args.items())
+        if experiment_args is not None:
+            command.extend(f"++{k}={v}" for k, v in experiment_args.items())
 
         s.command(command)
 
@@ -63,20 +68,14 @@ if __name__ == "__main__":
     ]
 
     for experiment in models:
-        experiment_args = {
-            "eval.batch_size": 8,
-        }
-
         run_for_model(
             dataset_arg="coral",
-            eval_arg=experiment,
-            experiment_args=experiment_args,
+            model_arg=experiment,
         )
-
-        experiment_args["eval.text_column"] = "transcription"
 
         run_for_model(
             dataset_arg="fleurs",
-            eval_arg=experiment,
-            experiment_args=experiment_args,
+            model_arg=experiment,
         )
+
+        sleep(5)

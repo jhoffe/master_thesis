@@ -21,6 +21,7 @@ def compute_metrics_of_dataset_using_pipeline(
     text_column: str,
     audio_column: str,
     batch_size: int,
+    num_workers: int,
     id_column: str | None = None,
     sampling_rate: int | None = None,
     target_lang: str | None = None,
@@ -77,10 +78,11 @@ def compute_metrics_of_dataset_using_pipeline(
         for idx, out in enumerate(
             transcriber(
                 KeyDataset(dataset=dataset, key=audio_column),  # type: ignore[arg-type]
-                batch_size=batch_size,
                 generate_kwargs=dict(language="danish", task="transcribe")
                 if target_lang is None
                 else dict(tgt_lang=target_lang),
+                batch_size=batch_size,
+                num_workers=num_workers,
             )
         ):
             prediction = process_example(

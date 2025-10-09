@@ -19,6 +19,8 @@ class EvaluationConfigSchema:
     batch_size: PositiveInt = 16
     store_results: bool = True
 
+    num_workers: PositiveInt = 4
+
     debug: bool = False
 
 
