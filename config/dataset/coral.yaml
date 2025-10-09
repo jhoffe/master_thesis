@@ -1,5 +1,8 @@
 defaults:
   - base_dataset
 
+name: 'coral-v2'
+
 dataset_id: 'CoRal-project/coral-v2'
 dataset_subset: 'read_aloud'
+id_column: 'id_recording'

@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import DefaultDict
+from typing import Any, DefaultDict
 
 from datasets import Dataset
 from evaluate.loading import load as load_metric
@@ -23,8 +23,10 @@ def compute_metrics_of_dataset_using_pipeline(
     text_column: str,
     audio_column: str,
     batch_size: int,
+    id_column: str | None = None,
+    sampling_rate: int | None = None,
     target_lang: str | None = None,
-) -> tuple[list[str], list[str], dict[str, list[float]]]:
+) -> tuple[list[str], list[str], list]:
     """Compute the metrics for the dataset using a pipeline.
 
     Args:
@@ -58,7 +60,18 @@ def compute_metrics_of_dataset_using_pipeline(
     labels: list[str] = [lbl.strip().lower() for lbl in dataset[text_column]]
     predictions: list[str] = list()
     metrics = {metric_name: load_metric(metric_name) for metric_name in metric_names}
-    all_scores: DefaultDict = defaultdict(list)
+
+    if id_column is not None:
+        ids = [str(id_) for id_ in dataset[id_column]]
+    else:
+        ids = list(range(len(dataset)))
+
+    if sampling_rate is not None:
+        clip_lengths = [len(sample["array"]) / sampling_rate for sample in dataset[audio_column]]
+    else:
+        clip_lengths = [None] * len(dataset)
+
+    all_metrics = []
 
     with (
         tqdm(total=len(dataset), desc="Transcribing") as pbar,
@@ -92,9 +105,19 @@ def compute_metrics_of_dataset_using_pipeline(
                 f"Expected the scores to be floats, but found {scores}"
             )
 
-            for metric, score in scores.items():
-                all_scores[metric].append(score)
+            all_metrics.append(scores)
             predictions.append(prediction)
             pbar.update()
 
-    return predictions, labels, all_scores
+    results = [
+        {
+            "id": ids[idx],
+            "prediction": predictions[idx],
+            "label": labels[idx],
+            "clip_length": clip_lengths[idx],
+            "metrics": all_metrics[idx],
+        }
+        for idx in range(len(dataset))
+    ]
+
+    return predictions, labels, results

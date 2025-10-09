@@ -1,8 +1,8 @@
 defaults:
   - base_eval
 
-name: 'whisper-tiny'
+name: 'hviske-v2'
 
 # Evaluation parameters
-model_id: 'openai/whisper-tiny'
+model_id: 'syvai/hviske-v2'
 batch_size: 1

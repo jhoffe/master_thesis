@@ -11,3 +11,5 @@ max_seconds_per_example: 10
 clean_text: true
 lower_case: true
 sampling_rate: 16_000
+
+id_column: null

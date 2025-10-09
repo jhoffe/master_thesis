@@ -7,10 +7,11 @@ from dotenv import load_dotenv
 from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
+from utils import data
 
 
-def run_for_model(experiment_args: dict[str, Any], wait_for: str | None = None) -> str | None:
-    job_name = f"evaluate_coral_{experiment_args['eval.model_id'].replace('/', '__')}"
+def run_for_model(dataset_arg: str, eval_arg: str, experiment_args: dict[str, Any]) -> str | None:
+    job_name = f"eval-{eval_arg}-{dataset_arg}"
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
@@ -23,7 +24,6 @@ def run_for_model(experiment_args: dict[str, Any], wait_for: str | None = None) 
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
         error_file=f"logs/{job_name}.%J.err",
-        dependency=wait_for,
     )
 
     with Submittor(opts) as s:
@@ -35,6 +35,8 @@ def run_for_model(experiment_args: dict[str, Any], wait_for: str | None = None) 
         command = [
             "python",
             "src/scripts/evaluate_model.py",
+            "eval=" + eval_arg,
+            "dataset=" + dataset_arg,
         ]
 
         command.extend(f"++{k}={v}" for k, v in experiment_args.items())
@@ -47,55 +49,34 @@ def run_for_model(experiment_args: dict[str, Any], wait_for: str | None = None) 
 if __name__ == "__main__":
     load_dotenv()
 
-    experiments = [
-        {
-            "eval.model_id": "CoRal-project/roest-wav2vec2-315m-v2",
-            "eval.no_lm": True,
-        },
-        {
-            "eval.model_id": "CoRal-project/roest-wav2vec2-1b-v2",
-            "eval.no_lm": True,
-        },
-        {
-            "eval.model_id": "CoRal-project/roest-wav2vec2-2b-v2",
-            "eval.no_lm": True,
-        },
-        {
-            "eval.model_id": "CoRal-project/roest-whisper-large-v1",
-            "eval.no_lm": False,
-        },
-        {
-            "eval.model_id": "syvai/hviske-v2",
-            "eval.no_lm": False,
-        },
-        {
-            "eval.model_id": "syvai/hviske-v3-conversation",
-            "eval.no_lm": False,
-        },
-        {
-            "eval.model_id": "facebook/seamless-m4t-v2-large",
-            "eval.no_lm": False,
-            "eval.language": "dan",
-        },
-        {
-            "eval.model_id": "openai/whisper-large-v3-turbo",
-            "eval.no_lm": False,
-        },
-        {
-            "eval.model_id": "openai/whisper-large-v3",
-            "eval.no_lm": False,
-        },
-        {
-            "eval.model_id": "facebook/wav2vec2-xls-r-2b",
-            "eval.no_lm": False,
-        },
+    models = [
+        "hviske-v2",
+        "hviske-v3-conversation",
+        "roest-whisper-large-v1",
+        "seamless-m4t-v2-large",
+        "wav2vec2-xls-r-2b",
+        "whisper-large-v3-turbo",
+        "whisper-large-v3",
+        "roest-wav2vec2-315m-v2",
+        "roest-wav2vec2-1B-v2",
+        "roest-wav2vec2-2B-v2",
     ]
 
-    wait_for = None
-    for experiment_args in experiments[3:]:
-        experiment_args["eval.batch_size"] = 8
+    for experiment in models:
+        experiment_args = {
+            "eval.batch_size": 8,
+        }
 
         run_for_model(
-            experiment_args,
-            wait_for,
+            dataset_arg="coral",
+            eval_arg=experiment,
+            experiment_args=experiment_args,
+        )
+
+        experiment_args["eval.text_column"] = "transcription"
+
+        run_for_model(
+            dataset_arg="fleurs",
+            eval_arg=experiment,
+            experiment_args=experiment_args,
         )

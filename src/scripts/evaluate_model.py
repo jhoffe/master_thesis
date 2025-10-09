@@ -26,7 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger("coral_evaluation")
 
 cs = ConfigStore.instance()
-cs.store(name="evaluation_config_schema", node=ConfigSchema)
+cs.store(name="config_schema", node=ConfigSchema)
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)

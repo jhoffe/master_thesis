@@ -11,6 +11,8 @@ class Metric(str, Enum):
 
 @dataclass
 class EvaluationConfigSchema:
+    name: str
+
     model_id: str
 
     text_column: str = "text"
@@ -32,11 +34,15 @@ class EvaluationConfigSchema:
 
 @dataclass
 class DatasetConfigSchema:
+    name: str
+
     dataset_id: str
     dataset_subset: str
     eval_split_name: str
 
     cache_dir: DirectoryPath | None = None
+
+    id_column: str | None = None
 
     # Filtering of the dataset
     filter: bool = False

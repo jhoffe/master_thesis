@@ -1,0 +1,8 @@
+defaults:
+  - base_eval
+
+name: 'roest-whisper-large-v1'
+
+# Evaluation parameters
+model_id: 'CoRal-project/roest-whisper-large-v1'
+batch_size: 1

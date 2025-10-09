@@ -1,0 +1,8 @@
+defaults:
+  - base_eval
+
+name: 'hviske-v3-conversation'
+
+# Evaluation parameters
+model_id: 'syvai/hviske-v3-conversation'
+batch_size: 1

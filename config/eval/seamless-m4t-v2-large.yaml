@@ -1,0 +1,8 @@
+defaults:
+  - base_eval
+
+name: 'seamless-m4t-v2-large'
+
+# Evaluation parameters
+model_id: 'facebook/seamless-m4t-v2-large'
+batch_size: 1

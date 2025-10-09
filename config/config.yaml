@@ -1,7 +1,7 @@
 defaults:
   - dataset: coral
-  - eval: wav2vec2
+  - eval: roest-wav2vec2-315m-v2
 
 hydra:
   run:
-    dir: ./experiments/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ./experiments/${hydra.job.name}/${eval.name}_${dataset.name}_${dataset.dataset_subset}_${dataset.eval_split_name}/${now:%Y-%m-%d_%H-%M-%S}

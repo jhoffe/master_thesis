@@ -1,5 +1,8 @@
 defaults:
   - base_dataset
 
+name: 'fleurs'
+
 dataset_id: 'google/fleurs'
 dataset_subset: 'da_dk'
+id_column: 'id'

@@ -5,7 +5,7 @@ import uuid
 
 from dotenv import load_dotenv
 from evaluate.loading import load as load_metric
-from omegaconf import DictConfig
+from hydra.core.hydra_config import HydraConfig
 import pandas as pd
 import torch
 from transformers import (
@@ -47,7 +47,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     transcriber = load_asr_pipeline(config.eval)
 
     logger.info("Computing the scores...")
-    preds, labels, all_scores = compute_metrics_of_dataset_using_pipeline(
+    preds, labels, results = compute_metrics_of_dataset_using_pipeline(
         dataset=dataset,
         transcriber=transcriber,
         metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
@@ -56,7 +56,15 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         audio_column=config.eval.audio_column,
         batch_size=config.eval.batch_size,
         target_lang=config.eval.language,
+        id_column=config.dataset.id_column,
+        sampling_rate=config.dataset.sampling_rate,
     )
+
+    if config.eval.store_results:
+        hydra_output_dir = HydraConfig.get().runtime.output_dir
+        results_df = pd.DataFrame(results)
+        results_df.to_parquet(f"{hydra_output_dir}/detailed_results.parquet", index=False)
+        logger.info(f"Saved detailed results to {hydra_output_dir}/detailed_results.parquet")
 
     # Hugging Face evaluate WER metric
     wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
