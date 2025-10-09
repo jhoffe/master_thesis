@@ -17,8 +17,8 @@ from datasets import (
     IterableDatasetDict,
     load_dataset,
 )
-from omegaconf import DictConfig
-from utils.config_schema import ConfigSchema, DatasetConfigSchema, EvaluationConfigSchema
+
+from utils.config_schema import ConfigSchema
 
 from .project_types import Data
 from .utils import NUMERAL_REGEX, convert_iterable_dataset_to_dataset, convert_numeral_to_words
@@ -98,6 +98,7 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
         token=os.getenv("HF_AUTH_TOKEN", True),
         cache_dir=str(config.dataset.cache_dir) if config.dataset.cache_dir else None,
         streaming=True,
+        trust_remote_code=True,
     )
     assert isinstance(dataset, IterableDataset)
 

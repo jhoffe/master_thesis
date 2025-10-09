@@ -1,7 +1,11 @@
+import dataclasses
 from enum import Enum
+import warnings
+
 from pydantic.dataclasses import dataclass
 from pydantic.types import DirectoryPath, PositiveFloat, PositiveInt
-import dataclasses
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class Metric(str, Enum):
@@ -9,7 +13,7 @@ class Metric(str, Enum):
     WER = "wer"
 
 
-@dataclass
+@dataclass(frozen=True)
 class EvaluationConfigSchema:
     name: str
 
@@ -32,7 +36,7 @@ class EvaluationConfigSchema:
     debug: bool = False
 
 
-@dataclass
+@dataclass(frozen=True)
 class DatasetConfigSchema:
     name: str
 
@@ -55,7 +59,11 @@ class DatasetConfigSchema:
     sampling_rate: PositiveInt = 16_000
 
 
-@dataclass
+@dataclass(frozen=True)
 class ConfigSchema:
+    """Configuration schema for the evaluation script."""
+
     dataset: DatasetConfigSchema
     eval: EvaluationConfigSchema
+
+    enable_wandb: bool = True

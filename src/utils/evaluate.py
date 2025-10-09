@@ -14,6 +14,7 @@ from transformers import (
     Wav2Vec2Processor,
     pipeline,
 )
+import wandb
 
 from utils.config_schema import ConfigSchema, EvaluationConfigSchema
 
@@ -60,6 +61,12 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         sampling_rate=config.dataset.sampling_rate,
     )
 
+    wandb.log(
+        {
+            "detailed_results": wandb.Table(dataframe=pd.DataFrame(results)),
+        },
+    )
+
     if config.eval.store_results:
         hydra_output_dir = HydraConfig.get().runtime.output_dir
         results_df = pd.DataFrame(results)
@@ -72,6 +79,8 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
 
     wer = wer_metric.compute(predictions=preds, references=labels)
     cer = cer_metric.compute(predictions=preds, references=labels)
+
+    wandb.log({"wer": wer, "cer": cer})
 
     return {"wer": wer, "cer": cer}
 

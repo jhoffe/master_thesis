@@ -3,6 +3,7 @@
 /outputs/
 /experiments/
 /logs/
+/wandb/
 
 # Mac OS-specific storage files
 .DS_Store

@@ -1,8 +1,6 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
 
-from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, DefaultDict
 
 from datasets import Dataset
 from evaluate.loading import load as load_metric

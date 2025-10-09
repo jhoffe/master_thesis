@@ -14,9 +14,8 @@ from hydra.core.hydra_config import HydraConfig
 
 from utils.config_schema import ConfigSchema
 from utils.evaluate import evaluate
-
-load_dotenv()
-
+from utils.ignore_warnings import ignore_warnings
+from utils.wandb_setup import WandbSetup
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,19 +36,28 @@ def main(config: ConfigSchema) -> None:
         config:
             The Hydra configuration object.
     """
-    logger.info("Starting evaluation...")
 
-    results = evaluate(config=config)
+    with WandbSetup(
+        config=config,
+        job_type="evaluation",
+        tags=(config.eval.name, config.dataset.name),
+    ):
+        logger.info("Starting evaluation...")
 
-    hydra_output_dir = HydraConfig.get().runtime.output_dir
+        results = evaluate(config=config)
 
-    logger.info(f"Saving results to {hydra_output_dir}/results.json...")
+        hydra_output_dir = HydraConfig.get().runtime.output_dir
 
-    with open(f"{hydra_output_dir}/results.json", "w") as f:
-        json.dump(results, f, indent=4)
+        logger.info(f"Saving results to {hydra_output_dir}/results.json...")
 
-    logger.info("Evaluation complete.")
+        with open(f"{hydra_output_dir}/results.json", "w") as f:
+            json.dump(results, f, indent=4)
+
+        logger.info("Evaluation complete.")
 
 
 if __name__ == "__main__":
+    ignore_warnings()
+    load_dotenv()
+
     main()
