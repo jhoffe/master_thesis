@@ -39,7 +39,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
 
     if config.eval.debug:
         logger.info("Debug mode is on, using only 5 examples from the dataset...")
-        dataset = dataset.select(range(5))
+        dataset = dataset.select(range(64))
 
     logger.info(f"Loading the {config.model.model_id!r} ASR model...")
     transcriber = load_asr_pipeline(config.model)

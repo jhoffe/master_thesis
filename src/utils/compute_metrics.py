@@ -1,4 +1,5 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
+import uuid
 
 from collections.abc import Iterable
 
@@ -58,7 +59,7 @@ def compute_metrics_of_dataset_using_pipeline(
 
     labels: list[str] = [lbl.strip().lower() for lbl in dataset[text_column]]
     predictions: list[str] = list()
-    metrics = {metric_name: load_metric(metric_name) for metric_name in metric_names}
+    metrics = {metric_name: load_metric(metric_name, experiment_id=uuid.uuid4().hex) for metric_name in metric_names}
 
     if id_column is not None:
         ids = [str(id_) for id_ in dataset[id_column]]

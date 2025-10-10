@@ -1,0 +1,6 @@
+defaults:
+  - base_eval
+
+debug: true
+num_workers: 8
+batch_size: 8

@@ -16,7 +16,7 @@ def run_for_model(
     experiment_args: dict[str, Any] | None = None,
 ) -> str | None:
     job_name = f"eval-{model_arg}-{dataset_arg}"
-    walltime = "02:00" if dataset_arg == "coral" else "00:30"
+    walltime = "02:00" if dataset_arg == "coral" else "00:45"
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
@@ -24,7 +24,7 @@ def run_for_model(
         gpu_num=1,
         num_cores=8,
         walltime=walltime,
-        memory="4GB",
+        memory="8GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         "hviske-v3-conversation",
         "roest-whisper-large-v1",
         "seamless-m4t-v2-large",
-        "wav2vec2-xls-r-2b",
+        #"wav2vec2-xls-r-2b",
         "whisper-large-v3-turbo",
         "whisper-large-v3",
         "roest-wav2vec2-315m-v2",
@@ -69,14 +69,14 @@ if __name__ == "__main__":
     ]
 
     for experiment in models:
-        run_for_model(
-            dataset_arg="coral",
-            model_arg=experiment,
-        )
-
         #run_for_model(
-        #    dataset_arg="fleurs",
+        #    dataset_arg="coral",
         #    model_arg=experiment,
         #)
+
+        run_for_model(
+            dataset_arg="fleurs",
+            model_arg=experiment,
+        )
 
         sleep(5)
