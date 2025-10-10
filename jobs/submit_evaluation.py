@@ -69,10 +69,10 @@ if __name__ == "__main__":
     ]
 
     for experiment in models:
-        #run_for_model(
-        #    dataset_arg="coral",
-        #    model_arg=experiment,
-        #)
+        run_for_model(
+            dataset_arg="coral",
+            model_arg=experiment,
+        )
 
         run_for_model(
             dataset_arg="fleurs",
