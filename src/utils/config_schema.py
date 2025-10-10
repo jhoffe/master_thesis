@@ -29,9 +29,12 @@ class ModelConfigSchema:
     name: str
 
     model_id: str
+    chunk_length_s: PositiveFloat
+    stride_length_s: PositiveFloat
 
     # Evaluation parameters
     no_lm: bool = False  # This is only relevant for Wav2Vec 2.0 models
+
     task: str | None = None
     language: str | None = None
 

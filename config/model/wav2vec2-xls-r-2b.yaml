@@ -5,3 +5,5 @@ name: 'wav2vec2-xls-r-2b'
 
 # Evaluation parameters
 model_id: 'facebook/wav2vec2-xls-r-2b'
+chunk_length_s: 30.0
+stride_length_s: 6.0

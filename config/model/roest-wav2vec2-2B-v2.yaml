@@ -6,3 +6,5 @@ name: 'roest-wav2vec2-2B-v2'
 # Evaluation parameters
 model_id: 'CoRal-project/roest-wav2vec2-2B-v2'
 no_lm: true # This is only relevant for Wav2Vec 2.0 models
+chunk_length_s: 10.0
+stride_length_s: 3.0

@@ -5,3 +5,5 @@ name: 'whisper-tiny'
 
 # Evaluation parameters
 model_id: 'openai/whisper-tiny'
+chunk_length_s: 30.0
+stride_length_s: 6.0

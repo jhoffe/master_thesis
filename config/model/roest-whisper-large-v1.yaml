@@ -5,3 +5,5 @@ name: 'roest-whisper-large-v1'
 
 # Evaluation parameters
 model_id: 'CoRal-project/roest-whisper-large-v1'
+chunk_length_s: 30.0
+stride_length_s: 6.0

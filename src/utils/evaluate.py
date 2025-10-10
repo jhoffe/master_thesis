@@ -106,19 +106,25 @@ def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPi
     if config.no_lm:
         model = Wav2Vec2ForCTC.from_pretrained(config.model_id)
         processor = Wav2Vec2Processor.from_pretrained(config.model_id)
-        transcriber = pipeline(
-            task="automatic-speech-recognition",
-            model=model,
-            tokenizer=processor.tokenizer,  # type: ignore
-            feature_extractor=processor.feature_extractor,  # type: ignore
-            device=device,
-            dtype=torch.float16 if device.type != "cpu" else torch.float32,
-        )
+        arguments = {
+            "task": "automatic-speech-recognition",
+            "model": model,
+            "tokenizer": processor.tokenizer,  # type: ignore
+            "feature_extractor": processor.feature_extractor,  # type: ignore
+            "device": device,
+            "dtype": torch.float16 if device.type != "cpu" else torch.float32,
+            "chunk_length_s": config.chunk_length_s,
+            "stride_length_s": config.stride_length_s,
+        }
+
+        transcriber = pipeline(**arguments)
     else:
         arguments = {
             "task": "automatic-speech-recognition",
             "model": config.model_id,
             "device": device,
+            "chunk_length_s": config.chunk_length_s,
+            "stride_length_s": config.stride_length_s,
         }
 
         transcriber = pipeline(**arguments)

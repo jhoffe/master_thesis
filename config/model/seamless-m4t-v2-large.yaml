@@ -5,5 +5,9 @@ name: 'seamless-m4t-v2-large'
 
 # Evaluation parameters
 model_id: 'facebook/seamless-m4t-v2-large'
+chunk_length_s: 30.0
+stride_length_s: 6.0
 
 language: 'dan'
+
+

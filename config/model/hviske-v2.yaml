@@ -5,3 +5,5 @@ name: 'hviske-v2'
 
 # Evaluation parameters
 model_id: 'syvai/hviske-v2'
+chunk_length_s: 30.0
+stride_length_s: 6.0

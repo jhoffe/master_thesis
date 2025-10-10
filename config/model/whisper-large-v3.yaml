@@ -5,3 +5,5 @@ name: 'whisper-large-v3'
 
 # Evaluation parameters
 model_id: 'openai/whisper-large-v3'
+chunk_length_s: 30.0
+stride_length_s: 6.0
