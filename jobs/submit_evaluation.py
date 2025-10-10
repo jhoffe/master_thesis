@@ -16,13 +16,14 @@ def run_for_model(
     experiment_args: dict[str, Any] | None = None,
 ) -> str | None:
     job_name = f"eval-{model_arg}-{dataset_arg}"
+    walltime = "02:00" if dataset_arg == "coral" else "00:30"
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
         num_cores=8,
-        walltime="02:00",
+        walltime=walltime,
         memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
@@ -73,9 +74,9 @@ if __name__ == "__main__":
             model_arg=experiment,
         )
 
-        run_for_model(
-            dataset_arg="fleurs",
-            model_arg=experiment,
-        )
+        #run_for_model(
+        #    dataset_arg="fleurs",
+        #    model_arg=experiment,
+        #)
 
         sleep(5)
