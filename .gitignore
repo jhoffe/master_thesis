@@ -4,6 +4,8 @@
 /experiments/
 /logs/
 /wandb/
+/reports/
+/multirun/
 
 # Mac OS-specific storage files
 .DS_Store
