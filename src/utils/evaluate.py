@@ -113,8 +113,8 @@ def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPi
             "feature_extractor": processor.feature_extractor,  # type: ignore
             "device": device,
             "dtype": torch.float16 if device.type != "cpu" else torch.float32,
-            "chunk_length_s": config.chunk_length_s,
-            "stride_length_s": config.stride_length_s,
+            "chunk_length_s": config.chunk_length_s if config.chunk_length_s is not None else None,
+            "stride_length_s": config.stride_length_s if config.stride_length_s is not None else None,
         }
 
         transcriber = pipeline(**arguments)

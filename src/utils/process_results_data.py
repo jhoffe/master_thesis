@@ -13,6 +13,8 @@ import ast
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
+import re
+import numpy as np
 
 from utils.config_schema import ConfigSchema
 
@@ -38,7 +40,12 @@ def process_results_data(config: ConfigSchema) -> dict[str, float]:
     )
 
     logger.info("Computing the scores...")
-    metrics = compute_avg_metrics(results_df)
+    metrics = compute_avg_metrics(results_df, 
+        model=config.model.name,
+        dataset=config.dataset.name,
+        subset=config.dataset.dataset_subset,
+        split=config.dataset.eval_split_name,
+    )
 
     logger.info("Computed average metrics.")
 
@@ -104,12 +111,12 @@ def load_latest_detailed_results_parsed(model, dataset, subset, split, base="exp
 
     return df
 
-def compute_avg_metrics(df):
-    # compute average CER and WER
-    metrics = {
-        "CER": df["CER"].mean(),
-        "WER": df["WER"].mean(),
-    }
+def compute_avg_metrics(df, model=None, dataset=None, subset=None, split=None):
+    metrics = {}# compute WER and CER again (load from evaluate to be sure)
+    wer_metric = load_metric("wer")
+    cer_metric = load_metric("cer")
+    metrics["WER"] = wer_metric.compute(predictions=df["prediction"].tolist(), references=df["label"].tolist())
+    metrics["CER"] = cer_metric.compute(predictions=df["prediction"].tolist(), references=df["label"].tolist())
 
     # compute median CER and WER
     metrics["CER_median"] = df["CER"].median()
@@ -119,21 +126,32 @@ def compute_avg_metrics(df):
     metrics["CER_std"] = df["CER"].std()
     metrics["WER_std"] = df["WER"].std()
 
+    # compuute standard error of the mean (SEM) for CER and WER
+    metrics["CER_sem"] = df["CER"].sem()
+    metrics["WER_sem"] = df["WER"].sem()
+
     # compute average clip length
     metrics["avg_clip_length"] = df["clip_length"].mean()
 
-    # do the same for all clips shorther than 10 seconds
-    short_df = df[df["clip_length"] <= 10.0]
-    metrics["CER_short"] = short_df["CER"].mean()
-    metrics["WER_short"] = short_df["WER"].mean()
+    # do the same for all clips shorther than 10 seconds and longer than 0.5 seconds
+    short_df = df[(df["clip_length"] < 10.0) & (df["clip_length"] > 0.5)]
+    logger.info(f"Number of short clips (0.5s < clip_length < 10s): {len(short_df)}")
+    metrics["CER_short"] = cer_metric.compute(predictions=short_df["prediction"].tolist(), references=short_df["label"].tolist())
+    metrics["WER_short"] = wer_metric.compute(predictions=short_df["prediction"].tolist(), references=short_df["label"].tolist())
     metrics["CER_short_median"] = short_df["CER"].median()
     metrics["WER_short_median"] = short_df["WER"].median()
     metrics["CER_short_std"] = short_df["CER"].std()
     metrics["WER_short_std"] = short_df["WER"].std()
+    metrics["CER_short_sem"] = short_df["CER"].sem()
+    metrics["WER_short_sem"] = short_df["WER"].sem()
     metrics["avg_clip_length_short"] = short_df["clip_length"].mean()
 
     # format all floats to 4 decimal places
-    metrics = {k: round(v, 4) if isinstance(v, float) else v for k, v in metrics.items()}
+    if model and dataset and subset and split:
+        metrics = {k: round(v, 4) if isinstance(v, float) else v for k, v in metrics.items()}
+        metrics = {'model': model, 'dataset': dataset, 'subset': subset, 'split': split, 'metrics': metrics}
+    else:
+        metrics = {k: round(v, 4) if isinstance(v, float) else v for k, v in metrics.items()}
 
     return metrics
 
@@ -210,3 +228,5 @@ def plot_corr_mat(corr, model=None, dataset=None, subset=None, split=None, save=
         plt.savefig(f"reports/figures/{model}_{dataset}_{subset}_{split}_correlation_matrix.png", dpi=200, bbox_inches="tight")
     else:
         plt.show()
+    plt.close()
+
