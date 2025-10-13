@@ -16,7 +16,15 @@ def run_for_model(
     experiment_args: dict[str, Any] | None = None,
 ) -> str | None:
     job_name = f"eval-{model_arg}-{dataset_arg}"
-    walltime = "02:00" if dataset_arg == "coral" else "00:45"
+    if dataset_arg == "coral":
+        walltime = "01:00"
+        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1"]:
+            walltime = "02:00"
+    else:
+        walltime = "00:15"
+        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1"]:
+            walltime = "00:25"
+
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,

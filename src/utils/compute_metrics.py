@@ -1,5 +1,6 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
 import uuid
+import time
 
 from collections.abc import Iterable
 
@@ -71,7 +72,9 @@ def compute_metrics_of_dataset_using_pipeline(
     else:
         clip_lengths = [None] * len(dataset)
 
-    all_metrics = []
+    #all_metrics = []
+
+    start_time = time.time()
 
     with (
         tqdm(total=len(dataset), desc="Transcribing") as pbar,
@@ -98,27 +101,39 @@ def compute_metrics_of_dataset_using_pipeline(
                 processor=None,
             )["text"]
 
-            scores = {
-                metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
-                for metric_name, metric in metrics.items()
-            }
-            assert all(isinstance(score, float) for score in scores.values()), (
-                f"Expected the scores to be floats, but found {scores}"
-            )
+            #scores = {
+            #    metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
+            #    for metric_name, metric in metrics.items()
+            #}
+            #assert all(isinstance(score, float) for score in scores.values()), (
+            #    f"Expected the scores to be floats, but found {scores}"
+            #)
 
-            all_metrics.append(scores)
+            #all_metrics.append(scores)
             predictions.append(prediction)
             pbar.update()
 
+    end_time = time.time()
+    duration = end_time - start_time
+
+    # compute RTFx
+    if all(clip_length is not None for clip_length in clip_lengths):
+        total_audio_length = sum(clip_length for clip_length in clip_lengths if clip_length is not None)
+        rtf = duration / total_audio_length
+        rtfx = 1 / rtf
+    else:
+        rtf = None
+        rtfx = None
+
+    # gather results
     results = [
         {
             "id": ids[idx],
             "prediction": predictions[idx],
             "label": labels[idx],
-            "clip_length": clip_lengths[idx],
-            "metrics": all_metrics[idx],
+            "clip_length": clip_lengths[idx]
         }
         for idx in range(len(dataset))
     ]
 
-    return predictions, labels, results
+    return predictions, labels, results, rtf, rtfx

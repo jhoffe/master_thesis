@@ -45,7 +45,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     transcriber = load_asr_pipeline(config.model)
 
     logger.info("Computing the scores...")
-    preds, labels, results = compute_metrics_of_dataset_using_pipeline(
+    preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_pipeline(
         dataset=dataset,
         transcriber=transcriber,
         metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
@@ -59,6 +59,20 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         sampling_rate=config.dataset.sampling_rate,
     )
 
+    # Hugging Face evaluate WER metric
+    wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
+    cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
+
+    # Compute WER and CER for each sample and add to results
+    for i in range(len(results)):
+        results[i]["wer"] = wer_metric.compute(predictions=[results[i]["prediction"]], references=[results[i]["label"]])
+        results[i]["cer"] = cer_metric.compute(predictions=[results[i]["prediction"]], references=[results[i]["label"]])
+
+    wer = wer_metric.compute(predictions=preds, references=labels)
+    cer = cer_metric.compute(predictions=preds, references=labels)
+
+    wandb.log({"wer": wer, "cer": cer, "rtf": rtf, "rtfx": rtfx})
+
     wandb.log(
         {
             "detailed_results": wandb.Table(dataframe=pd.DataFrame(results)),
@@ -71,16 +85,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         results_df.to_parquet(f"{hydra_output_dir}/detailed_results.parquet", index=False)
         logger.info(f"Saved detailed results to {hydra_output_dir}/detailed_results.parquet")
 
-    # Hugging Face evaluate WER metric
-    wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
-    cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
-
-    wer = wer_metric.compute(predictions=preds, references=labels)
-    cer = cer_metric.compute(predictions=preds, references=labels)
-
-    wandb.log({"wer": wer, "cer": cer})
-
-    return {"wer": wer, "cer": cer}
+    return {"wer": wer, "cer": cer, "rtf": rtf, "rtfx": rtfx}
 
 
 def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPipeline:
