@@ -132,8 +132,7 @@ def compute_metrics_of_dataset_using_pipeline(
             "prediction": predictions[idx],
             "label": labels[idx],
             "clip_length": clip_lengths[idx],
-            "wer": all_metrics[idx].get("wer"),
-            "cer": all_metrics[idx].get("cer"),
+            "metrics": all_metrics[idx]
         }
         for idx in range(len(dataset))
     ]
