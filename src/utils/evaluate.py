@@ -15,6 +15,7 @@ from transformers import (
     pipeline,
 )
 import wandb
+from tqdm.auto import tqdm
 
 from utils.config_schema import ConfigSchema, ModelConfigSchema
 
@@ -60,17 +61,14 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     )
 
     # Hugging Face evaluate WER metric
+    logger.info("Computing WER and CER...")
     wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
     cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
-
-    # Compute WER and CER for each sample and add to results
-    for i in range(len(results)):
-        results[i]["wer"] = wer_metric.compute(predictions=[results[i]["prediction"]], references=[results[i]["label"]])
-        results[i]["cer"] = cer_metric.compute(predictions=[results[i]["prediction"]], references=[results[i]["label"]])
 
     wer = wer_metric.compute(predictions=preds, references=labels)
     cer = cer_metric.compute(predictions=preds, references=labels)
 
+    logger.info(f"WER: {wer:.4f}, CER: {cer:.4f}, RTF: {rtf:.4f}, RTFx: {rtfx:.4f}")
     wandb.log({"wer": wer, "cer": cer, "rtf": rtf, "rtfx": rtfx})
 
     wandb.log(

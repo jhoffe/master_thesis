@@ -17,13 +17,13 @@ def run_for_model(
 ) -> str | None:
     job_name = f"eval-{model_arg}-{dataset_arg}"
     if dataset_arg == "coral":
-        walltime = "01:00"
-        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1"]:
+        walltime = "01:30"
+        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
             walltime = "02:00"
     else:
-        walltime = "00:15"
-        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1"]:
-            walltime = "00:25"
+        walltime = "00:20"
+        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
+            walltime = "00:40"
 
     opts = LSFSubmissionOptions(
         queue="gpua100",
@@ -32,7 +32,7 @@ def run_for_model(
         gpu_num=1,
         num_cores=8,
         walltime=walltime,
-        memory="8GB",
+        memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
@@ -68,7 +68,6 @@ if __name__ == "__main__":
         "hviske-v3-conversation",
         "roest-whisper-large-v1",
         "seamless-m4t-v2-large",
-        #"wav2vec2-xls-r-2b",
         "whisper-large-v3-turbo",
         "whisper-large-v3",
         "roest-wav2vec2-315m-v2",

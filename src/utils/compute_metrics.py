@@ -72,7 +72,7 @@ def compute_metrics_of_dataset_using_pipeline(
     else:
         clip_lengths = [None] * len(dataset)
 
-    #all_metrics = []
+    all_metrics = []
 
     start_time = time.time()
 
@@ -101,15 +101,15 @@ def compute_metrics_of_dataset_using_pipeline(
                 processor=None,
             )["text"]
 
-            #scores = {
-            #    metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
-            #    for metric_name, metric in metrics.items()
-            #}
-            #assert all(isinstance(score, float) for score in scores.values()), (
-            #    f"Expected the scores to be floats, but found {scores}"
-            #)
+            scores = {
+                metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
+                for metric_name, metric in metrics.items()
+            }
+            assert all(isinstance(score, float) for score in scores.values()), (
+                f"Expected the scores to be floats, but found {scores}"
+            )
 
-            #all_metrics.append(scores)
+            all_metrics.append(scores)
             predictions.append(prediction)
             pbar.update()
 
@@ -131,7 +131,9 @@ def compute_metrics_of_dataset_using_pipeline(
             "id": ids[idx],
             "prediction": predictions[idx],
             "label": labels[idx],
-            "clip_length": clip_lengths[idx]
+            "clip_length": clip_lengths[idx],
+            "wer": all_metrics[idx].get("wer"),
+            "cer": all_metrics[idx].get("cer"),
         }
         for idx in range(len(dataset))
     ]
