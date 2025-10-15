@@ -82,7 +82,7 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
 def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset):
     logger.info(f"Loading the {config.model.model_id!r} ASR model...")
     logger.info(f"Loading the {config.model.model_id!r} ASR model...")
-    transcriber = load_asr_pipeline(config.model)
+    transcriber = load_hf_asr_pipeline(config.model)
 
     logger.info("Computing the scores...")
     preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_pipeline(
