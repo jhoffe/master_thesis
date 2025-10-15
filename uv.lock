@@ -562,6 +562,26 @@ wheels = [
 ]
 
 [[package]]
+name = "cuda-bindings"
+version = "12.8.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e1/9a/8a07dbf7073811f1ecc0cdf058607064a3fa0fe75b3e5405cc8ca1d5a5be/cuda_bindings-12.8.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:673cc41c65f17774525bf0123309d5c0a35f2089b8ec639d957d012cbaf86538", size = 11060371 },
+    { url = "https://files.pythonhosted.org/packages/f9/c4/0dac1eb970f94c5d180d724eac69394b5fdcb60f986f77d86030b0f510e5/cuda_bindings-12.8.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7167b0c4d872a7c0935a2ee4025eb1669702815366c2f0fb4c938fbd3dac09c7", size = 11413425 },
+]
+
+[[package]]
+name = "cuda-python"
+version = "12.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cuda-bindings", marker = "sys_platform == 'linux'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/2c/02bb311b996ffb91d05f8c1fb79131bf50855f7410dd33d09f800fe78c58/cuda_python-12.8.0-py3-none-any.whl", hash = "sha256:3fca3a03c247d6aa1c414989dfe0dd21e9500307b8573f72216ed57d99344c5a", size = 11930 },
+]
+
+[[package]]
 name = "cycler"
 version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1928,6 +1948,7 @@ name = "master-thesis"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "cuda-python", marker = "sys_platform == 'linux'" },
     { name = "cython" },
     { name = "datasets" },
     { name = "evaluate" },
@@ -1966,6 +1987,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cuda-python", marker = "sys_platform == 'linux'", specifier = "==12.8" },
     { name = "cython", specifier = ">=3.1.4" },
     { name = "datasets", specifier = "==3.6.0" },
     { name = "evaluate", specifier = ">=0.4.2" },

@@ -1,0 +1,9 @@
+defaults:
+  - base_model
+
+name: 'canary-1b-v2'
+
+# Evaluation parameters
+model_id: 'nvidia/canary-1b-v2'
+nemo_model: true
+language: 'da'

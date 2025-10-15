@@ -218,11 +218,20 @@ def compute_metrics_of_dataset_using_nemo(
         lambda x: {"audio": torch.from_numpy(x["audio"]["array"]).to(torch.float32)},
     ).with_format("torch")
 
+    kwargs = {
+        "source_lang": "da",
+    }
+
+    if target_lang is not None:
+        kwargs["target_lang"] = target_lang
+
     with (
         tqdm(total=len(dataset), desc="Transcribing") as pbar,
     ):
         for idx, out in enumerate(
-            transcriber.transcribe(dataset["audio"], batch_size=batch_size, verbose=False)
+            transcriber.transcribe(
+                dataset["audio"], batch_size=batch_size, verbose=False, **kwargs
+            )
         ):  # type: ignore[arg-type]
             prediction = process_example(
                 example=dict(text=out.text),

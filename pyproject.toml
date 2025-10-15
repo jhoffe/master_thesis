@@ -43,7 +43,8 @@ dependencies = [
   "packaging>=24.0",
   "nemo-toolkit[asr,tts]>=2.5",
   "seaborn>=0.13.2",
-  "hydra-joblib-launcher>=1.2.0"
+  "hydra-joblib-launcher>=1.2.0",
+  "cuda-python==12.8 ; sys_platform == 'linux'",
 ]
 requires-python = "~=3.10.0"
 

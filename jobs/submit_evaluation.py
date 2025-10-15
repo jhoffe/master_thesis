@@ -18,11 +18,23 @@ def run_for_model(
     job_name = f"eval-{model_arg}-{dataset_arg}"
     if dataset_arg == "coral":
         walltime = "01:30"
-        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
+        if model_arg in [
+            "hviske-v2",
+            "hviske-v3-conversation",
+            "roest-whisper-large-v1",
+            "whisper-large-v3",
+        ]:
             walltime = "03:00"
     else:
         walltime = "00:20"
-        if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
+        if model_arg in [
+            "hviske-v2",
+            "hviske-v3-conversation",
+            "roest-whisper-large-v1",
+            "whisper-large-v3",
+            "canary-1b-v2",
+            "parakeet-tdt-0.6b-v3",
+        ]:
             walltime = "00:40"
 
     opts = LSFSubmissionOptions(
@@ -73,6 +85,8 @@ if __name__ == "__main__":
         "roest-wav2vec2-315m-v2",
         "roest-wav2vec2-1B-v2",
         "roest-wav2vec2-2B-v2",
+        "parakeet-tdt-0.6b-v3",
+        "canary-1b-v2",
     ]
 
     for experiment in models:
