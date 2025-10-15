@@ -17,6 +17,7 @@ from utils.evaluate import evaluate
 from utils.ignore_warnings import ignore_warnings
 from utils.wandb_setup import WandbSetup
 
+
 cs = ConfigStore.instance()
 cs.store(name="config_schema", node=ConfigSchema)
 

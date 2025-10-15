@@ -1,5 +1,8 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
 
+import uuid
+import time
+
 from collections.abc import Iterable
 import uuid
 
@@ -80,6 +83,8 @@ def compute_metrics_of_dataset_using_pipeline(
 
     all_metrics = []
 
+    start_time = time.time()
+
     with (
         tqdm(total=len(dataset), desc="Transcribing") as pbar,
     ):
@@ -117,6 +122,21 @@ def compute_metrics_of_dataset_using_pipeline(
             predictions.append(prediction)
             pbar.update()
 
+    end_time = time.time()
+    duration = end_time - start_time
+
+    # compute RTFx
+    if all(clip_length is not None for clip_length in clip_lengths):
+        total_audio_length = sum(
+            clip_length for clip_length in clip_lengths if clip_length is not None
+        )
+        rtf = duration / total_audio_length
+        rtfx = 1 / rtf
+    else:
+        rtf = None
+        rtfx = None
+
+    # gather results
     results = [
         {
             "id": ids[idx],
@@ -128,7 +148,7 @@ def compute_metrics_of_dataset_using_pipeline(
         for idx in range(len(dataset))
     ]
 
-    return predictions, labels, results
+    return predictions, labels, results, rtf, rtfx
 
 
 def compute_metrics_of_dataset_using_nemo(

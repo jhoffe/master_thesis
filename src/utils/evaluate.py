@@ -17,6 +17,7 @@ from transformers import (
     pipeline,
 )
 import wandb
+from tqdm.auto import tqdm
 
 from utils.config_schema import ConfigSchema, ModelConfigSchema
 
@@ -46,10 +47,22 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         logger.info("Debug mode is on, using only 64 examples from the dataset...")
         dataset = dataset.select(range(64))
 
+    rtf, rtfx = -1.0, -1.0
     if config.model.nemo_model:
         preds, labels, results = evaluate_for_nemo(config, dataset)
     else:
-        preds, labels, results = evaluate_for_hf_transformers(config, dataset)
+        preds, labels, results, rtf, rtfx = evaluate_for_hf_transformers(config, dataset)
+
+    # Hugging Face evaluate WER metric
+    logger.info("Computing WER and CER...")
+    wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
+    cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
+
+    wer = wer_metric.compute(predictions=preds, references=labels)
+    cer = cer_metric.compute(predictions=preds, references=labels)
+
+    logger.info(f"WER: {wer:.4f}, CER: {cer:.4f}, RTF: {rtf:.4f}, RTFx: {rtfx:.4f}")
+    wandb.log({"wer": wer, "cer": cer, "rtf": rtf, "rtfx": rtfx})
 
     wandb.log(
         {
@@ -63,24 +76,16 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         results_df.to_parquet(f"{hydra_output_dir}/detailed_results.parquet", index=False)
         logger.info(f"Saved detailed results to {hydra_output_dir}/detailed_results.parquet")
 
-    # Hugging Face evaluate WER metric
-    wer_metric = load_metric("wer", experiment_id=uuid.uuid4().hex)
-    cer_metric = load_metric("cer", experiment_id=uuid.uuid4().hex)
-
-    wer = wer_metric.compute(predictions=preds, references=labels)
-    cer = cer_metric.compute(predictions=preds, references=labels)
-
-    wandb.log({"wer": wer, "cer": cer})
-
-    return {"wer": wer, "cer": cer}
+    return {"wer": wer, "cer": cer, "rtf": rtf, "rtfx": rtfx}
 
 
 def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset):
     logger.info(f"Loading the {config.model.model_id!r} ASR model...")
-    transcriber = load_hf_asr_pipeline(config.model)
+    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    transcriber = load_asr_pipeline(config.model)
 
     logger.info("Computing the scores...")
-    preds, labels, results = compute_metrics_of_dataset_using_pipeline(
+    preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_pipeline(
         dataset=dataset,
         transcriber=transcriber,
         metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
@@ -93,8 +98,7 @@ def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset
         id_column=config.dataset.id_column,
         sampling_rate=config.dataset.sampling_rate,
     )
-
-    return preds, labels, results
+    return preds, labels, results, rtf, rtfx
 
 
 def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
@@ -157,8 +161,10 @@ def load_hf_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitio
             "feature_extractor": processor.feature_extractor,  # type: ignore
             "device": device,
             "dtype": torch.float16 if device.type != "cpu" else torch.float32,
-            "chunk_length_s": config.chunk_length_s,
-            "stride_length_s": config.stride_length_s,
+            "chunk_length_s": config.chunk_length_s if config.chunk_length_s is not None else None,
+            "stride_length_s": config.stride_length_s
+            if config.stride_length_s is not None
+            else None,
         }
 
         transcriber = pipeline(**arguments)
