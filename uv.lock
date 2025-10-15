@@ -562,39 +562,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cuda-bindings"
-version = "13.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cuda-pathfinder" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/1c/bb8dd9f25250799b225021edd61a7ad008818eb5c749edcb58519107361a/cuda_bindings-13.0.2-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:280b5006cd335d119723ac553e031fd04e59f3e298ea1ffecb980572eac45f1e", size = 11599491 },
-    { url = "https://files.pythonhosted.org/packages/13/aa/0476c98fc7c8a6716ae67f683b441723405dc28e6542e06afe3815372ad3/cuda_bindings-13.0.2-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:08b647b9cf876ce671baeaed0f0da3e73b542fa7bd35acf596a9e1b363187cca", size = 11967166 },
-    { url = "https://files.pythonhosted.org/packages/9e/63/7ae2d78df4ba5f58f9437176e0f4bf28088162063e6def590cc71b0751da/cuda_bindings-13.0.2-cp310-cp310-win_amd64.whl", hash = "sha256:6a9186b5b680a30fc8787fe94443894e356031e96543bf73151f4d67c94cd507", size = 11083328 },
-]
-
-[[package]]
-name = "cuda-pathfinder"
-version = "1.3.0"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/c8/3aed1450eae91794841653340cf554091dfa33a68214ab9dadcf903b3490/cuda_pathfinder-1.3.0-py3-none-any.whl", hash = "sha256:2e904a408ab4ebfba5b3ee67ecd15383487ffe109fc6e1f2e2ea61577e4519be", size = 27310 },
-]
-
-[[package]]
-name = "cuda-python"
-version = "13.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cuda-bindings" },
-    { name = "cuda-pathfinder" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/4d/d04772e5ba415aad4633796d636a3abbd8f779b438c3441d795e6bc9f172/cuda_python-13.0.2-py3-none-any.whl", hash = "sha256:5ad711c64236f4cf62ba94806e47042121ceb4f4c3be2600a84b0ab6b0f698a0", size = 7604 },
-]
-
-[[package]]
 name = "cycler"
 version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1961,7 +1928,6 @@ name = "master-thesis"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
-    { name = "cuda-python" },
     { name = "cython" },
     { name = "datasets" },
     { name = "evaluate" },
@@ -2000,7 +1966,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cuda-python", specifier = ">=12.3" },
     { name = "cython", specifier = ">=3.1.4" },
     { name = "datasets", specifier = "==3.6.0" },
     { name = "evaluate", specifier = ">=0.4.2" },
