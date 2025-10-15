@@ -1,0 +1,8 @@
+defaults:
+  - base_model
+
+name: 'parakeet-tdt-0.6-v3'
+
+# Evaluation parameters
+model_id: 'nvidia/parakeet-tdt-0.6b-v3'
+nemo_model: true

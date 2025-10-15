@@ -2,10 +2,12 @@
 
 import uuid
 
+import datasets
 from dotenv import load_dotenv
 from evaluate.loading import load as load_metric
 from hydra.core.hydra_config import HydraConfig
 from loguru import logger
+import nemo.collections.asr as nemo_asr
 import pandas as pd
 import torch
 from transformers import (
@@ -18,7 +20,10 @@ import wandb
 
 from utils.config_schema import ConfigSchema, ModelConfigSchema
 
-from .compute_metrics import compute_metrics_of_dataset_using_pipeline
+from .compute_metrics import (
+    compute_metrics_of_dataset_using_nemo,
+    compute_metrics_of_dataset_using_pipeline,
+)
 from .data import load_dataset_for_evaluation
 
 load_dotenv()
@@ -38,26 +43,13 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     dataset = load_dataset_for_evaluation(config=config)
 
     if config.eval.debug:
-        logger.info("Debug mode is on, using only 5 examples from the dataset...")
+        logger.info("Debug mode is on, using only 64 examples from the dataset...")
         dataset = dataset.select(range(64))
 
-    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
-    transcriber = load_asr_pipeline(config.model)
-
-    logger.info("Computing the scores...")
-    preds, labels, results = compute_metrics_of_dataset_using_pipeline(
-        dataset=dataset,
-        transcriber=transcriber,
-        metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
-        characters_to_keep=config.dataset.characters_to_keep,
-        text_column=config.dataset.text_column,
-        audio_column=config.dataset.audio_column,
-        batch_size=config.eval.batch_size,
-        num_workers=config.eval.num_workers,
-        target_lang=config.model.language,
-        id_column=config.dataset.id_column,
-        sampling_rate=config.dataset.sampling_rate,
-    )
+    if config.model.nemo_model:
+        preds, labels, results = evaluate_for_nemo(config, dataset)
+    else:
+        preds, labels, results = evaluate_for_hf_transformers(config, dataset)
 
     wandb.log(
         {
@@ -83,7 +75,59 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
     return {"wer": wer, "cer": cer}
 
 
-def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPipeline:
+def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset):
+    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    transcriber = load_hf_asr_pipeline(config.model)
+
+    logger.info("Computing the scores...")
+    preds, labels, results = compute_metrics_of_dataset_using_pipeline(
+        dataset=dataset,
+        transcriber=transcriber,
+        metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
+        characters_to_keep=config.dataset.characters_to_keep,
+        text_column=config.dataset.text_column,
+        audio_column=config.dataset.audio_column,
+        batch_size=config.eval.batch_size,
+        num_workers=config.eval.num_workers,
+        target_lang=config.model.language,
+        id_column=config.dataset.id_column,
+        sampling_rate=config.dataset.sampling_rate,
+    )
+
+    return preds, labels, results
+
+
+def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
+    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    transcriber = load_nemo_asr_pipeline(config.model)
+
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+
+    logger.info("Computing the scores...")
+    preds, labels, results = compute_metrics_of_dataset_using_nemo(
+        dataset=dataset,
+        transcriber=transcriber,
+        metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
+        characters_to_keep=config.dataset.characters_to_keep,
+        text_column=config.dataset.text_column,
+        audio_column=config.dataset.audio_column,
+        batch_size=config.eval.batch_size,
+        num_workers=config.eval.num_workers,
+        target_lang=config.model.language,
+        id_column=config.dataset.id_column,
+        sampling_rate=config.dataset.sampling_rate,
+        device=device,
+    )
+
+    return preds, labels, results
+
+
+def load_hf_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPipeline:
     """Load the ASR pipeline.
 
     Args:
@@ -131,3 +175,30 @@ def load_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPi
 
     assert isinstance(transcriber, AutomaticSpeechRecognitionPipeline)
     return transcriber
+
+
+def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRModel:
+    """Load the ASR pipeline.
+
+    Args:
+        model_id:
+            The model ID to load.
+        no_lm:
+            Whether to load the ASR pipeline without a language model. Only applicable
+            to Wav2Vec 2.0 models.
+
+    Returns:
+        The ASR pipeline.
+    """
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+
+    asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
+        model_name=config.model_id, map_location=device
+    )
+
+    return asr_model

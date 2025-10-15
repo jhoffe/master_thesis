@@ -2,3 +2,4 @@ no_lm: false
 
 task: null
 language: null
+nemo_model: false
