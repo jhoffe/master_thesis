@@ -19,7 +19,7 @@ def run_for_model(
     if dataset_arg == "coral":
         walltime = "01:30"
         if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
-            walltime = "02:00"
+            walltime = "03:00"
     else:
         walltime = "00:20"
         if model_arg in ["hviske-v2", "hviske-v3-conversation", "roest-whisper-large-v1", "whisper-large-v3"]:
