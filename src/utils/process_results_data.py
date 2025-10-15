@@ -111,8 +111,25 @@ def load_latest_detailed_results_parsed(model, dataset, subset, split, base="exp
 
     return df
 
+
+def load_results_json_for_config(model, dataset, subset, split, base="experiments/evaluate_model"):
+    """
+    Return dict loaded from the newest results.json for this config.
+    """
+    root = Path(base) / f"{model}_{dataset}_{subset}_{split}"
+    files = [p for p in root.rglob("results.json") if ".hydra" not in p.parts]
+    if not files:
+        return None, None
+    path = max(files, key=lambda p: p.stat().st_mtime)
+    with open(path, "r") as f:
+        data = json.load(f)
+    return data, path
+
+
 def compute_avg_metrics(df, model=None, dataset=None, subset=None, split=None):
-    metrics = {}# compute WER and CER again (load from evaluate to be sure)
+    metrics = {}
+    
+    # compute WER and CER again (load from evaluate to be sure)
     wer_metric = load_metric("wer")
     cer_metric = load_metric("cer")
     metrics["WER"] = wer_metric.compute(predictions=df["prediction"].tolist(), references=df["label"].tolist())
@@ -145,6 +162,16 @@ def compute_avg_metrics(df, model=None, dataset=None, subset=None, split=None):
     metrics["CER_short_sem"] = short_df["CER"].sem()
     metrics["WER_short_sem"] = short_df["WER"].sem()
     metrics["avg_clip_length_short"] = short_df["clip_length"].mean()
+
+    # add values from results.json for this config, if present
+    if model and dataset and subset and split:
+        results_json, _ = load_results_json_for_config(model, dataset, subset, split)
+        if results_json:
+            # keep your computed values as primary, but add the json for traceability
+            if "rtf" in results_json:
+                metrics["RTF"] = float(results_json["rtf"])
+            if "rtfx" in results_json:
+                metrics["RTFx"] = float(results_json["rtfx"])
 
     # format all floats to 4 decimal places
     if model and dataset and subset and split:
