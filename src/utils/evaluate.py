@@ -47,9 +47,8 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
         logger.info("Debug mode is on, using only 64 examples from the dataset...")
         dataset = dataset.select(range(64))
 
-    rtf, rtfx = -1.0, -1.0
     if config.model.nemo_model:
-        preds, labels, results = evaluate_for_nemo(config, dataset)
+        preds, labels, results, rtf, rtfx = evaluate_for_nemo(config, dataset)
     else:
         preds, labels, results, rtf, rtfx = evaluate_for_hf_transformers(config, dataset)
 
@@ -113,7 +112,7 @@ def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
         device = torch.device("cpu")
 
     logger.info("Computing the scores...")
-    preds, labels, results = compute_metrics_of_dataset_using_nemo(
+    preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_nemo(
         dataset=dataset,
         transcriber=transcriber,
         metric_names=config.eval.metrics,  # pyright: ignore[reportArgumentType]
@@ -128,7 +127,7 @@ def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
         device=device,
     )
 
-    return preds, labels, results
+    return preds, labels, results, rtf, rtfx
 
 
 def load_hf_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitionPipeline:

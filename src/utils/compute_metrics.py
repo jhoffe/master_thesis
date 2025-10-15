@@ -81,60 +81,60 @@ def compute_metrics_of_dataset_using_pipeline(
     else:
         clip_lengths = [None] * len(dataset)
 
+    total_len = len(dataset)
     all_metrics = []
 
     start_time = time.time()
 
-    with (
-        tqdm(total=len(dataset), desc="Transcribing") as pbar,
+    transcriptions = []
+
+    for out in tqdm(
+        transcriber(
+            KeyDataset(dataset=dataset, key=audio_column),  # type: ignore[arg-type]
+            generate_kwargs=dict(language="danish", task="transcribe")
+            if target_lang is None
+            else dict(tgt_lang=target_lang),
+            batch_size=batch_size,
+            num_workers=num_workers,
+        ),
+        desc="Transcribing",
+        total=total_len,
     ):
-        for idx, out in enumerate(
-            transcriber(
-                KeyDataset(dataset=dataset, key=audio_column),  # type: ignore[arg-type]
-                generate_kwargs=dict(language="danish", task="transcribe")
-                if target_lang is None
-                else dict(tgt_lang=target_lang),
-                batch_size=batch_size,
-                num_workers=num_workers,
-            )
-        ):
-            prediction = process_example(
-                example=dict(text=out["text"]),
-                characters_to_keep=characters_to_keep,
-                conversion_dict=DEFAULT_CONVERSION_DICT,
-                text_column="text",
-                audio_column=None,
-                clean_text=True,
-                lower_case=True,
-                convert_numerals=True,
-                processor=None,
-            )["text"]
-
-            scores = {
-                metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
-                for metric_name, metric in metrics.items()
-            }
-            assert all(isinstance(score, float) for score in scores.values()), (
-                f"Expected the scores to be floats, but found {scores}"
-            )
-
-            all_metrics.append(scores)
-            predictions.append(prediction)
-            pbar.update()
+        transcriptions.append(out)
 
     end_time = time.time()
     duration = end_time - start_time
 
-    # compute RTFx
-    if all(clip_length is not None for clip_length in clip_lengths):
-        total_audio_length = sum(
-            clip_length for clip_length in clip_lengths if clip_length is not None
+    for idx, out in tqdm(
+        enumerate(transcriptions),
+        total=total_len,
+        desc="Computing scores",
+    ):
+        prediction = process_example(
+            example=dict(text=out["text"]),
+            characters_to_keep=characters_to_keep,
+            conversion_dict=DEFAULT_CONVERSION_DICT,
+            text_column="text",
+            audio_column=None,
+            clean_text=True,
+            lower_case=True,
+            convert_numerals=True,
+            processor=None,
+        )["text"]
+
+        scores = {
+            metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
+            for metric_name, metric in metrics.items()
+        }
+        assert all(isinstance(score, float) for score in scores.values()), (
+            f"Expected the scores to be floats, but found {scores}"
         )
-        rtf = duration / total_audio_length
-        rtfx = 1 / rtf
-    else:
-        rtf = None
-        rtfx = None
+
+        all_metrics.append(scores)
+        predictions.append(prediction)
+
+    # compute RTFx
+    rtf, rtfx = compute_rtfx(clip_lengths, duration)
 
     # gather results
     results = [
@@ -151,6 +151,19 @@ def compute_metrics_of_dataset_using_pipeline(
     return predictions, labels, results, rtf, rtfx
 
 
+def compute_rtfx(clip_lengths, duration):
+    if all(clip_length is not None for clip_length in clip_lengths):
+        total_audio_length = sum(
+            clip_length for clip_length in clip_lengths if clip_length is not None
+        )
+        rtf = duration / total_audio_length
+        rtfx = 1 / rtf
+    else:
+        rtf = None
+        rtfx = None
+    return rtf, rtfx
+
+
 def compute_metrics_of_dataset_using_nemo(
     dataset: Dataset,
     transcriber: nemo_asr.models.ASRModel,
@@ -164,7 +177,7 @@ def compute_metrics_of_dataset_using_nemo(
     sampling_rate: int | None = None,
     target_lang: str | None = None,
     device: device | None = None,
-) -> tuple[list[str], list[str], list]:
+) -> tuple[list[str], list[str], list, float | None, float | None]:
     """Compute the metrics for the dataset using a pipeline.
 
     Args:
@@ -218,44 +231,48 @@ def compute_metrics_of_dataset_using_nemo(
         lambda x: {"audio": torch.from_numpy(x["audio"]["array"]).to(torch.float32)},
     ).with_format("torch")
 
-    kwargs = {
-        "source_lang": "da",
-    }
-
+    kwargs = {}
     if target_lang is not None:
+        kwargs["source_lang"] = "da"
         kwargs["target_lang"] = target_lang
 
-    with (
-        tqdm(total=len(dataset), desc="Transcribing") as pbar,
-    ):
-        for idx, out in enumerate(
-            transcriber.transcribe(
-                dataset["audio"], batch_size=batch_size, verbose=False, **kwargs
-            )
-        ):  # type: ignore[arg-type]
-            prediction = process_example(
-                example=dict(text=out.text),
-                characters_to_keep=characters_to_keep,
-                conversion_dict=DEFAULT_CONVERSION_DICT,
-                text_column="text",
-                audio_column=None,
-                clean_text=True,
-                lower_case=True,
-                convert_numerals=True,
-                processor=None,
-            )["text"]
+    start_time = time.time()
 
-            scores = {
-                metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
-                for metric_name, metric in metrics.items()
-            }
-            assert all(isinstance(score, float) for score in scores.values()), (
-                f"Expected the scores to be floats, but found {scores}"
-            )
+    transcriptions = transcriber.transcribe(
+        dataset["audio"],
+        batch_size=batch_size,
+        num_workers=num_workers,
+        **kwargs,
+    )
 
-            all_metrics.append(scores)
-            predictions.append(prediction)
-            pbar.update()
+    end_time = time.time()
+    duration = end_time - start_time
+
+    rtf, rtfx = compute_rtfx(clip_lengths, duration)
+
+    for idx, out in tqdm(enumerate(transcriptions), desc="Computing scores"):  # type: ignore[arg-type]
+        prediction = process_example(
+            example=dict(text=out.text),
+            characters_to_keep=characters_to_keep,
+            conversion_dict=DEFAULT_CONVERSION_DICT,
+            text_column="text",
+            audio_column=None,
+            clean_text=True,
+            lower_case=True,
+            convert_numerals=True,
+            processor=None,
+        )["text"]
+
+        scores = {
+            metric_name: metric.compute(predictions=[prediction], references=[labels[idx]])
+            for metric_name, metric in metrics.items()
+        }
+        assert all(isinstance(score, float) for score in scores.values()), (
+            f"Expected the scores to be floats, but found {scores}"
+        )
+
+        all_metrics.append(scores)
+        predictions.append(prediction)
 
     results = [
         {
@@ -268,4 +285,4 @@ def compute_metrics_of_dataset_using_nemo(
         for idx in range(len(dataset))
     ]
 
-    return predictions, labels, results
+    return predictions, labels, results, rtf, rtfx
