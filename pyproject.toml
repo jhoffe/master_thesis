@@ -45,6 +45,7 @@ dependencies = [
   "seaborn>=0.13.2",
   "hydra-joblib-launcher>=1.2.0",
   "cuda-python==12.8 ; sys_platform == 'linux'",
+  "carbontracker>=2.3.1",
 ]
 requires-python = "~=3.10.0"
 

@@ -53,6 +53,17 @@ def run_for_model(
 
     with Submittor(opts) as s:
         s.sync_packages_uv()
+
+        # two models require a different version of transformers
+        if model_arg in ["whisper-large-v3", "whisper-large-v3-turbo"]:
+            install_command = [
+                "uv",
+                "pip",
+                "install",
+                "transformers>=4.57.1",
+            ]
+            s.command(install_command)
+
         s.activate_venv(".venv")
 
         s.load_modules("cuda/12.8.0")
@@ -76,17 +87,17 @@ if __name__ == "__main__":
     load_dotenv()
 
     models = [
-        "hviske-v2",
-        "hviske-v3-conversation",
-        "roest-whisper-large-v1",
-        "seamless-m4t-v2-large",
-        "whisper-large-v3-turbo",
+        #"hviske-v2",
+        #"hviske-v3-conversation",
+        #"roest-whisper-large-v1",
+        #"seamless-m4t-v2-large",
+        #"whisper-large-v3-turbo",
         "whisper-large-v3",
-        "roest-wav2vec2-315m-v2",
-        "roest-wav2vec2-1B-v2",
-        "roest-wav2vec2-2B-v2",
-        "parakeet-tdt-0.6b-v3",
-        "canary-1b-v2",
+        #"roest-wav2vec2-315m-v2",
+        #"roest-wav2vec2-1B-v2",
+        #"roest-wav2vec2-2B-v2",
+        #"parakeet-tdt-0.6b-v3",
+        #"canary-1b-v2",
     ]
 
     for experiment in models:
