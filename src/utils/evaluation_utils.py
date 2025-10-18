@@ -311,8 +311,4 @@ def compute_average_metrics_for_detailed_results(df: pd.DataFrame, eval_combinat
             avg_metrics_df["dataset_split"] = eval_combination["dataset_split"]
             avg_metrics_list.append(avg_metrics_df)
     combined_avg_metrics_df = pd.concat(avg_metrics_list, ignore_index=True)
-    save_path = Path("reports/metrics/")
-    save_path.mkdir(parents=True, exist_ok=True)
-    full_save_path = save_path / "combined_average_metrics.csv"
-    combined_avg_metrics_df.to_csv(full_save_path, index=False)
     return combined_avg_metrics_df
