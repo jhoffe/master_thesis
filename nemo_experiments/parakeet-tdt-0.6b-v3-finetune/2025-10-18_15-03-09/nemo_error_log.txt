@@ -1,0 +1,38 @@
+[NeMo W 2025-10-18 15:04:19 modelPT:181] If you intend to do training or fine-tuning, please call the ModelPT.setup_training_data() method and provide a valid configuration file to setup the train data loader.
+    Train config : 
+    manifest_filepath: null
+    sample_rate: 16000
+    batch_size: 32
+    trim_silence: true
+    max_duration: 16.7
+    shuffle: true
+    is_tarred: false
+    tarred_audio_filepaths: null
+    
+[NeMo W 2025-10-18 15:04:19 modelPT:188] If you intend to do validation, please call the ModelPT.setup_validation_data() or ModelPT.setup_multiple_validation_data() method and provide a valid configuration file to setup the validation data loader(s). 
+    Validation config : 
+    manifest_filepath: null
+    sample_rate: 16000
+    batch_size: 32
+    shuffle: false
+    
+[NeMo W 2025-10-18 15:04:19 modelPT:195] Please call the ModelPT.setup_test_data() or ModelPT.setup_multiple_test_data() method and provide a valid configuration file to setup the test data loader(s).
+    Test config : 
+    manifest_filepath:
+    - /home/smajumdar/PycharmProjects/nemo-eval/nemo_eval/librispeech/manifests/dev_other.json
+    sample_rate: 16000
+    batch_size: 32
+    shuffle: false
+    num_workers: 12
+    pin_memory: true
+    
+[NeMo W 2025-10-18 15:04:20 audio_to_text_dataset:346] dataset does not have explicitly defined labels
+[NeMo W 2025-10-18 15:04:20 manifest:258] Manifest file `./data/processed/CoRal-project_coral-v2_read-aloud/train/tarred_audio_manifest.json` seems to be part of a tarred dataset, skip checking for relative paths. If this is not intended, please avoid having `/sharded_manifests/` and `tarred_audio_manifest.json` in manifest_filepath.
+[NeMo W 2025-10-18 15:04:25 manifest:258] Manifest file `./data/processed/CoRal-project_coral-v2_read-aloud/val/tarred_audio_manifest.json` seems to be part of a tarred dataset, skip checking for relative paths. If this is not intended, please avoid having `/sharded_manifests/` and `tarred_audio_manifest.json` in manifest_filepath.
+[NeMo W 2025-10-18 15:04:25 manifest:258] Manifest file `./data/processed/CoRal-project_coral-v2_read-aloud/test/tarred_audio_manifest.json` seems to be part of a tarred dataset, skip checking for relative paths. If this is not intended, please avoid having `/sharded_manifests/` and `tarred_audio_manifest.json` in manifest_filepath.
+[NeMo W 2025-10-18 15:04:25 nemo_logging:361] /home/jhoffe/Projects/master_thesis/.venv/lib/python3.10/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+      warnings.warn(
+    
+[NeMo W 2025-10-18 15:04:25 nemo_logging:361] /home/jhoffe/Projects/master_thesis/.venv/lib/python3.10/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+      warnings.warn(
+    

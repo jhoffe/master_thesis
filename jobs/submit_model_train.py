@@ -5,17 +5,19 @@ import os
 from dotenv import load_dotenv
 from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
-
+from subjob.lsf.options import GPUMode
 
 if __name__ == "__main__":
     load_dotenv()
-    job_name = "download-nemo-dataset"
+    job_name = "train-model"
 
     opts = LSFSubmissionOptions(
-        queue="hpc",
+        queue="gpua100",
         job_name=job_name,
-        num_cores=16,
-        walltime="03:00",
+        num_cores=8,
+        gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
+        gpu_num=1,
+        walltime="01:00",
         memory="2GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
@@ -26,4 +28,9 @@ if __name__ == "__main__":
     with Submittor(opts) as s:
         s.sync_packages_uv()
         s.activate_venv(".venv")
-        s.command(["just", "nemo-convert-coral"])
+        s.command(
+            [
+                "python",
+                "src/scripts/train_model.py",
+            ]
+        )

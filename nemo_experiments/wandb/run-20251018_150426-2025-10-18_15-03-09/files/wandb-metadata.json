@@ -1,0 +1,40 @@
+{
+  "os": "Linux-6.16.3-76061603-generic-x86_64-with-glibc2.35",
+  "python": "CPython 3.10.12",
+  "startedAt": "2025-10-18T13:04:26.392277Z",
+  "program": "/home/jhoffe/Projects/master_thesis/src/scripts/train_model.py",
+  "codePath": "src/scripts/train_model.py",
+  "codePathLocal": "src/scripts/train_model.py",
+  "git": {
+    "remote": "git@github.com:jhoffe/master_thesis.git",
+    "commit": "17b41d4110e105d33276ac967a9c7147ac90e6cd"
+  },
+  "email": "s204071@student.dtu.dk",
+  "root": "/home/jhoffe/Projects/master_thesis/nemo_experiments",
+  "host": "jhoffe",
+  "executable": "/home/jhoffe/Projects/master_thesis/.venv/bin/python",
+  "cpu_count": 16,
+  "cpu_count_logical": 24,
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "973818466304",
+      "used": "545642176512"
+    }
+  },
+  "memory": {
+    "total": "33377439744"
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 3070",
+      "memoryTotal": "8589934592",
+      "cudaCores": 5888,
+      "architecture": "Ampere",
+      "uuid": "GPU-b6ff64cf-e066-1615-586f-9892bc6f89aa"
+    }
+  ],
+  "cudaVersion": "12.8",
+  "writerId": "l274hskx6ih0e0rjy3ws3q05ljb94o60"
+}
