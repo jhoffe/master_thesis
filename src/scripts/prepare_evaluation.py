@@ -14,14 +14,13 @@ from loguru import logger
 
 from utils.config_schema import ConfigSchema
 from utils.ignore_warnings import ignore_warnings
-from utils.process_results_data import process_results_data
+from utils.prepare_evaluation import prepare_evaluation_data
 
 cs = ConfigStore.instance()
 #cs.store(name="config_schema", node=ConfigSchema)
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
-def main(config: ConfigSchema) -> None:
+def main() -> None:
     """Evaluate a speech model on a dataset.
 
     Args:
@@ -31,7 +30,7 @@ def main(config: ConfigSchema) -> None:
     
     logger.info("Starting processing of results data...")
 
-    metrics = process_results_data(config=config)
+    prepare_evaluation_data()
 
     logger.info("Processing complete.")
 

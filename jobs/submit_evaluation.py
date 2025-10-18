@@ -52,17 +52,17 @@ def run_for_model(
     )
 
     with Submittor(opts) as s:
-        s.sync_packages_uv()
+        #s.sync_packages_uv()
 
         # two models require a different version of transformers
-        if model_arg in ["whisper-large-v3", "whisper-large-v3-turbo"]:
-            install_command = [
-                "uv",
-                "pip",
-                "install",
-                "transformers>=4.57.1",
-            ]
-            s.command(install_command)
+        #if model_arg in ["whisper-large-v3", "whisper-large-v3-turbo"]:
+        #    install_command = [
+        #        "uv",
+        #        "pip",
+        #        "install",
+        #        "transformers>=4.57.1",
+        #    ]
+        #    s.command(install_command)
 
         s.activate_venv(".venv")
 
