@@ -196,6 +196,32 @@ def save_to_parquet(df: pd.DataFrame, base_path: Path, file_name: str) -> Path:
     return save_path
 
 
+def load_from_parquet(parquet_path: Path) -> pd.DataFrame:
+    """Load a DataFrame from a parquet file.
+
+    Args:
+        parquet_path:
+            Path to the parquet file.
+
+    Returns:
+        Loaded DataFrame.
+    """
+    return pd.read_parquet(parquet_path)
+
+
+def load_from_csv(csv_path: Path) -> pd.DataFrame:
+    """Load a DataFrame from a CSV file.
+
+    Args:
+        csv_path:
+            Path to the CSV file.
+
+    Returns:
+        Loaded DataFrame.
+    """
+    return pd.read_csv(csv_path)
+
+
 def _semantic_distance(label, prediction):
     return 1 - np.dot(label, prediction) / (np.linalg.norm(label) * np.linalg.norm(prediction))
 
