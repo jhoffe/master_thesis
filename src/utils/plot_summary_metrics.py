@@ -65,15 +65,15 @@ def build_model_handles(model_order: Sequence[str], model_palette: Dict[str, str
         return [
             Line2D([0], [0], marker="o", linestyle="None",
                    markerfacecolor=model_palette[m], markeredgecolor="black",
-                   markersize=8)
+                   markersize=11)
             for m in model_order
         ]
 
 def build_dataset_handles(ds_order: Sequence[str], ds_markers: Dict[str, str]) -> List[Line2D]:
     return [
         Line2D([0], [0], marker=ds_markers[d], linestyle="None",
-                markerfacecolor="white", markeredgecolor="black",
-                markersize=8)
+                markerfacecolor="gray", markeredgecolor="black",
+                markersize=11)
         for d in ds_order
     ]
 
@@ -145,7 +145,7 @@ def plot_summary_scatter(
             alpha=alpha,
             edgecolor="black",
             linewidth=0.4,
-            legend=False,
+            legend=False
         )
 
         ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize)
@@ -182,38 +182,49 @@ def plot_summary_scatter(
         fig = ax.get_figure()
 
     else:
+        # one marker per facet: first=o, second=s, rest fall back to a list
+        facet_marker_pool = ["o", "s", "D", "^", "v", "P", "X"]
+        facet_markers = {
+            ds: facet_marker_pool[i] if i < len(facet_marker_pool) else "o"
+            for i, ds in enumerate(ds_order)
+        }
+
         g = sns.FacetGrid(
             data, col="dataset_name", col_order=ds_order,
             height=height, aspect=width / (height * max(1, len(ds_order))),
             sharex=False, sharey=True
         )
-        g.map_dataframe(
-            sns.scatterplot,
-            x=x, y=y,
-            hue="model",
-            hue_order=model_order,
-            palette=model_palette,
-            s=point_size,
-            alpha=alpha,
-            edgecolor="black",
-            linewidth=0.4,
-            legend=False,
-        )
 
-        # Axis labels (formatted)
-        g.set_axis_labels(x_label, y_label)
-        for ax in g.axes.flat:
+        # draw each facet with its own marker
+        for ax, ds in zip(g.axes.flat, ds_order):
+            sub = data[data["dataset_name"] == ds]
+            sns.scatterplot(
+                data=sub,
+                x=x, y=y,
+                hue="model",
+                hue_order=model_order,
+                palette=model_palette,
+                s=point_size,
+                alpha=alpha,
+                edgecolor="black",
+                linewidth=0.4,
+                legend=False,
+                marker=facet_markers[ds],
+                ax=ax,
+            )
+            # axis labels and facet title
             ax.set_xlabel(x_label, fontsize=fontsize)
             ax.set_ylabel(y_label, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
-
-        # Facet titles: format dataset names
-        for ax, ds in zip(g.axes.flat, ds_order):
             ax.set_title(_fmt(ds), fontsize=fontsize)
+
+            if add_labels:
+                for _, r in sub.iterrows():
+                    ax.text(r[x], r[y], _fmt(r["model"]), fontsize=7, alpha=0.75)
 
         g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize)
 
-        # Model legend on first facet, with formatted model labels
+        # model legend on last facet
         ax0 = g.axes.flat[-1]
         leg_model = ax0.legend(
             handles=build_model_handles(model_order=model_order, model_palette=model_palette),
@@ -224,12 +235,6 @@ def plot_summary_scatter(
             frameon=True,
         )
         ax0.add_artist(leg_model)
-
-        if add_labels:
-            for ax, ds in zip(g.axes.flat, ds_order):
-                sub = data[data["dataset_name"] == ds]
-                for _, r in sub.iterrows():
-                    ax.text(r[x], r[y], _fmt(r["model"]), fontsize=7, alpha=0.75)
 
         fig = g.fig
 
@@ -278,7 +283,7 @@ def make_all_summary_plots(
         x="co2_g", 
         y="WER", 
         model_legend_loc="upper right", 
-        dataset_legend_loc="lower right", 
+        dataset_legend_loc="upper center", 
         fontsize=fontsize, 
         save_dir=save_dir,
         width=width,
