@@ -148,7 +148,7 @@ def plot_summary_scatter(
             legend=False
         )
 
-        ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize)
+        ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize+3)
         ax.set_xlabel(x_label, fontsize=fontsize)
         ax.set_ylabel(y_label, fontsize=fontsize)
         ax.tick_params(axis="both", labelsize=fontsize)
@@ -174,6 +174,8 @@ def plot_summary_scatter(
             frameon=True,
         )
         ax.add_artist(leg_dataset)
+        plt.setp(leg_model.get_title(), fontsize=fontsize+1) # for legend title
+        plt.setp(leg_dataset.get_title(), fontsize=fontsize+1) # for legend title
 
         if add_labels:
             for _, r in data.iterrows():
@@ -216,13 +218,13 @@ def plot_summary_scatter(
             ax.set_xlabel(x_label, fontsize=fontsize)
             ax.set_ylabel(y_label, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
-            ax.set_title(_fmt(ds), fontsize=fontsize)
+            ax.set_title(_fmt(ds), fontsize=fontsize+2)
 
             if add_labels:
                 for _, r in sub.iterrows():
                     ax.text(r[x], r[y], _fmt(r["model"]), fontsize=7, alpha=0.75)
 
-        g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize)
+        g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize+3)
 
         # model legend on last facet
         ax0 = g.axes.flat[-1]
@@ -237,6 +239,7 @@ def plot_summary_scatter(
         ax0.add_artist(leg_model)
 
         fig = g.fig
+        plt.setp(leg_model.get_title(), fontsize=fontsize+1) # for legend title
 
     fig.tight_layout()
     if save_dir:

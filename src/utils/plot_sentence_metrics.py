@@ -146,9 +146,9 @@ def plot_bar_metric(
 
         # facet titles (format dataset names)
         for ax, ds in zip(g.axes.flat, ds_categories):
-            ax.set_title(_fmt(ds), fontsize=fontsize)
+            ax.set_title(_fmt(ds), fontsize=fontsize+2)
 
-        g.fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize)
+        g.fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize+3)
 
         # single color per facet
         for ax, ds in zip(g.axes.flat, ds_categories):
@@ -175,7 +175,7 @@ def plot_bar_metric(
         # labels/titles
         ax.set_xlabel(x_lab, fontsize=fontsize)
         ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize)
+        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
         ax.tick_params(axis="both", labelsize=fontsize)
         plt.xticks(rotation=60, ha="right")
 
@@ -240,7 +240,7 @@ def plot_box_metric(
         )
         ax.set_xlabel(x_lab, fontsize=fontsize)
         ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize)
+        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
         ax.tick_params(axis="both", labelsize=fontsize)
         plt.xticks(rotation=60, ha="right")
 
@@ -280,7 +280,7 @@ def plot_box_metric(
             for line in ax.lines:
                 line.set_color("black")
 
-            ax.set_title(_fmt(ds), fontsize=fontsize)         # formatted facet title
+            ax.set_title(_fmt(ds), fontsize=fontsize+2)         # formatted facet title
             ax.set_xlabel(x_lab, fontsize=fontsize)
             ax.set_ylabel(y_lab, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
@@ -288,7 +288,7 @@ def plot_box_metric(
                 label.set_rotation(60)
                 label.set_horizontalalignment("right")
 
-        fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize)
+        fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize+3)
 
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
