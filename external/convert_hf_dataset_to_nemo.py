@@ -59,7 +59,7 @@ python convert_hf_dataset_to_nemo.py \
     split=<`split` argument in HF datasets, can be null> \
     use_auth_token=<Can be `True` or `False` depending on whether the dataset requires authentication>
 
-This will create an output directory of multiple sub-folders containing the preprocessed .wav files,
+This will create an output directory of multiple sub-folders containing the preprocessed .flac files,
 along with a nemo compatible JSON manifest file.
 
 NOTE:
@@ -169,13 +169,13 @@ def prepare_audio_filepath(audio_filepath):
     """
     Helper method to run in batch mode over a mapped Dataset.
 
-    Prepares the audio filepath and its subdirectories. Remaps the extension to .wav file.
+    Prepares the audio filepath and its subdirectories. Remaps the extension to .flac file.
 
     Args:
         audio_filepath: String path to the audio file.
 
     Returns:
-        Cleaned filepath renamed to be a wav file.
+        Cleaned filepath renamed to be a flac file.
     """
     audio_basefilepath = os.path.split(audio_filepath)[0]
     if not os.path.exists(audio_basefilepath):
@@ -185,9 +185,9 @@ def prepare_audio_filepath(audio_filepath):
     if os.path.exists(audio_filepath):
         os.remove(audio_filepath)
 
-    # replace any ext with .wav
+    # replace any ext with .flac
     audio_filepath, ext = os.path.splitext(audio_filepath)
-    audio_filepath = audio_filepath + ".wav"
+    audio_filepath = audio_filepath + ".flac"
 
     # Remove previous run file
     if os.path.exists(audio_filepath):
@@ -221,7 +221,7 @@ def build_map_dataset_to_nemo_func(cfg: HFDatasetConversionConfig, basedir):
         batch["audio_filepath"] = audio_filepath  # update filepath with prepared path
 
         soundfile.write(
-            audio_filepath, batch["audio"]["array"], samplerate=cfg.sampling_rate, format="wav"
+            audio_filepath, batch["audio"]["array"], samplerate=cfg.sampling_rate, format="flac"
         )
 
         batch["duration"] = librosa.get_duration(
@@ -303,13 +303,16 @@ def convert_streaming_dataset_to_nemo(
                 audio_filepath,
                 sample["audio"]["array"],
                 samplerate=cfg.sampling_rate,
-                format="wav",
+                format="flac",
             )
 
             manifest_line = {
                 "audio_filepath": audio_filepath,
                 "text": sample["text"],
                 "duration": librosa.get_duration(y=sample["audio"]["array"], sr=cfg.sampling_rate),
+                "target_lang": "da",
+                "source_lang": "da",
+                "lang": "da",
             }
 
             # remove large components from sample

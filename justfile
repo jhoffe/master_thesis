@@ -60,7 +60,7 @@ nemo-convert-coral: activate-venv
     @echo "Creating tarred dataset for Coral Training Set"
     python external/convert_to_tarred_audio_dataset.py \
         --manifest_path ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/train/train_CoRal-project_coral-v2_manifest.json \
-        --target_dir=${NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/readtrain \
+        --target_dir=${NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train \
         --num_shards=296 \
         --max_duration=120 \
         --min_duration=0.01 \
@@ -93,8 +93,27 @@ nemo-convert-coral: activate-venv
         --force_codec=flac \
         --workers=-1
 
-remove-intermediate:
-    rm -rf ${NEMO_CORAL_DATASET_PATH}/CoRal-project
 
-nemo-dataset-prepare: nemo-download-coral nemo-convert-coral remove-intermediate
+nemo-to-lhotse: activate-venv
+    @echo "Preparing Nemo dataset for Lhotse"
+
+
+    @echo "Converting Coral Validation Set to Lhotse format"
+    python external/convert_nemo_to_lhotse.py \
+        ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/val/val_CoRal-project_coral-v2_manifest.json \
+        ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/val/lhotse_val_CoRal-project_coral-v2_manifest.jsonl \
+        --target_key="audio_filepath" \
+        -a
+
+    @echo "Converting Coral Test Set to Lhotse format"
+    python external/convert_nemo_to_lhotse.py \
+        ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/test/test_CoRal-project_coral-v2_manifest.json \
+        ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/test/lhotse_test_CoRal-project_coral-v2_manifest.jsonl \
+        --target_key="audio_filepath" \
+        -a
+
+nemo-dataset-prepare: nemo-download-coral nemo-convert-coral
     @echo "Nemo dataset preparation complete."
+
+submit-finetune: activate-venv transfer
+    python jobs/submit_model_finetuning.py

@@ -68,6 +68,7 @@ from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import DictConfig, OmegaConf
 from numba import cuda
+from pytorch_lightning.plugins.environments import LSFEnvironment
 
 
 def get_base_model(trainer, cfg):
@@ -195,19 +196,25 @@ def setup_dataloaders(asr_model, cfg):
     """
     cfg = model_utils.convert_model_config_to_dict_config(cfg)
     asr_model.setup_training_data(cfg.model.train_ds)
-    asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
+    if (
+        hasattr(cfg.model, "validation_ds")
+        and cfg.model.validation_ds.manifest_filepath is not None
+    ):
+        asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
+
     if hasattr(cfg.model, "test_ds") and cfg.model.test_ds.manifest_filepath is not None:
         asr_model.setup_multiple_test_data(cfg.model.test_ds)
 
     return asr_model
 
 
-@hydra_runner(config_path="../../nemo_config", config_name="parakeet-tdt-0.6b-v3")
+@hydra_runner(config_path="../../nemo_config", config_name="canary-1b-v2-finetune")
 def main(cfg):
-    cuda.select_device(0)
     logging.info(f"Hydra config: {OmegaConf.to_yaml(cfg)}")
 
-    trainer = pl.Trainer(**resolve_trainer_cfg(cfg.trainer))
+    trainer_cfg = resolve_trainer_cfg(cfg.trainer)
+
+    trainer = pl.Trainer(**trainer_cfg)
     exp_manager(trainer, cfg.get("exp_manager", None))
 
     if hasattr(cfg, "init_from_ptl_ckpt") and cfg.init_from_ptl_ckpt is not None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from math import e
 import os
 
 from dotenv import load_dotenv
@@ -7,9 +8,9 @@ from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
 
-if __name__ == "__main__":
-    load_dotenv()
-    job_name = "train-model"
+
+def submit_job(config_name: str):
+    job_name = f"finetune-model-{config_name}"
 
     opts = LSFSubmissionOptions(
         queue="gpua100",
@@ -17,20 +18,35 @@ if __name__ == "__main__":
         num_cores=8,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="01:00",
-        memory="2GB",
+        walltime="16:00",
+        memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
         error_file=f"logs/{job_name}.%J.err",
+        environment={
+            "NUMBA_CUDA_USE_NVIDIA_BINDING": "0",
+            "WANDB_JOB_TYPE": "training",
+        },
+        additional_resources=["select[gpu80gb]"],
     )
 
-    with Submittor(opts) as s:
+    with Submittor(opts, verbosity=2) as s:
         s.sync_packages_uv()
         s.activate_venv(".venv")
+
         s.command(
             [
                 "python",
                 "src/scripts/train_model.py",
+                "--config-name",
+                f"{config_name}.yaml",
             ]
         )
+
+
+if __name__ == "__main__":
+    load_dotenv()
+
+    submit_job("canary-1b-v2-finetune")
+    submit_job("parakeet-tdt-0.6b-v3-finetune")
