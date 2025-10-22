@@ -6,6 +6,7 @@ import time
 from collections.abc import Iterable
 import uuid
 
+from carbontracker.tracker import CarbonTracker
 from datasets import Dataset
 from evaluate.loading import load as load_metric
 import nemo.collections.asr as nemo_asr
@@ -33,6 +34,7 @@ def compute_metrics_of_dataset_using_pipeline(
     id_column: str | None = None,
     sampling_rate: int | None = None,
     target_lang: str | None = None,
+    carbon_tracker_log_name: str | None = None,
 ) -> tuple[list[str], list[str], list]:
     """Compute the metrics for the dataset using a pipeline.
 
@@ -88,6 +90,10 @@ def compute_metrics_of_dataset_using_pipeline(
 
     transcriptions = []
 
+    if carbon_tracker_log_name is not None:
+        carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
+        carbon_tracker.epoch_start()
+
     for out in tqdm(
         transcriber(
             KeyDataset(dataset=dataset, key=audio_column),  # type: ignore[arg-type]
@@ -101,6 +107,10 @@ def compute_metrics_of_dataset_using_pipeline(
         total=total_len,
     ):
         transcriptions.append(out)
+
+    if carbon_tracker_log_name is not None:
+        carbon_tracker.epoch_end()
+        carbon_tracker.stop()
 
     end_time = time.time()
     duration = end_time - start_time
@@ -177,6 +187,7 @@ def compute_metrics_of_dataset_using_nemo(
     sampling_rate: int | None = None,
     target_lang: str | None = None,
     device: device | None = None,
+    carbon_tracker_log_name: str | None = None,
 ) -> tuple[list[str], list[str], list, float | None, float | None]:
     """Compute the metrics for the dataset using a pipeline.
 
@@ -238,12 +249,20 @@ def compute_metrics_of_dataset_using_nemo(
 
     start_time = time.time()
 
+    #if carbon_tracker_log_name is not None:
+    #    carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
+    #    carbon_tracker.epoch_start()
+
     transcriptions = transcriber.transcribe(
         dataset["audio"],
         batch_size=batch_size,
         num_workers=num_workers,
         **kwargs,
     )
+
+    #if carbon_tracker_log_name is not None:
+    #    carbon_tracker.epoch_end()
+    #    carbon_tracker.stop()
 
     end_time = time.time()
     duration = end_time - start_time

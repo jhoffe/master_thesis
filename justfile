@@ -22,6 +22,7 @@ transfer:
 
 download-results:
     rsync -av ${HPC_HOST}:${HPC_PATH}/experiments .
+    rsync -av ${HPC_HOST}:${HPC_PATH}/carbon_logs .
 
 submit-eval: activate-venv transfer
     python jobs/submit_evaluation.py

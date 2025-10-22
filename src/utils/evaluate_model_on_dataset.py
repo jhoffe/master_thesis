@@ -80,8 +80,13 @@ def evaluate(config: ConfigSchema) -> dict[str, float]:
 
 def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset):
     logger.info(f"Loading the {config.model.model_id!r} ASR model...")
-    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
     transcriber = load_hf_asr_pipeline(config.model)
+
+    # setup carbon tracker log name
+    if config.eval.carbon_tracker:
+        carbon_tracker_log_name = f"eval-{config.model.name}-{config.dataset.name}-{config.dataset.dataset_subset}-{config.dataset.eval_split_name}"
+    else:
+        carbon_tracker_log_name = None
 
     logger.info("Computing the scores...")
     preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_pipeline(
@@ -96,6 +101,7 @@ def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset
         target_lang=config.model.language,
         id_column=config.dataset.id_column,
         sampling_rate=config.dataset.sampling_rate,
+        carbon_tracker_log_name=carbon_tracker_log_name,
     )
     return preds, labels, results, rtf, rtfx
 
@@ -111,6 +117,15 @@ def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
     else:
         device = torch.device("cpu")
 
+    # setup carbon tracker log name
+    if config.eval.carbon_tracker:
+        carbon_tracker_log_name = f"eval-{config.model.name}-{config.dataset.name}-{config.dataset.dataset_subset}-{config.dataset.eval_split_name}"
+    else:
+        carbon_tracker_log_name = None
+
+    if carbon_tracker_log_name is not None:
+        logger.info(f"Using carbon tracker log name: {carbon_tracker_log_name}")
+
     logger.info("Computing the scores...")
     preds, labels, results, rtf, rtfx = compute_metrics_of_dataset_using_nemo(
         dataset=dataset,
@@ -125,6 +140,7 @@ def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
         id_column=config.dataset.id_column,
         sampling_rate=config.dataset.sampling_rate,
         device=device,
+        carbon_tracker_log_name=carbon_tracker_log_name,
     )
 
     return preds, labels, results, rtf, rtfx

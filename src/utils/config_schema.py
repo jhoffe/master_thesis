@@ -28,6 +28,8 @@ class EvaluationConfigSchema:
 
     debug: bool = False
 
+    carbon_tracker: bool | None = None
+
 
 @dataclass(frozen=True)
 class ModelConfigSchema:

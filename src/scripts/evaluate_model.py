@@ -13,7 +13,7 @@ from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 
 from utils.config_schema import ConfigSchema
-from utils.evaluate import evaluate
+from utils.evaluate_model_on_dataset import evaluate
 from utils.ignore_warnings import ignore_warnings
 from utils.wandb_setup import WandbSetup
 

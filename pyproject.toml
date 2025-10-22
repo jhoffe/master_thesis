@@ -48,6 +48,8 @@ dependencies = [
   "numba-cuda[cu13]==0.20.0",
   "cuda-toolkit>=13.0.1",
   "llvmlite>=0.45.1",
+  "carbontracker>=2.3.1",
+  "sentence-transformers>=5.1.1",
 ]
 requires-python = "~=3.10.0"
 
