@@ -86,7 +86,7 @@ trainer:
   devices: -1 # number of GPUs, -1 would use all available GPUs
   num_nodes: 1
   max_epochs: 10
-  max_steps: 100000 # computed at runtime if not set
+  max_steps: 200000 # computed at runtime if not set
   val_check_interval: 0.5 # Set to 0.25 to check 4 times per epoch, or an int for number of iterations
   accelerator: auto
   strategy: 'auto'

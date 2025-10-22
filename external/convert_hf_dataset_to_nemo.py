@@ -313,6 +313,8 @@ def convert_streaming_dataset_to_nemo(
                 "target_lang": "da",
                 "source_lang": "da",
                 "lang": "da",
+                "pnc": "yes",
+                "taskname": "asr",
             }
 
             # remove large components from sample
