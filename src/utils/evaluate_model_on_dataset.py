@@ -107,7 +107,10 @@ def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset
 
 
 def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
-    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    model_name = (
+        config.model.model_id if config.model.model_id is not None else config.model.restore_from
+    )
+    logger.info(f"Loading the {model_name!r} ASR model...")
     transcriber = load_nemo_asr_pipeline(config.model)
 
     if torch.backends.mps.is_available():
@@ -218,8 +221,13 @@ def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRMode
     else:
         device = torch.device("cpu")
 
-    asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
-        model_name=config.model_id, map_location=device
-    )
+    if config.restore_from is not None and config.model_id is None:
+        asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.restore_from(
+            restore_path=config.restore_from, map_location=device
+        )
+    else:
+        asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
+            model_name=config.model_id, map_location=device
+        )
 
     return asr_model
