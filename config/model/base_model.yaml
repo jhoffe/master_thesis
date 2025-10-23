@@ -2,4 +2,5 @@ no_lm: false
 
 task: null
 language: null
+restore_from: null
 nemo_model: false
