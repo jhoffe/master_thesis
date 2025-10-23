@@ -57,6 +57,7 @@ nemo-download-coral: activate-venv
         use_auth_token=True \
         streaming=True
 
+# Converts Coral dataset to tarred audio dataset format
 [group('nemo')]
 nemo-convert-coral: activate-venv
     @echo "Converting Coral Training Set"
@@ -101,13 +102,7 @@ nemo-convert-coral: activate-venv
 nemo-dataset-prepare: nemo-download-coral nemo-convert-coral
     @echo "Nemo dataset preparation complete."
 
-[group('nemo')]
-nemo-estimate-duration-bins:
-    @echo "Estimating duration bins for Coral Training Set"
-    python external/estimate_duration_bins.py \
-        ${NEMO_CORAL_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/train/train_CoRal-project_coral-v2_manifest.json \
-        --buckets 30
-
+# Estimates duration bins for specified model and dataset
 [group('nemo')]
 nemo-estimate-duration-bins-2d:
     @echo "Estimating duration bins for Coral Training Set for nvidia/canary-1b-v2"
