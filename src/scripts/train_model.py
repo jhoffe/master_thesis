@@ -54,9 +54,6 @@ For documentation on fine-tuning this model, please visit:
 https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/asr/configs.html#fine-tuning-configurations
 """
 
-from calendar import c
-from math import log
-import os
 import time
 
 from dotenv import load_dotenv
@@ -67,8 +64,7 @@ from nemo.utils import logging, model_utils
 from nemo.utils.exp_manager import exp_manager
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
-from omegaconf import DictConfig, OmegaConf
-from numba import cuda
+from omegaconf import OmegaConf
 import wandb
 
 

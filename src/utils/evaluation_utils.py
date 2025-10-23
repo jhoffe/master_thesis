@@ -1,16 +1,15 @@
 import ast
 import json
-import re
 from pathlib import Path
+import re
 from typing import List
 
-import numpy as np
-import pandas as pd
 from carbontracker import parser
 from evaluate.loading import load as load_metric
 from loguru import logger
+import numpy as np
+import pandas as pd
 from sentence_transformers import SentenceTransformer
-
 
 MODELS = [
     "whisper-large-v3",

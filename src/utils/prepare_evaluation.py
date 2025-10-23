@@ -2,15 +2,15 @@
 Prepare evaluation data by combining detailed results, computing sentence embeddings,
 and calculating average metrics.
 """
-import argparse
-from loguru import logger
 from pathlib import Path
+
+from loguru import logger
 
 from utils.evaluation_utils import (
     combine_all_detailed_results,
     compute_average_metrics_for_detailed_results,
-    save_to_parquet,
     compute_sentence_embeddings,
+    save_to_parquet,
 )
 
 MODELS = [

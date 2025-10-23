@@ -17,7 +17,6 @@ from transformers import (
     pipeline,
 )
 import wandb
-from tqdm.auto import tqdm
 
 from utils.config_schema import ConfigSchema, ModelConfigSchema
 

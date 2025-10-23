@@ -1,12 +1,11 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-import seaborn as sns
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
-from scipy import stats
+
 from loguru import logger
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 sns.set(style="whitegrid")
 
@@ -51,7 +50,7 @@ EVALUATION_COMBINATIONS = [
 ]
 
 FORMAT_DICT = {
-    "co2_g": f"$CO_2$ Emissions (g)",
+    "co2_g": "$CO_2$ Emissions (g)",
     "RTFx": "Inverse Real-Time Factor (RTFx)",
     "WER": "Word Error Rate (WER)",
     "CER": "Character Error Rate (CER)",

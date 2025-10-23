@@ -37,14 +37,6 @@ def run_for_model(
         ]:
             walltime = "00:40"
 
-    email_options = {}
-    if os.environ.get("HPC_EMAIL_ADDRESS") is not None:
-        email_options = {
-            "email_address": os.environ.get("HPC_EMAIL_ADDRESS"),
-            "notify_on_start": os.environ.get("HPC_NOTIFY_ON_START") == "1",
-            "notify_on_completion": os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
-        }
-
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
