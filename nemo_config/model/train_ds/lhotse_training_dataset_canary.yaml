@@ -4,12 +4,9 @@ defaults:
 manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/sharded_manifests/manifest__OP_0..295_CL_.json'
 # bucketing params
 use_lhotse: true
-batch_duration: 2000
-quadratic_duration: 30
-bucket_buffer_size: 10000
-shuffle_buffer_size: 10000
 
 # Bucket configuration
+use_bucketing: true
 num_buckets: 30
 bucket_duration_bins:
   [

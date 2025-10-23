@@ -1,6 +1,6 @@
 defaults:
   - base_finetune
 
-max_steps: 250000
+max_steps: 100000
 limit_train_batches: ${trainer.max_steps}
-val_check_interval: 20000
+val_check_interval: 2500
