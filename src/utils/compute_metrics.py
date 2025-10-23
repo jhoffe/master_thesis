@@ -1,23 +1,20 @@
 """Function used to compute metrics during ASR training of Wav2Vec 2.0 models."""
 
-import uuid
-import time
-
 from collections.abc import Iterable
+import time
 import uuid
 
 from carbontracker.tracker import CarbonTracker
 from datasets import Dataset
 from evaluate.loading import load as load_metric
 import nemo.collections.asr as nemo_asr
-from torch import device
 import torch
+from torch import device
 from tqdm.auto import tqdm
 from transformers import (
     AutomaticSpeechRecognitionPipeline,
 )
 from transformers.pipelines.pt_utils import KeyDataset
-from torch.utils.data import DataLoader
 
 from .data import DEFAULT_CONVERSION_DICT, process_example
 

@@ -17,7 +17,6 @@ from transformers import (
     pipeline,
 )
 import wandb
-from tqdm.auto import tqdm
 
 from utils.config_schema import ConfigSchema, ModelConfigSchema
 
@@ -107,7 +106,10 @@ def evaluate_for_hf_transformers(config: ConfigSchema, dataset: datasets.Dataset
 
 
 def evaluate_for_nemo(config: ConfigSchema, dataset: datasets.Dataset):
-    logger.info(f"Loading the {config.model.model_id!r} ASR model...")
+    model_name = (
+        config.model.model_id if config.model.model_id is not None else config.model.restore_from
+    )
+    logger.info(f"Loading the {model_name!r} ASR model...")
     transcriber = load_nemo_asr_pipeline(config.model)
 
     if torch.backends.mps.is_available():
@@ -218,8 +220,26 @@ def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRMode
     else:
         device = torch.device("cpu")
 
-    asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
-        model_name=config.model_id, map_location=device
-    )
+    if config.restore_from is not None and config.model_id is None:
+        if config.restore_from.startswith("artifact://"):
+            logger.info(f"Restoring model from WandB artifact: {config.restore_from}...")
+
+            artifact_full_path = config.restore_from.split("://")[1]
+            artifact, artifact_file = artifact_full_path.split("/")
+
+            logger.info(f"Downloading WandB artifact: {artifact} (file: {artifact_file})...")
+
+            artifact = wandb.use_artifact(artifact, type="model")
+
+            config.restore_from = artifact.get_path(artifact_file).download()
+            logger.info(f"Downloaded model from WandB artifact: {config.restore_from}")
+
+        asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.restore_from(
+            restore_path=config.restore_from, map_location=device
+        )
+    else:
+        asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
+            model_name=config.model_id, map_location=device
+        )
 
     return asr_model

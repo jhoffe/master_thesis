@@ -1,0 +1,8 @@
+defaults:
+  - base_finetune
+
+checkpoint_callback_params:
+  monitor: 'val_wer'
+  mode: 'min'
+  save_top_k: 5
+  always_save_nemo: true

@@ -1,13 +1,12 @@
 from pathlib import Path
-import pandas as pd
-from loguru import logger
 
+from loguru import logger
 
 from utils.evaluation_utils import (
     load_from_parquet,
 )
 from utils.plot_sentence_metrics import (
-   make_all_plots,
+    make_all_plots,
 )
 from utils.plot_summary_metrics import (
     make_all_summary_plots,

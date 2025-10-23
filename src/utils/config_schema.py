@@ -30,7 +30,8 @@ class EvaluationConfigSchema:
 class ModelConfigSchema:
     name: str
 
-    model_id: str
+    model_id: str | None = None
+    restore_from: str | None = None
     chunk_length_s: PositiveFloat | None = None
     stride_length_s: PositiveFloat | None = None
 

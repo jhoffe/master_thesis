@@ -4,15 +4,11 @@ Usage:
     python src/scripts/evaluate_model.py [key=value] [key=value] ...
 """
 
-import json
 
 from dotenv import load_dotenv
-import hydra
 from hydra.core.config_store import ConfigStore
-from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 
-from utils.config_schema import ConfigSchema
 from utils.ignore_warnings import ignore_warnings
 from utils.prepare_evaluation import prepare_evaluation_data
 

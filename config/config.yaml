@@ -2,6 +2,7 @@ defaults:
   - dataset: coral
   - model: whisper-tiny
   - eval: base_eval
+  - trainer: base_trainer
 
 enable_wandb: true
 

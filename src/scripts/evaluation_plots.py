@@ -4,6 +4,7 @@ from utils.evaluation_plots import (
     make_plots,
 )
 
+
 def main():
     logger.info("Starting evaluation plots generation...")
     make_plots()

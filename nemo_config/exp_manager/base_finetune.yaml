@@ -1,0 +1,11 @@
+exp_dir: null
+name: ${name}
+create_tensorboard_logger: false
+create_checkpoint_callback: true
+checkpoint_callback_params: {}
+resume_if_exists: false
+resume_ignore_no_checkpoint: false
+create_wandb_logger: true
+wandb_logger_kwargs:
+  name: ${name}_${oc.env:LSB_JOBID}
+  project: ${oc.env:WANDB_PROJECT}

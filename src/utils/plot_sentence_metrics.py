@@ -1,10 +1,10 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
 from typing import Dict, List, Optional
+
+import matplotlib.pyplot as plt
+import pandas as pd
 from scipy import stats
+import seaborn as sns
 
 sns.set(style="whitegrid")
 
@@ -73,7 +73,7 @@ def filter_eval_grid(
 # Formatting utilities
 # =========================
 FORMAT_DICT = {
-    "co2_g": f"$CO_2$ Emissions (g)",
+    "co2_g": "$CO_2$ Emissions (g)",
     "RTFx": "Inverse Real-Time Factor (RTFx)",
     "WER": "Word Error Rate (WER)",
     "CER": "Character Error Rate (CER)",
