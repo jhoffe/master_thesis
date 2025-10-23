@@ -9,17 +9,17 @@ from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
 
 
-def submit_job(config_name: str):
-    job_name = f"finetune-model-{config_name}"
+def submit_job():
+    job_name = "oomptimizer"
 
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
-        num_cores=8,
+        num_cores=4,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="16:00",
-        memory="4GB",
+        walltime="00:30",
+        memory="8GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
@@ -38,18 +38,9 @@ def submit_job(config_name: str):
         s.sync_packages_uv()
         s.activate_venv(".venv")
 
-        s.command(
-            [
-                "python",
-                "src/scripts/train_model.py",
-                "--config-name",
-                f"{config_name}.yaml",
-            ]
-        )
+        s.command(["just", "nemo-oomptimize"])
 
 
 if __name__ == "__main__":
     load_dotenv()
-
-    submit_job("canary-1b-v2-finetune")
-    submit_job("parakeet-tdt-0.6b-v3-finetune")
+    submit_job()

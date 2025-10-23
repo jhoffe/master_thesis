@@ -55,6 +55,7 @@ https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/asr/configs.ht
 """
 
 from calendar import c
+from math import log
 import os
 import time
 
@@ -68,7 +69,7 @@ from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import DictConfig, OmegaConf
 from numba import cuda
-from pytorch_lightning.plugins.environments import LSFEnvironment
+import wandb
 
 
 def get_base_model(trainer, cfg):
@@ -215,7 +216,7 @@ def main(cfg):
     trainer_cfg = resolve_trainer_cfg(cfg.trainer)
 
     trainer = pl.Trainer(**trainer_cfg)
-    exp_manager(trainer, cfg.get("exp_manager", None))
+    logging_path = exp_manager(trainer, cfg.get("exp_manager", None))
 
     if hasattr(cfg, "init_from_ptl_ckpt") and cfg.init_from_ptl_ckpt is not None:
         raise NotImplementedError(
@@ -238,6 +239,17 @@ def main(cfg):
         asr_model.spec_augment = ASRModel.from_config_dict(cfg.model.spec_augment)
 
     trainer.fit(asr_model)
+
+    logging.info("Logging the fine-tuned model as a WandB artifact.")
+    artifact = wandb.Artifact(
+        name=cfg.exp_manager.wandb_logger_kwargs.name,
+        type="model",
+        description=f"Fine-tuned model: {cfg.name}",
+        metadata=OmegaConf.to_container(cfg, resolve=True),
+    )
+
+    artifact.add_reference(f"file://{logging_path}/checkpoints")
+    wandb.run.log_artifact(artifact)
 
 
 if __name__ == "__main__":

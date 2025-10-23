@@ -1,4 +1,4 @@
-manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/sharded_manifests/manifest__OP_0..295_CL_.json'
+manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/tarred_audio_manifest.json'
 sample_rate: ${model.sample_rate}
 
 shuffle: true
