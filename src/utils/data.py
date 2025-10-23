@@ -109,6 +109,12 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     logger.info(f"Dataset converted with {len(dataset):,} samples.")
 
     assert isinstance(dataset, Dataset)
+
+    # check if dataset if fleurs
+    if config.dataset.name == "fleurs":
+        ids = range(1, len(dataset) + 1)
+        dataset = dataset.add_column(name="id_recording", column=ids)
+
     # filter the dataset
     if config.dataset.filter:
         dataset = filter_dataset(
