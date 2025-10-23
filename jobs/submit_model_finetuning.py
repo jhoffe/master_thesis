@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from math import e
 import os
 
 from dotenv import load_dotenv
@@ -18,7 +17,7 @@ def submit_job(config_name: str):
         num_cores=8,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="16:00",
+        walltime="24:00",
         memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
