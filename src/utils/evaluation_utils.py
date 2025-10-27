@@ -106,6 +106,22 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
     df["dataset_subset"] = eval_combination["dataset_subset"]
     df["dataset_split"] = eval_combination["dataset_split"]
 
+    # For FLEUERS, the 'id' column is not actuallys id's but rather utterance indices.
+    # Therefore, we remove the 'id' column to avoid confusion.
+    if eval_combination["dataset_name"] == "fleurs":
+        df = df.drop(columns=["id"])
+
+        # next, we replace it with a new 'id' column that is simply a range from 1 to len(df)
+        ids = [f"rec_{idx}" for idx in range(1, len(df) + 1)]
+        df["id"] = ids
+    
+    if eval_combination["dataset_name"] == "coral-v2":
+        pitch_data = pd.read_csv("reports/metrics/coral-processed.csv")
+        df = df.merge(pitch_data, on="id", how="left")
+    elif eval_combination["dataset_name"] == "fleurs":
+        pitch_data = pd.read_csv("reports/metrics/fleurs-processed.csv")
+        df = df.merge(pitch_data, on="id", how="left")
+        
     return df
 
 
