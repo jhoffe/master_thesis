@@ -5,8 +5,8 @@ num_workers: 12
 pin_memory: true
 max_duration: 20
 min_duration: 0.1
-shuffle_seed: ${oc.env:RANDOM_SEED, default=42}
-seed: ${oc.env:RANDOM_SEED, default=42}
+shuffle_seed: ${seed}
+seed: ${seed}
 
 # Tarred datasets
 is_tarred: true

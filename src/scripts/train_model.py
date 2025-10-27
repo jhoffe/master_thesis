@@ -203,9 +203,8 @@ def setup_dataloaders(asr_model, cfg):
 def main(cfg):
     logging.info(f"Hydra config: {OmegaConf.to_yaml(cfg)}")
 
-    seed = cfg.get("seed", 42)
-    logging.info(f"Setting random seed to {seed} for reproducibility.")
-    seed_everything(seed, workers=True)
+    logging.info(f"Setting random seed to {cfg.seed} for reproducibility.")
+    seed_everything(cfg.seed, workers=True)
 
     trainer_cfg = resolve_trainer_cfg(cfg.trainer)
 
