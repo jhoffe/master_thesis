@@ -3,6 +3,7 @@ Prepare evaluation data by combining detailed results, computing sentence embedd
 and calculating average metrics.
 """
 from pathlib import Path
+import pandas as pd
 import os
 
 from loguru import logger
@@ -14,9 +15,13 @@ import numpy as np
 from tqdm import tqdm
 from joblib import Parallel, delayed
 
+from utils.evaluation_utils import (
+    save_to_parquet,
+)
+
 DATASETS = {
     "fleurs": "google--fleurs-da_dk-test-unfiltered",
-    "coral": "CoRal-project--coral-v2-read_aloud-test-unfiltered",
+    "coral-v2": "CoRal-project--coral-v2-read_aloud-test-unfiltered",
 }
 
 
@@ -78,16 +83,44 @@ def prepare_test_sets() -> None:
         logger.info(f"Loading dataset: {dataset_name}...")
         evaluation_dataset = Dataset.load_from_disk(f"data/huggingface/datasets/test-sets/{path}")
         logger.info(f"Dataset {dataset_name} loaded with {len(evaluation_dataset)} samples.")
+        # compute clip lengths
+        clip_lengths = [x["audio"]['array'].shape[0] / 16000 for x in evaluation_dataset]
         logger.info(f"Processing samples in dataset: {dataset_name} with joblib...")
         n_jobs = int(os.getenv("N_JOBS", os.cpu_count() or 1))
         samples = list(evaluation_dataset)
         processed_samples = Parallel(n_jobs=n_jobs, backend="loky")( 
             delayed(process_sample)(s, dataset_name) for s in tqdm(samples)
         )
-
         # make into dataframe
         processed_df = Dataset.from_list(processed_samples).to_pandas()
-        processed_df.to_csv(f"reports/metrics/{dataset_name}-processed.csv", index=False)
+        # Save results to be used in evaluation
+        save_to_parquet(processed_df, base_path=Path("reports/metrics"), file_name=f"{dataset_name}-processed.parquet")
+
+        
+        evaluation_df = evaluation_dataset.to_pandas()
+
+        # rename id column to id_recording
+        logger.info(f"Renaming id column to id_recording for dataset: {dataset_name}...")
+        processed_df = processed_df.rename(columns={"id": "id_recording"})
+
+        # merge on id_recording
+        logger.info(f"Merging processed data with original dataset for: {dataset_name}...")
+        processed_df = processed_df.merge(evaluation_df, on="id_recording", how="left")
+        
+        # drop audio column
+        if "audio" in processed_df.columns:
+            processed_df = processed_df.drop(columns=["audio"])
+        
+        # make clip length column
+        processed_df["clip_length"] = np.array(clip_lengths)
+
+        # add dataset name column
+        processed_df["dataset_name"] = dataset_name
+
+        # Save summary results to be used in evaluation
+        logger.info(f"Saving summary results for dataset: {dataset_name}...")
+        save_to_parquet(processed_df, base_path=Path("reports/metrics"), file_name=f"{dataset_name}-summary.parquet")
+
 
 
     
