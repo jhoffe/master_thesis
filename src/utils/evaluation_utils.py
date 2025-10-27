@@ -116,10 +116,10 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         df["id"] = ids
     
     if eval_combination["dataset_name"] == "coral-v2":
-        pitch_data = pd.read_csv("reports/metrics/coral-processed.csv")
+        pitch_data = pd.read_parquet("reports/metrics/coral-v2-processed.parquet")
         df = df.merge(pitch_data, on="id", how="left")
     elif eval_combination["dataset_name"] == "fleurs":
-        pitch_data = pd.read_csv("reports/metrics/fleurs-processed.csv")
+        pitch_data = pd.read_parquet("reports/metrics/fleurs-processed.parquet")
         df = df.merge(pitch_data, on="id", how="left")
         
     return df

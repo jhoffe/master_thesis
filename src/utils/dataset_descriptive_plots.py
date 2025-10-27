@@ -1,0 +1,115 @@
+from utils.evaluation_utils import (
+    load_from_parquet,
+)
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import os
+from pathlib import Path
+from loguru import logger
+
+
+sns.set(style="whitegrid")
+
+
+DATASETS = {
+    "fleurs": "google--fleurs-da_dk-test-unfiltered",
+    "coral-v2": "CoRal-project--coral-v2-read_aloud-test-unfiltered",
+}
+
+
+METRICS = [
+    "clip_length",
+    "mean_pitch_hz",
+    "median_pitch_hz",
+    "voiced_ratio",
+]
+
+
+FORMAT_DICT = {
+    "dataset_name": "Dataset",
+    "coral-v2": "CoRal-v2 Read Aloud Testset",
+    "fleurs": "Fleurs da_dk Testset",
+    "clip_length": "Clip Length (s)",
+    "mean_pitch_hz": "Mean Pitch (Hz)",
+    "median_pitch_hz": "Median Pitch (Hz)",
+    "voiced_ratio": "Voiced Ratio",
+}
+
+
+def _fmt(label: str) -> str:
+    return FORMAT_DICT.get(label, label)
+
+
+def save_plot(base_path: str, filename: str) -> None:
+    """
+    Save the current matplotlib plot to the specified path.
+    """
+    Path(base_path).mkdir(parents=True, exist_ok=True)
+    plt.savefig(f"{base_path}/{filename}", bbox_inches='tight', dpi=200)
+    plt.close()
+
+def distribution_plot(dataset_name: str, metric: str, base_path: str) -> None:
+    """
+    Generate and save distribution plots for dataset descriptive statistics.
+    """
+    df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
+
+    plt.figure(figsize=(10, 6))
+    sns.histplot(df[metric], bins=30, kde=True)
+    plt.title(f'{_fmt(metric)} distribution for {_fmt(dataset_name)}')
+    plt.xlabel(_fmt(metric))    
+    plt.ylabel('Frequency')
+    save_plot(base_path=f'reports/plots/{dataset_name}', filename=f'{metric}_distribution.png')
+
+
+def age_plot(dataset_name: str, base_path: str) -> None:
+    """
+    Generate and save age distribution plot for dataset descriptive statistics.
+    """
+    df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
+
+    # make bins 0-9, 10-19, ..., 90-99
+    df['age_bin'] = pd.cut(df['age'], bins=range(0, 101, 10), right=False)
+
+    plt.figure(figsize=(10, 6))
+    sns.countplot(x='age_bin', data=df, stat='percent')
+    plt.title(f'Age distribution for {_fmt(dataset_name)}', fontsize=14)
+    plt.xlabel('Age Group', fontsize=12)
+    plt.ylabel('Percentage', fontsize=12)
+    
+    # make ticks show percentage
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
+    total = len(df)
+    for p in plt.gca().patches:
+        height = p.get_height()
+        plt.gca().annotate(f'{height:.1f}%', (p.get_x() + p.get_width() / 2., height),
+                           ha='center', va='bottom', fontsize=12, color='black', xytext=(0, 5),
+                           textcoords='offset points')
+    save_plot(base_path=base_path, filename='age_distribution.png')
+
+
+def make_coral_plots() -> None:
+    """
+    Generate and save distribution plots for CoRal v2 dataset descriptive statistics.
+    """
+    dataset_name = "coral-v2"
+    for metric in METRICS:
+        logger.info(f"Generating distribution plot for {dataset_name} - {metric}...")
+        distribution_plot(dataset_name, metric, base_path=f'reports/plots/{dataset_name}')
+
+    # also make distribution plots for age
+    logger.info(f"Generating age distribution plot for {dataset_name}...")
+    age_plot(dataset_name, base_path=f'reports/plots/{dataset_name}')
+
+
+
+def make_fleurs_plots() -> None:
+    """
+    Generate and save distribution plots for Fleurs dataset descriptive statistics.
+    """
+    dataset_name = "fleurs"
+    for metric in METRICS:
+        logger.info(f"Generating distribution plot for {dataset_name} - {metric}...")
+        distribution_plot(dataset_name, metric, base_path=f'reports/plots/{dataset_name}')
