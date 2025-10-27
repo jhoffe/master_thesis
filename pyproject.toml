@@ -80,6 +80,7 @@ torch = [
 torchvision = [
   { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo" }
 
 [tool.uv]
 package = true

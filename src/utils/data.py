@@ -354,41 +354,14 @@ def process_example(
     """
     doc = example[text_column]
 
-    if convert_numerals and re.search(pattern=NUMERAL_REGEX, string=doc):
-        doc = "".join(
-            convert_numeral_to_words(numeral=maybe_numeral)
-            for maybe_numeral in re.split(pattern=NUMERAL_REGEX, string=doc)
-            if maybe_numeral is not None
-        )
-
-    if lower_case:
-        doc = doc.lower()
-
-    # Normalise the transcription, which uniformises the characters. For instance, the
-    # "long dash" (－) is converted to the normal dash (-).
-    if clean_text:
-        doc = normalize("NFKC", doc)
-
-        for key, value in conversion_dict.items():
-            doc = doc.replace(key, value)
-
-        # Remove all non-standard characters
-        if characters_to_keep is not None:
-            characters_to_keep = "".join(char for char in characters_to_keep)
-            if lower_case:
-                characters_to_keep = characters_to_keep.lower()
-            else:
-                characters_to_keep = characters_to_keep.upper() + characters_to_keep.lower()
-            non_standard_characters_regex = re.compile(
-                f"[^{re.escape(characters_to_keep + ' |')}]"
-            )
-            doc = re.sub(non_standard_characters_regex, " ", doc.strip())
-
-        # Replace superfluous spaces
-        doc = re.sub(r" +", " ", doc)
-
-        # Strip each newline
-        doc = "\n".join([line.strip() for line in doc.split("\n")]).strip("\n")
+    doc = process_text_example(
+        text=doc,
+        characters_to_keep=characters_to_keep,
+        conversion_dict=conversion_dict,
+        clean_text=clean_text,
+        lower_case=lower_case,
+        convert_numerals=convert_numerals,
+    )
 
     # Re-assign the cleaned transcription
     example[text_column] = doc
@@ -412,3 +385,49 @@ def process_example(
     example["input_length"] = len(example["labels"])
 
     return example
+
+
+def process_text_example(
+    text: str,
+    characters_to_keep: Iterable[str] | None,
+    conversion_dict: dict[str, str] = DEFAULT_CONVERSION_DICT,
+    clean_text: bool = True,
+    lower_case: bool = True,
+    convert_numerals: bool = True,
+):
+    if convert_numerals and re.search(pattern=NUMERAL_REGEX, string=text):
+        text = "".join(
+            convert_numeral_to_words(numeral=maybe_numeral)
+            for maybe_numeral in re.split(pattern=NUMERAL_REGEX, string=text)
+            if maybe_numeral is not None
+        )
+
+    if lower_case:
+        text = text.lower()
+
+    # Normalise the transcription, which uniformises the characters. For instance, the
+    # "long dash" (－) is converted to the normal dash (-).
+    if clean_text:
+        text = normalize("NFKC", text)
+
+        for key, value in conversion_dict.items():
+            text = text.replace(key, value)
+
+        # Remove all non-standard characters
+        if characters_to_keep is not None:
+            characters_to_keep = "".join(char for char in characters_to_keep)
+            if lower_case:
+                characters_to_keep = characters_to_keep.lower()
+            else:
+                characters_to_keep = characters_to_keep.upper() + characters_to_keep.lower()
+            non_standard_characters_regex = re.compile(
+                f"[^{re.escape(characters_to_keep + ' |')}]"
+            )
+            text = re.sub(non_standard_characters_regex, " ", text.strip())
+
+        # Replace superfluous spaces
+        text = re.sub(r" +", " ", text)
+
+        # Strip each newline
+        text = "\n".join([line.strip() for line in text.split("\n")]).strip("\n")
+    return text

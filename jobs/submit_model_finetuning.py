@@ -17,7 +17,7 @@ def submit_job(config_name: str):
         num_cores=16,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="32:00",
+        walltime="33:00",
         memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:

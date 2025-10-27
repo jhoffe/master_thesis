@@ -58,13 +58,15 @@ import time
 
 from dotenv import load_dotenv
 import lightning.pytorch as pl
-from nemo.collections.asr.models import ASRModel
+from loguru import logger
+from nemo.collections.asr.models import ASRModel, EncDecRNNTModel, EncDecMultiTaskModel
 from nemo.core.config import hydra_runner
 from nemo.utils import logging, model_utils
 from nemo.utils.exp_manager import exp_manager
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import OmegaConf
+from utils.nemo_wer import WERWithProcessing
 import wandb
 from lightning import seed_everything
 
@@ -226,6 +228,14 @@ def main(cfg):
 
     # Setup Optimizer
     asr_model.setup_optimization(cfg.model.optim)
+
+    wer = WERWithProcessing(
+        decoding=asr_model.decoding,
+        batch_dim_index=0,
+        use_cer=asr_model._cfg.get("use_cer", False),
+        log_prediction=asr_model._cfg.get("log_prediction", True),
+        dist_sync_on_step=True,
+    )
 
     # Setup SpecAug
     if hasattr(cfg.model, "spec_augment") and cfg.model.spec_augment is not None:
