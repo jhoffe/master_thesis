@@ -112,7 +112,7 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
 
     # check if dataset if fleurs
     if config.dataset.name == "fleurs":
-        ids = range(1, len(dataset) + 1)
+        ids = [f"rec_{idx}" for idx in range(1, len(dataset) + 1)]
         dataset = dataset.add_column(name="id_recording", column=ids)
 
     # filter the dataset

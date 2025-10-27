@@ -58,12 +58,7 @@ def extract_pitch_librosa(y,
 
 
 def process_sample(sample, dataset_name):
-    if dataset_name == "coral":
-        id = sample['id_recording']
-    elif dataset_name == "fleurs":
-        id = sample['id']
-    else:
-        id = None
+    id = sample["id_recording"]
 
     y, sr = sample["audio"]["array"], sample["audio"]["sampling_rate"]
 
