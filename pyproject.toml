@@ -51,6 +51,7 @@ dependencies = [
   "carbontracker>=2.3.1",
   "sentence-transformers>=5.1.1",
   "nvidia-ml-py>=13.580.82",
+  "megatron>=0.5.1",
 ]
 requires-python = "~=3.10.0"
 

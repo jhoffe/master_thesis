@@ -1,4 +1,4 @@
-manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/test/tarred_audio_manifest.json'
+manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/test/tarred_audio_manifest.json'
 sample_rate: ${model.sample_rate}
 batch_size: 16
 shuffle: false
@@ -6,5 +6,5 @@ use_start_end_token: false
 num_workers: 6
 pin_memory: true
 is_tarred: true
-tarred_audio_filepaths: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/test/audio__OP_0..11_CL_.tar'
+tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/test/audio__OP_0..11_CL_.tar'
 log_prediction: ${model.log_prediction}

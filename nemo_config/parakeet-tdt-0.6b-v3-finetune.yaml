@@ -1,9 +1,11 @@
 defaults:
   - model: parakeet-tdt-0.6b-v3
   - trainer: parakeet-tdt-0.6b-v3
-  - exp_manager: parakeet-tdt-0.6b-v3
+  - exp_manager: base_finetune
 
 name: 'parakeet-tdt-0.6b-v3-finetune'
+
+seed: ${oc.env:RANDOM_SEED, default=42}
 
 # use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.

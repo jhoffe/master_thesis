@@ -1,13 +1,14 @@
-manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/tarred_audio_manifest.json'
+manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/tarred_audio_manifest.json'
 sample_rate: ${model.sample_rate}
 
-shuffle: true
-num_workers: 6
+num_workers: 12
 pin_memory: true
 max_duration: 20
 min_duration: 0.1
+shuffle_seed: ${oc.env:RANDOM_SEED, default=42}
+seed: ${oc.env:RANDOM_SEED, default=42}
 
 # Tarred datasets
 is_tarred: true
-tarred_audio_filepaths: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/audio__OP_0..295_CL_.tar'
+tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/audio__OP_0..295_CL_.tar'
 shuffle_n: 2048

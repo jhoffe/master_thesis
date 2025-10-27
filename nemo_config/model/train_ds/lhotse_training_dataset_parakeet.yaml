@@ -1,7 +1,7 @@
 defaults:
   - base_training_dataset
 
-manifest_filepath: '${oc.env:NEMO_CORAL_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/sharded_manifests/manifest__OP_0..295_CL_.json'
+manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/sharded_manifests/manifest__OP_0..295_CL_.json'
 # bucketing params
 use_lhotse: true
 

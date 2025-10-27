@@ -2046,6 +2046,7 @@ dependencies = [
     { name = "librosa" },
     { name = "llvmlite" },
     { name = "loguru" },
+    { name = "megatron" },
     { name = "nemo-toolkit", extra = ["asr", "tts"] },
     { name = "numba-cuda", extra = ["cu13"] },
     { name = "numpy" },
@@ -2092,6 +2093,7 @@ requires-dist = [
     { name = "librosa", specifier = ">=0.11.0" },
     { name = "llvmlite", specifier = ">=0.45.1" },
     { name = "loguru", specifier = ">=0.7.3" },
+    { name = "megatron", specifier = ">=0.5.1" },
     { name = "nemo-toolkit", extras = ["asr", "tts"], specifier = ">=2.5" },
     { name = "numba-cuda", extras = ["cu13"], specifier = "==0.20.0" },
     { name = "numpy", specifier = ">=1.26.4" },
@@ -2183,6 +2185,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/9e/b2/451be65c13d2d69b7
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/a0/0d55c59ea8a5f1b13b3eb931e1c0eab9c2a07322cad79cb51a596d2d2a5c/mediapy-1.1.6-py3-none-any.whl", hash = "sha256:c74370808b445666f95272bfdf0eb5707a43b7e05e5527f2dd0830e6892f976f", size = 24955 },
 ]
+
+[[package]]
+name = "megatron"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dill" },
+    { name = "numpy" },
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/34/c712fc83bb3967a727e1bf13f09b7fec2aa3fb1054afd6f106b2f3d0fe03/Megatron-0.5.1.tar.gz", hash = "sha256:1b92a2f339335b99d4a6e2479110bb83b9348f8667453b4f448daab60afec057", size = 21258 }
 
 [[package]]
 name = "mistune"
@@ -3578,6 +3591,7 @@ wheels = [
 name = "regex"
 version = "2025.10.23"
 source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/c8/1d2160d36b11fbe0a61acb7c3c81ab032d9ec8ad888ac9e0a61b85ab99dd/regex-2025.10.23.tar.gz", hash = "sha256:8cbaf8ceb88f96ae2356d01b9adf5e6306fa42fa6f7eab6b97794e37c959ac26", size = 401266 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/11/849d5d23633a77047465eaae4cc0cbf24ded7aa496c02e8b9710e28b1687/regex-2025.10.23-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:17bbcde374bef1c5fad9b131f0e28a6a24856dd90368d8c0201e2b5a69533daa", size = 487957 },
     { url = "https://files.pythonhosted.org/packages/87/12/5985386e7e3200a0d6a6417026d2c758d783a932428a5efc0a42ca1ddf74/regex-2025.10.23-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b4e10434279cc8567f99ca6e018e9025d14f2fded2a603380b6be2090f476426", size = 290419 },

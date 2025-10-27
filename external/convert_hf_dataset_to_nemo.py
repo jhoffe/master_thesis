@@ -105,6 +105,8 @@ class HFDatasetConversionConfig:
 
     # HF Dataset info
     path: str  # HF dataset path
+    text_column: str = "text"  # name of the text column in the dataset
+    pnc: bool = True  # whether to apply punctuation normalization or not
     name: Optional[str] = None  # name of the dataset subset
     split: Optional[str] = None  # split of the dataset subset
     use_auth_token: bool = (
@@ -308,18 +310,18 @@ def convert_streaming_dataset_to_nemo(
 
             manifest_line = {
                 "audio_filepath": audio_filepath,
-                "text": sample["text"],
+                "text": sample[cfg.text_column],
                 "duration": librosa.get_duration(y=sample["audio"]["array"], sr=cfg.sampling_rate),
                 "target_lang": "da",
                 "source_lang": "da",
                 "lang": "da",
-                "pnc": "yes",
+                "pnc": "yes" if cfg.pnc else "no",
                 "taskname": "asr",
             }
 
             # remove large components from sample
             del sample["audio"]
-            del sample["text"]
+            del sample[cfg.text_column]
             if "file" in sample:
                 del sample["file"]
 

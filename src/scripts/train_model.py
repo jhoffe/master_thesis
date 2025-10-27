@@ -66,6 +66,7 @@ from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import OmegaConf
 import wandb
+from lightning import seed_everything
 
 
 def get_base_model(trainer, cfg):
@@ -193,14 +194,7 @@ def setup_dataloaders(asr_model, cfg):
     """
     cfg = model_utils.convert_model_config_to_dict_config(cfg)
     asr_model.setup_training_data(cfg.model.train_ds)
-    if (
-        hasattr(cfg.model, "validation_ds")
-        and cfg.model.validation_ds.manifest_filepath is not None
-    ):
-        asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
-
-    if hasattr(cfg.model, "test_ds") and cfg.model.test_ds.manifest_filepath is not None:
-        asr_model.setup_multiple_test_data(cfg.model.test_ds)
+    asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
 
     return asr_model
 
@@ -208,6 +202,10 @@ def setup_dataloaders(asr_model, cfg):
 @hydra_runner(config_path="../../nemo_config", config_name="canary-1b-v2-finetune")
 def main(cfg):
     logging.info(f"Hydra config: {OmegaConf.to_yaml(cfg)}")
+
+    seed = cfg.get("seed", 42)
+    logging.info(f"Setting random seed to {seed} for reproducibility.")
+    seed_everything(seed, workers=True)
 
     trainer_cfg = resolve_trainer_cfg(cfg.trainer)
 

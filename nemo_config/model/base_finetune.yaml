@@ -4,21 +4,6 @@ defaults:
 sample_rate: 16000
 log_prediction: false
 
-train_ds:
-  manifest_filepath: null
-  sample_rate: 16000
-  batch_size: 16
-  shuffle: true
-  num_workers: 6
-  pin_memory: true
-  max_duration: 20
-  min_duration: 0.1
-  is_tarred: false
-  tarred_audio_filepaths: null
-  shuffle_n: 2048
-  bucketing_strategy: 'fully_randomized'
-  bucketing_batch_size: null
-
 char_labels:
   update_labels: false
   labels: null
