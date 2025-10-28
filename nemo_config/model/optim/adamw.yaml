@@ -1,8 +1,8 @@
 name: adamw
-lr: 2e-5
+lr: 1e-4
 betas: [0.9, 0.999]
 weight_decay: 1e-3
 sched:
-  name: InverseSquareRootAnnealing
-  warmup_steps: null
-  min_lr: 1e-6
+  name: CosineAnnealing
+  warmup_ratio: 0.03
+  min_lr: 5e-6

@@ -1,6 +1,6 @@
 defaults:
   - base_finetune
-  - train_ds: lhotse_training_dataset_parakeet
+  - train_ds: parakeet_training_set
   - validation_ds: base_validation_dataset
   - test_ds: base_test_dataset
 
