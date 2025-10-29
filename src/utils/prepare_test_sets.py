@@ -93,10 +93,8 @@ def prepare_test_sets() -> None:
         )
         # make into dataframe
         processed_df = Dataset.from_list(processed_samples).to_pandas()
-        # Save results to be used in evaluation
-        save_to_parquet(processed_df, base_path=Path("reports/metrics"), file_name=f"{dataset_name}-processed.parquet")
-
         
+        # Making evaluation dataframe
         evaluation_df = evaluation_dataset.to_pandas()
 
         # rename id column to id_recording

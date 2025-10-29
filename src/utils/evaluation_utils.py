@@ -116,10 +116,32 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         df["id"] = ids
     
     if eval_combination["dataset_name"] == "coral-v2":
-        pitch_data = pd.read_parquet("reports/metrics/coral-v2-processed.parquet")
+        pitch_data = pd.read_parquet("reports/metrics/coral-v2-summary.parquet")
+        # drop dataset_name column and clip_length column
+        pitch_data = pitch_data.drop(columns=["dataset_name", "clip_length"])
+        # rename id_recording to id in pitch_data
+        pitch_data = pitch_data.rename(columns={"id_recording": "id"})
         df = df.merge(pitch_data, on="id", how="left")
     elif eval_combination["dataset_name"] == "fleurs":
-        pitch_data = pd.read_parquet("reports/metrics/fleurs-processed.parquet")
+        pitch_data = pd.read_parquet("reports/metrics/fleurs-summary.parquet")
+        # drop unneeded columns
+        colums_to_drop = [
+            "id",
+            "gender",
+            "dataset_name",
+            "clip_length",
+            "path",
+            "num_samples",
+            "transcription",
+            "raw_transcription",
+            "language",
+            "lang_group_id",
+            "lang_id",
+        ]
+        pitch_data = pitch_data.drop(columns=colums_to_drop)
+        # rename id_recording to id in pitch_data
+        pitch_data = pitch_data.rename(columns={"id_recording": "id"})
+        
         df = df.merge(pitch_data, on="id", how="left")
         
     return df

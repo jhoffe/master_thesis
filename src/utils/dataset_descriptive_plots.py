@@ -90,6 +90,48 @@ def age_plot(dataset_name: str, base_path: str) -> None:
     save_plot(base_path=base_path, filename='age_distribution.png')
 
 
+def age_plot_by_gender(dataset_name: str, base_path: str) -> None:
+    """
+    Generate and save age distribution grouped by gender (side-by-side bars per age bin).
+
+    - Uses the same 10-year bins as age_plot
+    - Displays percentages on the y-axis
+    - Requires a 'gender' column; skips gracefully if missing
+    """
+    df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
+
+    if 'gender' not in df.columns:
+        logger.warning(f"'gender' column not found in {dataset_name}-summary.parquet. Skipping age_by_gender plot.")
+        return
+
+    # Drop missing genders and bin ages
+    df = df[df['gender'].notna()].copy()
+    df['age_bin'] = pd.cut(df['age'], bins=range(0, 101, 10), right=False)
+
+    plt.figure(figsize=(12, 6))
+    ax = sns.countplot(x='age_bin', hue='gender', data=df, stat='percent')
+    plt.title(f'Age distribution by gender for {_fmt(dataset_name)}', fontsize=14)
+    plt.xlabel('Age Group', fontsize=12)
+    plt.ylabel('Percentage', fontsize=12)
+
+    # Format y-axis as percent
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
+
+    # Annotate each bar with its percentage
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0:
+            ax.annotate(
+                f'{height:.1f}%',
+                (p.get_x() + p.get_width() / 2., height),
+                ha='center', va='bottom', fontsize=10, color='black', xytext=(0, 4),
+                textcoords='offset points'
+            )
+
+    plt.legend(title='Gender')
+    save_plot(base_path=base_path, filename='age_distribution_by_gender.png')
+
+
 def distribution_by_gender(dataset_name: str, base_path: str) -> None:
     """
     Generate and save distribution plots for each metric, split by gender.
@@ -145,9 +187,11 @@ def make_coral_plots() -> None:
     logger.info(f"Generating age distribution plot for {dataset_name}...")
     age_plot(dataset_name, base_path=f'reports/plots/{dataset_name}')
 
+    logger.info(f"Generating age distribution by gender plot for {dataset_name}...")
+    age_plot_by_gender(dataset_name, base_path=f'reports/plots/{dataset_name}')
+
     logger.info(f"Generating gender distribution plots for {dataset_name}...")
     distribution_by_gender(dataset_name, base_path=f'reports/plots/{dataset_name}')
-
 
 
 def make_fleurs_plots() -> None:
