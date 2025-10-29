@@ -228,18 +228,6 @@ def main(cfg):
     # Setup Optimizer
     asr_model.setup_optimization(cfg.model.optim)
 
-    wer = WERWithProcessing(
-        decoding=asr_model.decoding,
-        batch_dim_index=0,
-        use_cer=asr_model._cfg.get("use_cer", False),
-        log_prediction=asr_model._cfg.get("log_prediction", True),
-        dist_sync_on_step=True,
-    )
-
-    # Setup SpecAug
-    if hasattr(cfg.model, "spec_augment") and cfg.model.spec_augment is not None:
-        asr_model.spec_augment = ASRModel.from_config_dict(cfg.model.spec_augment)
-
     trainer.fit(asr_model)
 
     logging.info("Logging the fine-tuned model as a WandB artifact.")
