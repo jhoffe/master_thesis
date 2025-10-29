@@ -51,6 +51,7 @@ EVALUATION_COMBINATIONS = [
 
 FORMAT_DICT = {
     "co2_g": "$CO_2$ Emissions (g)",
+    "energy_kWh": "Energy Consumption (kWh)",
     "RTFx": "Inverse Real-Time Factor (RTFx)",
     "WER": "Word Error Rate (WER)",
     "CER": "Character Error Rate (CER)",
@@ -251,8 +252,8 @@ def plot_summary_scatter(
 def make_all_summary_plots(
     df: pd.DataFrame,
     save_dir: Optional[str] = None,
-    width: int = 10,
-    height: int = 6,
+    width: int = 12,
+    height: int = 7,
     alpha: float = 0.9,
     point_size: int = 100,
     separate_by_dataset: bool = False,
@@ -279,10 +280,10 @@ def make_all_summary_plots(
     summary_df = df.copy()
 
     # WER vs CO2
-    logger.info("Plotting WER vs CO2 in same facet...")
+    logger.info("Plotting WER vs energy in same facet...")
     plot_summary_scatter(
         summary_df, 
-        x="co2_g", 
+        x="energy_kWh", 
         y="WER", 
         model_legend_loc="upper right", 
         dataset_legend_loc="upper center", 
@@ -296,10 +297,10 @@ def make_all_summary_plots(
         models_order=models_order,
     )
 
-    logger.info("Plotting WER vs CO2 faceted by dataset...")
+    logger.info("Plotting WER vs energy faceted by dataset...")
     plot_summary_scatter(
         summary_df, 
-        x="co2_g", 
+        x="energy_kWh", 
         y="WER", 
         model_legend_loc="upper right", 
         dataset_legend_loc="lower right", 

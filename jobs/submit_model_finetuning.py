@@ -50,5 +50,5 @@ def submit_job(config_name: str):
 if __name__ == "__main__":
     load_dotenv()
 
-    submit_job("canary-1b-v2-finetune")
     submit_job("parakeet-tdt-0.6b-v3-finetune")
+    submit_job("canary-1b-v2-finetune")
