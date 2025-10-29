@@ -90,6 +90,48 @@ def age_plot(dataset_name: str, base_path: str) -> None:
     save_plot(base_path=base_path, filename='age_distribution.png')
 
 
+def distribution_by_gender(dataset_name: str, base_path: str) -> None:
+    """
+    Generate and save distribution plots for each metric, split by gender.
+    Expects a 'gender' column in the dataset summary parquet.
+
+    Saves one PNG per metric to: reports/plots/{dataset_name}/{metric}_by_gender.png
+    """
+    df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
+
+    if 'gender' not in df.columns:
+        logger.warning(f"'gender' column not found in {dataset_name}-summary.parquet. Skipping gender plots.")
+        return
+
+    # Clean up gender values (optional but helps avoid NaNs showing up as a legend entry)
+    df = df[df['gender'].notna()].copy()
+
+    for metric in METRICS:
+        if metric not in df.columns:
+            logger.warning(f"Metric '{metric}' not found in dataframe for {dataset_name}. Skipping.")
+            continue
+
+        plt.figure(figsize=(10, 6))
+        sns.histplot(
+            data=df,
+            x=metric,
+            hue='gender',
+            bins=30,
+            kde=True,
+            stat='percent',        # y axis in percent
+            common_norm=False,     # each gender scaled independently
+            element='step',        # cleaner overlay look
+            alpha=0.4
+        )
+
+        plt.title(f"{_fmt(metric)} distribution by gender for {_fmt(dataset_name)}")
+        plt.xlabel(_fmt(metric))
+        plt.ylabel("Percentage")
+
+        # Ensure output dir exists and save
+        save_plot(base_path=f"reports/plots/{dataset_name}", filename=f"{metric}_by_gender.png")
+
+
 def make_coral_plots() -> None:
     """
     Generate and save distribution plots for CoRal v2 dataset descriptive statistics.
@@ -102,6 +144,9 @@ def make_coral_plots() -> None:
     # also make distribution plots for age
     logger.info(f"Generating age distribution plot for {dataset_name}...")
     age_plot(dataset_name, base_path=f'reports/plots/{dataset_name}')
+
+    logger.info(f"Generating gender distribution plots for {dataset_name}...")
+    distribution_by_gender(dataset_name, base_path=f'reports/plots/{dataset_name}')
 
 
 
