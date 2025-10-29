@@ -33,7 +33,7 @@ def submit_job(config_name: str):
         notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
     )
 
-    with Submittor(opts, verbosity=2) as s:
+    with Submittor(opts) as s:
         s.sync_packages_uv()
         s.activate_venv(".venv")
 

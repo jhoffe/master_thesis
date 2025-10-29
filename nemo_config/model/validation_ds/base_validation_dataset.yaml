@@ -7,7 +7,6 @@ ds_item:
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    pin_memory: true
     is_tarred: true
     log_prediction: ${model.log_prediction}
 
@@ -19,6 +18,5 @@ ds_item:
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    pin_memory: true
     is_tarred: true
     log_prediction: ${model.log_prediction}

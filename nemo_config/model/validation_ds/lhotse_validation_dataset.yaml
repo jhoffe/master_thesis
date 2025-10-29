@@ -8,7 +8,6 @@ ds_item:
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    pin_memory: true
     log_prediction: ${model.log_prediction}
 
     force_map_dataset: true
@@ -35,7 +34,6 @@ ds_item:
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    pin_memory: true
     log_prediction: ${model.log_prediction}
 
     force_map_dataset: true
