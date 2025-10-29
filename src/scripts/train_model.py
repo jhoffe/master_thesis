@@ -57,18 +57,17 @@ https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/asr/configs.ht
 import time
 
 from dotenv import load_dotenv
+from lightning import seed_everything
 import lightning.pytorch as pl
 from loguru import logger
-from nemo.collections.asr.models import ASRModel, EncDecRNNTModel, EncDecMultiTaskModel
+from nemo.collections.asr.models import ASRModel, EncDecMultiTaskModel, EncDecRNNTModel
 from nemo.core.config import hydra_runner
 from nemo.utils import logging, model_utils
 from nemo.utils.exp_manager import exp_manager
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import OmegaConf
-from utils.nemo_wer import WERWithProcessing
 import wandb
-from lightning import seed_everything
 
 
 def get_base_model(trainer, cfg):
