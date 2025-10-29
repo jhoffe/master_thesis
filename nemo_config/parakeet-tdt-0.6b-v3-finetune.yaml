@@ -1,7 +1,7 @@
 defaults:
   - model: parakeet-tdt-0.6b-v3
   - trainer: parakeet-tdt-0.6b-v3
-  - exp_manager: base_finetune
+  - exp_manager: base_single
 
 name: 'parakeet-tdt-0.6b-v3-finetune'
 

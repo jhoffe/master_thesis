@@ -1,7 +1,7 @@
 defaults:
   - base_finetune
   - train_ds: parakeet_training_set
-  - validation_ds: base_validation_dataset
+  - validation_ds: base_coral
   - test_ds: base_test_dataset
 
 batch_dim_index: 1

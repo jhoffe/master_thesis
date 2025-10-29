@@ -1,0 +1,19 @@
+exp_dir: null
+name: ${name}
+create_tensorboard_logger: false
+create_checkpoint_callback: true
+resume_if_exists: false
+resume_ignore_no_checkpoint: false
+create_wandb_logger: true
+wandb_logger_kwargs:
+  name: ${name}_${oc.env:LSB_JOBID}
+  project: ${oc.env:WANDB_PROJECT}
+checkpoint_callback_params:
+  monitor: 'val_wer'
+  mode: 'min'
+  save_top_k: 5
+  always_save_nemo: true
+  save_nemo_on_train_end: true
+  save_last: true
+  auto_insert_metric_name: false
+  filename: '${name}_val_wer={val_wer:.2f}_step={step}'
