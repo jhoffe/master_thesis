@@ -14,11 +14,11 @@ def submit_job(config_name: str):
     opts = LSFSubmissionOptions(
         queue="gpua100",
         job_name=job_name,
-        num_cores=12,
+        num_cores=9,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
         walltime="32:00",
-        memory="5GB",
+        memory="7GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",

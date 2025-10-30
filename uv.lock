@@ -619,10 +619,10 @@ wheels = [
 
 [[package]]
 name = "cuda-pathfinder"
-version = "1.3.1"
+version = "1.3.2"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ae/c0/7a8a1e87b0fd278e3c5069a7b11d8b5e8c5c2da0bb4ccbd59b73c4195277/cuda_pathfinder-1.3.1-py3-none-any.whl", hash = "sha256:0f04527f647e16ee26055447d3e4479bd608acce60f6506b14043f51d71736e7", size = 27181 },
+    { url = "https://files.pythonhosted.org/packages/b4/b2/a4982b5c7315d2dd211092d1ab226cb0c69b902480d0a58fde89b5991d71/cuda_pathfinder-1.3.2-py3-none-any.whl", hash = "sha256:7bd2774bc6be93aea226d579f415a63803b2b2c062207ed06c1d6dfc9cfacc3c", size = 27375 },
 ]
 
 [[package]]
@@ -2030,7 +2030,6 @@ name = "master-thesis"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
-    { name = "carbontracker" },
     { name = "cuda-python", marker = "sys_platform == 'linux'" },
     { name = "cuda-toolkit" },
     { name = "cython" },
@@ -2075,9 +2074,14 @@ dependencies = [
     { name = "wandb" },
 ]
 
+[package.optional-dependencies]
+carbon = [
+    { name = "carbontracker" },
+]
+
 [package.metadata]
 requires-dist = [
-    { name = "carbontracker", specifier = ">=2.3.1" },
+    { name = "carbontracker", marker = "extra == 'carbon'", specifier = ">=2.3.1" },
     { name = "cuda-python", marker = "sys_platform == 'linux'", specifier = "==13.0" },
     { name = "cuda-toolkit", specifier = ">=13.0.1" },
     { name = "cython", specifier = ">=3.1.4" },
@@ -2121,6 +2125,7 @@ requires-dist = [
     { name = "uuid", specifier = ">=1.30" },
     { name = "wandb", specifier = ">=0.22.1" },
 ]
+provides-extras = ["carbon"]
 
 [[package]]
 name = "matplotlib"
@@ -2642,7 +2647,7 @@ wheels = [
 
 [[package]]
 name = "nv-one-logger-core"
-version = "2.3.0"
+version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "overrides" },
@@ -2651,14 +2656,14 @@ dependencies = [
     { name = "toml" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3f/f6/1e14c12c11087aca3d88d6fc5f1b74a22a812a6bf55ef78d44372bff5611/nv_one_logger_core-2.3.0.tar.gz", hash = "sha256:4369a5817bdeee8b2d35012668a860dca1e9418ab935d0e42b9a7244ccab8e26", size = 52407 }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/37/963095797035f371e0db6ea761f5aaccb624fc786af217115b423baeb0e2/nv_one_logger_core-2.3.1.tar.gz", hash = "sha256:cbb2f87604c78b96a302f32d87199902129d76153a73a20f8455a250b3246c1d", size = 52640 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/0b/92911c3eee6699bf5b0edf0f8d66ae69362ce512935a0e7db604e738a2bf/nv_one_logger_core-2.3.0-py3-none-any.whl", hash = "sha256:8dad7f6d22c47da99bf1bbb68e8df87669aab481ab605b643c4cf6182acdf49c", size = 62698 },
+    { url = "https://files.pythonhosted.org/packages/ee/c4/ea91554c4fcbff66057f667690101d7a4b965605741350ac661b03fa6c46/nv_one_logger_core-2.3.1-py3-none-any.whl", hash = "sha256:0c8b77bcdac4daa1ea913bf8d4afd2a057bd5526e3654ac39f67caba157341a6", size = 63066 },
 ]
 
 [[package]]
 name = "nv-one-logger-pytorch-lightning-integration"
-version = "2.3.0"
+version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "lightning" },
@@ -2667,23 +2672,23 @@ dependencies = [
     { name = "setuptools" },
     { name = "strenum" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/3c/efc4baf30c427bc389a935a826e9d8d7307e8b3161cda40ce5d3dfab56fb/nv_one_logger_pytorch_lightning_integration-2.3.0.tar.gz", hash = "sha256:02713374dd1cecce155035db25217a76c867a8d9a154d145fe3d436d24d625e8", size = 10970 }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/d0/3475b7ab17d367362f650fb0419e8669f41e63c1018f4a8ac2fbecfd2e85/nv_one_logger_pytorch_lightning_integration-2.3.1.tar.gz", hash = "sha256:b32d99b6a8f02a16538bcade939b0a7edd7249e936aacefe336b5519447340c3", size = 10979 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/57/433ab3fac243e83114b45b24c8d4c678156e5e9cc3fe5667b6d309a072fa/nv_one_logger_pytorch_lightning_integration-2.3.0-py3-none-any.whl", hash = "sha256:46a0ccf55d761fbe51bb8e90ad775c036f83b9d700681bf5a364a0493f646a1b", size = 9823 },
+    { url = "https://files.pythonhosted.org/packages/f0/56/01a55efb365b6864646b4ac941a1d9de66f024e880764510ba5a7a63f62c/nv_one_logger_pytorch_lightning_integration-2.3.1-py3-none-any.whl", hash = "sha256:f92904055fb0082516480cc1e3dd0bb6cedb2b033985ebfd4814b9cbf7da2cb2", size = 9822 },
 ]
 
 [[package]]
 name = "nv-one-logger-training-telemetry"
-version = "2.3.0"
+version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nv-one-logger-core" },
     { name = "strenum" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/64/ff1813f6bd617f208e58b2b9505e61ff97ccf36ba3520c54e7c3b9eab695/nv_one_logger_training_telemetry-2.3.0.tar.gz", hash = "sha256:69933c013cff5d0b035f47e69402ebb7aa83cf674aba816c141d9b3b19e4d97c", size = 44435 }
+sdist = { url = "https://files.pythonhosted.org/packages/c5/21/016fa067967734d52f1ccf5a2a37a1a65216f2d7053bc2b85872cce956ca/nv_one_logger_training_telemetry-2.3.1.tar.gz", hash = "sha256:8c67940ea71799afaf1f46df3ba2f52f93aea26321c6f1c1d54aae02efc2a4af", size = 44435 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/e6/bd32cf056d9a47aec5bf86b1a861242c2de36e4596c6bddcb8db4b081d8e/nv_one_logger_training_telemetry-2.3.0-py3-none-any.whl", hash = "sha256:1a6838a65fab9be6a133f9d26d7d6069a8c9af477225d455f9f9aebee9f30b34", size = 44139 },
+    { url = "https://files.pythonhosted.org/packages/e5/15/97e6e4ddfe5fc35bcee74a45b7c33fb73abb83713c7dfa26420b971a86c3/nv_one_logger_training_telemetry-2.3.1-py3-none-any.whl", hash = "sha256:5319443829b59378a498c3c62ac98973e14f31be675c229ff2b14e2fe109aa0b", size = 44140 },
 ]
 
 [[package]]
@@ -2739,7 +2744,7 @@ name = "nvidia-cudnn-cu13"
 version = "9.13.0.50"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "nvidia-cublas", marker = "sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8a/9c/9e99c00dc23db324244ec257d1e84d79539202ee2f185dee2c1fa97c9549/nvidia_cudnn_cu13-9.13.0.50-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:33f0aa0b64230101b348648fd0693342188071d3f8a137c0cf50051c24b3584b", size = 412337597 },
@@ -2751,7 +2756,7 @@ name = "nvidia-cufft"
 version = "12.0.0.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9b/e9/4e49b1baf6899e42eeec324a49d7aa2219fec42076327c4e468000dd375a/nvidia_cufft-12.0.0.15-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:1885731254835797572ff075f3daf43a2a0a2801210dea26971940dae7e1a367", size = 214053580 },
@@ -2781,9 +2786,9 @@ name = "nvidia-cusolver"
 version = "12.0.3.29"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "nvidia-cusparse", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "nvidia-cublas", marker = "sys_platform == 'linux'" },
+    { name = "nvidia-cusparse", marker = "sys_platform == 'linux'" },
+    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/bb/2e60de9bb1f0c3395eabd91ccad00f4ba3ef736dc9190a158a9d268419f5/nvidia_cusolver-12.0.3.29-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:3bb6e65ce0beaeafdd069b320246e8f17c1cd30ddb27a0539143a3706733a4d8", size = 193104180 },
@@ -2795,7 +2800,7 @@ name = "nvidia-cusparse"
 version = "12.6.2.49"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "nvidia-nvjitlink", marker = "sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fc/30/f32023427f2ef4ec27e8293dfddb5068de566912cd0a45eccfd400017a62/nvidia_cusparse-12.6.2.49-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5d3269c19283a0057fb5ebfb003ae2a10c97a28a6958f4238354826b055827c7", size = 155888587 },

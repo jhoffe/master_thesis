@@ -14,3 +14,6 @@ enable_checkpointing: False
 logger: false
 benchmark: false
 use_distributed_sampler: false
+# Reproducibility
+# deterministic: true
+# benchmark: false
