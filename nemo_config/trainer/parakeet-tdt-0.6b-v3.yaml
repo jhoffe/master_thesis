@@ -3,4 +3,4 @@ defaults:
 
 max_steps: 200000
 limit_train_batches: ${trainer.max_steps}
-val_check_interval: 0.25
+val_check_interval: 2500
