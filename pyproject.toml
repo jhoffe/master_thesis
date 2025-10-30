@@ -41,7 +41,6 @@ dependencies = [
   "pyarrow>=21.0.0",
   "cython>=3.1.4",
   "packaging>=24.0",
-  "nemo-toolkit[asr,tts]>=2.5",
   "seaborn>=0.13.2",
   "hydra-joblib-launcher>=1.2.0",
   "cuda-python==13.0 ; sys_platform == 'linux'",
@@ -52,6 +51,7 @@ dependencies = [
   "sentence-transformers>=5.1.1",
   "nvidia-ml-py>=13.580.82",
   "megatron>=0.5.1",
+  "nemo-toolkit[asr,tts]>=2.5.2",
 ]
 requires-python = "~=3.10.0"
 
@@ -80,7 +80,7 @@ torch = [
 torchvision = [
   { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo" }
+nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo", branch = "thesis" }
 
 [tool.uv]
 package = true
