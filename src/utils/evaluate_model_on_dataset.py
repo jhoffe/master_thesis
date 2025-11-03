@@ -8,6 +8,7 @@ from evaluate.loading import load as load_metric
 from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 import nemo.collections.asr as nemo_asr
+from omegaconf import DictConfig
 import pandas as pd
 import torch
 from transformers import (
@@ -237,6 +238,10 @@ def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRMode
         asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.restore_from(
             restore_path=config.restore_from, map_location=device
         )
+
+        if config.decoding_config is not None:
+            logger.info("Changing decoding strategy...")
+            asr_model.change_decoding_strategy(decoding_config)
     else:
         asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
             model_name=config.model_id, map_location=device

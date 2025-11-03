@@ -4,7 +4,13 @@ from collections.abc import Iterable
 import time
 import uuid
 
-from carbontracker.tracker import CarbonTracker
+from loguru import logger
+
+try:
+    from carbontracker.tracker import CarbonTracker
+except ImportError:
+    pass
+
 from datasets import Dataset
 from evaluate.loading import load as load_metric
 import nemo.collections.asr as nemo_asr
@@ -87,9 +93,18 @@ def compute_metrics_of_dataset_using_pipeline(
 
     transcriptions = []
 
+    carbon_tracker_installed = "CarbonTracker" in globals()
+
     if carbon_tracker_log_name is not None:
-        carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
-        carbon_tracker.epoch_start()
+        if not carbon_tracker_installed:
+            logger.warning(
+                "CarbonTracker is not installed. Please install it to use carbon tracking."
+            )
+        else:
+            carbon_tracker = CarbonTracker(
+                epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name
+            )
+            carbon_tracker.epoch_start()
 
     for out in tqdm(
         transcriber(
@@ -105,7 +120,7 @@ def compute_metrics_of_dataset_using_pipeline(
     ):
         transcriptions.append(out)
 
-    if carbon_tracker_log_name is not None:
+    if carbon_tracker_log_name is not None and carbon_tracker_installed:
         carbon_tracker.epoch_end()
         carbon_tracker.stop()
 
@@ -246,7 +261,7 @@ def compute_metrics_of_dataset_using_nemo(
 
     start_time = time.time()
 
-    #if carbon_tracker_log_name is not None:
+    # if carbon_tracker_log_name is not None:
     #    carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
     #    carbon_tracker.epoch_start()
 
@@ -257,7 +272,7 @@ def compute_metrics_of_dataset_using_nemo(
         **kwargs,
     )
 
-    #if carbon_tracker_log_name is not None:
+    # if carbon_tracker_log_name is not None:
     #    carbon_tracker.epoch_end()
     #    carbon_tracker.stop()
 

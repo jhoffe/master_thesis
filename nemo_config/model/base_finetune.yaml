@@ -19,3 +19,4 @@ spec_augment:
   time_masks: 10
   freq_width: 27
   time_width: 0.05
+  use_numba_spec_augment: true

@@ -95,12 +95,14 @@ if __name__ == "__main__":
         # "roest-whisper-large-v1",
         # "seamless-m4t-v2-large",
         # "whisper-large-v3-turbo",
-        "whisper-large-v3",
+        # "whisper-large-v3",
         # "roest-wav2vec2-315m-v2",
         # "roest-wav2vec2-1B-v2",
         # "roest-wav2vec2-2B-v2",
         # "parakeet-tdt-0.6b-v3",
         # "canary-1b-v2",
+        "canary-1b-v2_finetuned_spec-aug",
+        "parakeet-tdt-0.6b-v3_finetuned_spec-aug",
     ]
 
     for experiment in models:

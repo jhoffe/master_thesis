@@ -21,6 +21,7 @@ class WandbSetup:
         wandb.init(
             project=os.getenv("WANDB_PROJECT"),
             entity=os.getenv("WANDB_ENTITY"),
+            name=f"{self.config.model.name}_{self.config.dataset.name}",
             job_type=self.job_type,
             config=dict(self.config),  # type: ignore
             mode="disabled" if not self.config.enable_wandb else "online",

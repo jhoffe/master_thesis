@@ -235,6 +235,13 @@ submit-oomptimize gpumem='80gb': transfer
     {{python}} jobs/submit_oomptimizer.py --gpu-mem={{gpumem}}
     @echo "Finished submitting OOMptimizer job"
 
+[group('jobs')]
+submit-train-kenlm: transfer
+    @echo "Submitting KenLM training job"
+    {{python}} jobs/submit_train_kenlm.py
+    @echo "Finished submitting KenLM training job"
+
+
 # Submit all finetuning jobs
 [group('jobs')]
 submit-finetune: transfer
@@ -254,3 +261,18 @@ jobs:
 [group('jobs')]
 wjobs:
     watch -n 15 uv run subjob jobs list -e
+
+[group('lm')]
+train-kenlm-parakeet:
+    {{python}} external/train_kenlm.py \
+        nemo_model_file="nvidia/parakeet-tdt-0.6b-v3" \
+        train_paths="[${NEMO_DATASET_PROCESSED_PATH}/lm/lm_training.jsonl]" \
+        kenlm_model_file="kenlm_parakeet_0.6b.arpa" \
+        ngram_length=6 \
+        save_nemo=true \
+        verbose=1
+
+
+[group('lm')]
+train-kenlm: train-kenlm-parakeet
+    @echo "KenLM training complete."

@@ -43,6 +43,8 @@ class ModelConfigSchema:
     task: str | None = None
     language: str | None = None
 
+    decoding_config: dict | None = None
+
 
 @dataclass(frozen=True)
 class DatasetConfigSchema:

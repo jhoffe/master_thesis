@@ -4,3 +4,4 @@ task: null
 language: null
 restore_from: null
 nemo_model: false
+decoding_config: null
