@@ -57,10 +57,11 @@ def distribution_plot(dataset_name: str, metric: str, base_path: str) -> None:
     df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
 
     plt.figure(figsize=(10, 6))
-    sns.histplot(df[metric], bins=30, kde=True)
+    sns.histplot(df[metric], bins=30, kde=True, stat='percent', common_norm=False, element='step')
     plt.title(f'{_fmt(metric)} distribution for {_fmt(dataset_name)}')
-    plt.xlabel(_fmt(metric))    
-    plt.ylabel('Frequency')
+    plt.xlabel(_fmt(metric))
+    plt.ylabel('Percentage')
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
     save_plot(base_path=f'reports/plots/{dataset_name}', filename=f'{metric}_distribution.png')
 
 
@@ -81,7 +82,6 @@ def age_plot(dataset_name: str, base_path: str) -> None:
     
     # make ticks show percentage
     plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
-    total = len(df)
     for p in plt.gca().patches:
         height = p.get_height()
         plt.gca().annotate(f'{height:.1f}%', (p.get_x() + p.get_width() / 2., height),
@@ -169,6 +169,7 @@ def distribution_by_gender(dataset_name: str, base_path: str) -> None:
         plt.title(f"{_fmt(metric)} distribution by gender for {_fmt(dataset_name)}")
         plt.xlabel(_fmt(metric))
         plt.ylabel("Percentage")
+        plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.0f}%'))
 
         # Ensure output dir exists and save
         save_plot(base_path=f"reports/plots/{dataset_name}", filename=f"{metric}_by_gender.png")
