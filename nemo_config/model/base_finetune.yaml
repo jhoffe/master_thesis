@@ -16,7 +16,22 @@ tokenizer:
 spec_augment:
   _target_: nemo.collections.asr.modules.SpectrogramAugmentation
   freq_masks: 2
-  time_masks: 10
+  time_masks: 2
   freq_width: 27
-  time_width: 0.05
-  use_numba_spec_augment: true
+  time_width: 0.06
+  use_vectorized_code: true
+
+preprocessor:
+  _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+  sample_rate: ${model.sample_rate}
+  normalize: 'per_feature'
+  window_size: 0.025
+  window_stride: 0.01
+  window: 'hann'
+  features: 128
+  n_fft: 512
+  log: true
+  frame_splicing: 1
+  dither: 0.00001
+  pad_to: 0
+  pad_value: 0.0

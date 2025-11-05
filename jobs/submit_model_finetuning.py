@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
+import typer
 
 
 def submit_job(config_name: str):
@@ -17,7 +18,7 @@ def submit_job(config_name: str):
         num_cores=9,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="32:00",
+        walltime="24:00",
         memory="7GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
@@ -47,11 +48,46 @@ def submit_job(config_name: str):
         )
 
 
-if __name__ == "__main__":
+app = typer.Typer()
+
+
+@app.command()
+def main(
+    config_names: list[str] = typer.Argument(
+        None,
+        help="List of config names to submit. If not provided, submits all default configs.",
+    ),
+):
+    """
+    Submit model finetuning jobs to the cluster.
+
+    Examples:
+        # Submit all default configs
+        python jobs/submit_model_finetuning.py
+
+        # Submit specific configs
+        python jobs/submit_model_finetuning.py parakeet-tdt-0.6b-v3-finetune canary-1b-v2-finetune
+    """
     load_dotenv()
 
-    submit_job("parakeet-tdt-0.6b-v3-finetune")
-    submit_job("canary-1b-v2-finetune")
+    # Default configs to submit if none specified
+    default_configs = [
+        "parakeet-tdt-0.6b-v3-finetune_spec-aug",
+        "canary-1b-v2-finetune_spec-aug",
+        "parakeet-tdt-0.6b-v3-finetune_",
+        "canary-1b-v2-finetune",
+    ]
 
-    # submit_job("parakeet-tdt-0.6b-v3-finetune_spec-aug")
-    # submit_job("canary-1b-v2-finetune_spec-aug")
+    # Use provided configs or default to all
+    configs_to_submit = config_names if config_names else default_configs
+
+    typer.echo(f"Submitting {len(configs_to_submit)} job(s)...")
+    for config_name in configs_to_submit:
+        typer.echo(f"  - Submitting: {config_name}")
+        submit_job(config_name)
+
+    typer.echo("✓ All jobs submitted successfully!")
+
+
+if __name__ == "__main__":
+    app()

@@ -24,6 +24,11 @@ download-results:
     rsync -av ${HPC_HOST}:${HPC_PATH}/experiments .
     rsync -av ${HPC_HOST}:${HPC_PATH}/carbon_logs .
 
+# Downloads specs from HPC to local machine
+[group('hpc')]
+download-specs:
+    rsync -av ${HPC_HOST}:${HPC_PATH}/specs specs/
+
 download-jonas-results:
     rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/canary-1b-v2_finetuned_spec-aug_coral-v2_read_aloud_test .
     rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/canary-1b-v2_finetuned_spec-aug_fleurs_da_dk_test .
