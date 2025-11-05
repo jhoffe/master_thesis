@@ -14,8 +14,8 @@ if __name__ == "__main__":
     opts = LSFSubmissionOptions(
         queue="hpc",
         job_name=job_name,
-        num_cores=16,
-        walltime="03:00",
+        num_cores=32,
+        walltime="24:00",
         memory="2GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     with Submittor(opts) as s:
         s.sync_packages_uv()
         s.activate_venv(".venv")
-        s.command(["just", "nemo-convert-coral"])
+        s.command(["just", "nemo-dataset-prepare"])

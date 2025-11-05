@@ -159,7 +159,7 @@ nemo-convert-fleurs:
     @echo "Creating tarred dataset for Fleurs Training Set with speed perturbation"
     {{python}} external/convert_to_tarred_audio_dataset.py \
         --manifest_path ${NEMO_DATASET_PATH}/google/fleurs/da_dk/train/train_google_fleurs_manifest_sp.json \
-        --target_dir=${NEMO_DATASET_PROCESSED_PATH}/google_fleurs/train \
+        --target_dir=${NEMO_DATASET_PROCESSED_PATH}/google_fleurs_sp/train \
         --num_shards=15 \
         --max_duration=120 \
         --min_duration=0.01 \
@@ -212,7 +212,7 @@ nemo-convert-coral:
     @echo "Creating tarred dataset for Coral Training Set"
     {{python}} external/convert_to_tarred_audio_dataset.py \
         --manifest_path ${NEMO_DATASET_PATH}/CoRal-project/coral-v2/read_aloud/train/train_CoRal-project_coral-v2_manifest_sp.json \
-        --target_dir=${NEMO_DATASET_PATH}/CoRal-project_coral-v2_read-aloud/train \
+        --target_dir=${NEMO_DATASET_PATH}/CoRal-project_coral-v2_read-aloud_sp/train \
         --num_shards=882 \
         --max_duration=120 \
         --min_duration=0.01 \
