@@ -24,6 +24,13 @@ download-results:
     rsync -av ${HPC_HOST}:${HPC_PATH}/experiments .
     rsync -av ${HPC_HOST}:${HPC_PATH}/carbon_logs .
 
+download-jonas-results:
+    rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/canary-1b-v2_finetuned_spec-aug_coral-v2_read_aloud_test .
+    rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/canary-1b-v2_finetuned_spec-aug_fleurs_da_dk_test .
+    rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/parakeet-tdt-0.6b-v3_finetuned_spec-aug_coral-v2_read_aloud_test .
+    rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/parakeet-tdt-0.6b-v3_finetuned_spec-aug_fleurs_da_dk_test .
+    #rsync -av ${HPC_HOST}:${HPC_PATH_JONAS}/carbon_logs .
+
 # Downloads a specific path from HPC to local machine
 [group('hpc')]
 download path:

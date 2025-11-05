@@ -11,6 +11,7 @@ from loguru import logger
 from datasets import Dataset
 
 import librosa
+import parselmouth
 import numpy as np
 from tqdm import tqdm
 from joblib import Parallel, delayed
@@ -28,7 +29,7 @@ DATASETS = {
 def extract_pitch_librosa(y,
                           sr,
                           fmin=50,
-                          fmax=350,
+                          fmax=500,
                           frame_length=2048,
                           hop_length=256):
     """
@@ -59,15 +60,61 @@ def extract_pitch_librosa(y,
     if len(f0_voiced) == 0:
         return f0, 0.0, float('nan'), float('nan')
 
-    return f0, len(f0_voiced) / len(f0), float(np.mean(f0_voiced)), float(np.median(f0_voiced))
+    return len(f0_voiced) / len(f0), float(np.mean(f0_voiced)), float(np.median(f0_voiced))
 
 
-def process_sample(sample, dataset_name):
+def extract_pitch_praat(y: np.ndarray,
+                        sr: int,
+                        time_step: float = 0.01,
+                        pitch_floor: float = 50.0,
+                        pitch_ceiling: float = 800.0):
+    """
+    Extract pitch using Praat via parselmouth.
+
+    Returns:
+      f0_hz: numpy array of pitch values in Hz (NaN = unvoiced)
+      voiced_ratio: fraction of voiced frames
+      mean_pitch_hz: mean F0 over voiced frames
+      median_pitch_hz: median F0 over voiced frames
+    """
+
+    # Create a parselmouth Sound object
+    sound = parselmouth.Sound(y, sampling_frequency=sr)
+
+    # Extract pitch
+    pitch = sound.to_pitch(time_step=time_step, pitch_floor=pitch_floor, pitch_ceiling=pitch_ceiling)
+
+    # Get pitch values
+    f0_values = pitch.selected_array['frequency']
+
+    # Replace 0 Hz with NaN for unvoiced frames
+    f0_values[f0_values == 0] = np.nan
+
+    # Calculate voiced ratio
+    num_voiced_frames = np.sum(~np.isnan(f0_values))
+    total_frames = len(f0_values)
+    voiced_ratio = num_voiced_frames / total_frames if total_frames > 0 else 0.0
+
+    # Calculate mean and median pitch over voiced frames
+    f0_voiced = f0_values[~np.isnan(f0_values)]
+    mean_pitch_hz = float(np.mean(f0_voiced)) if len(f0_voiced) > 0 else float('nan')
+    median_pitch_hz = float(np.median(f0_voiced)) if len(f0_voiced) > 0 else float('nan')
+
+    return voiced_ratio, mean_pitch_hz, median_pitch_hz
+
+
+def process_sample(sample, method="praat"):
     id = sample["id_recording"]
 
     y, sr = sample["audio"]["array"], sample["audio"]["sampling_rate"]
 
-    _, voiced_ratio, mean_pitch_hz, median_pitch_hz = extract_pitch_librosa(y, sr)
+    if method == "praat":
+        voiced_ratio, mean_pitch_hz, median_pitch_hz = extract_pitch_praat(y, sr)
+    elif method == "librosa":
+        voiced_ratio, mean_pitch_hz, median_pitch_hz = extract_pitch_librosa(y, sr)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
     return {
         "id": id,
         "voiced_ratio": voiced_ratio,
@@ -89,7 +136,7 @@ def prepare_test_sets() -> None:
         n_jobs = int(os.getenv("N_JOBS", os.cpu_count() or 1))
         samples = list(evaluation_dataset)
         processed_samples = Parallel(n_jobs=n_jobs, backend="loky")( 
-            delayed(process_sample)(s, dataset_name) for s in tqdm(samples)
+            delayed(process_sample)(sample) for sample in tqdm(samples)
         )
         # make into dataframe
         processed_df = Dataset.from_list(processed_samples).to_pandas()
