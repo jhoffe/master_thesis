@@ -81,21 +81,22 @@ python convert_hf_dataset_to_nemo.py \
 
 """
 
+from contextlib import ExitStack
+from dataclasses import dataclass, field, is_dataclass
 import json
 import os
-from dataclasses import dataclass, field, is_dataclass
 from typing import Optional
 
-import hydra
-import librosa
-import soundfile
-import tqdm
 from datasets import Audio, Dataset, IterableDataset, load_dataset
+from dotenv import load_dotenv
+import hydra
 from hydra.conf import HydraConf, RunDir
 from hydra.core.config_store import ConfigStore
-from omegaconf import OmegaConf
-from dotenv import load_dotenv
+import librosa
 from loguru import logger
+from omegaconf import OmegaConf
+import soundfile
+import tqdm
 
 
 @dataclass
@@ -122,6 +123,9 @@ class HFDatasetConversionConfig:
     # Placeholders. Generated internally.
     resolved_output_dir: str = ""
     split_output_dir: Optional[str] = None
+
+    # Speed perturbations
+    speed_perturb: list[float] | None = None
 
     hydra: HydraConf = field(default_factory=lambda: HydraConf(run=RunDir(dir=".")))
 
@@ -290,8 +294,14 @@ def convert_streaming_dataset_to_nemo(
     # dataset = dataset.map(build_map_dataset_to_nemo_func(cfg, basedir))
 
     ds_iter = iter(dataset)
+    with ExitStack() as stack:
+        manifest_f = stack.enter_context(open(manifest_filepath, "w"))
 
-    with open(manifest_filepath, "w") as manifest_f:
+        if cfg.speed_perturb is not None:
+            manifest_sp_f = stack.enter_context(
+                open(manifest_filepath.replace(".json", "_sp.json"), "w")
+            )
+
         for idx, sample in enumerate(
             tqdm.tqdm(
                 ds_iter, desc=f"Processing {cfg.path} (split: {cfg.split}):", unit=" samples"
@@ -301,17 +311,64 @@ def convert_streaming_dataset_to_nemo(
             audio_filepath = os.path.abspath(os.path.join(basedir, audio_filepath))
             audio_filepath = prepare_audio_filepath(audio_filepath)
 
+            audio = sample["audio"]["array"]
+            text = sample[cfg.text_column]
+
+            # Remove large components from sample
+            del sample["audio"]
+            del sample[cfg.text_column]
+            if "file" in sample:
+                del sample["file"]
+
+            if cfg.speed_perturb is not None:
+                for speed in cfg.speed_perturb:
+                    # Apply speed perturbation
+                    perturbed_audio = librosa.resample(
+                        y=audio,
+                        orig_sr=cfg.sampling_rate,
+                        target_sr=int(cfg.sampling_rate * speed),
+                        res_type="kaiser_best",
+                    )
+
+                    audio_filepath_perturbed = audio_filepath.split(".flac")[0]
+                    audio_filepath_perturbed += f"_sp={speed:.2f}.flac"
+
+                    soundfile.write(
+                        audio_filepath_perturbed,
+                        perturbed_audio,
+                        samplerate=cfg.sampling_rate,
+                        format="flac",
+                    )
+
+                    manifest_line = {
+                        "audio_filepath": audio_filepath_perturbed,
+                        "text": text,
+                        "duration": librosa.get_duration(y=perturbed_audio, sr=cfg.sampling_rate),
+                        "perturbation_factor": speed,
+                        "target_lang": "da",
+                        "source_lang": "da",
+                        "lang": "da",
+                        "pnc": "yes" if cfg.pnc else "no",
+                        "taskname": "asr",
+                    }
+
+                    manifest_line.update(sample)
+                    manifest_sp_f.write(
+                        f"{json.dumps(manifest_line, ensure_ascii=cfg.ensure_ascii)}\n"
+                    )
+
             soundfile.write(
                 audio_filepath,
-                sample["audio"]["array"],
+                audio,
                 samplerate=cfg.sampling_rate,
                 format="flac",
             )
 
             manifest_line = {
                 "audio_filepath": audio_filepath,
-                "text": sample[cfg.text_column],
-                "duration": librosa.get_duration(y=sample["audio"]["array"], sr=cfg.sampling_rate),
+                "text": text,
+                "duration": librosa.get_duration(y=audio, sr=cfg.sampling_rate),
+                "perturbation_factor": None,
                 "target_lang": "da",
                 "source_lang": "da",
                 "lang": "da",
@@ -319,15 +376,13 @@ def convert_streaming_dataset_to_nemo(
                 "taskname": "asr",
             }
 
-            # remove large components from sample
-            del sample["audio"]
-            del sample[cfg.text_column]
-            if "file" in sample:
-                del sample["file"]
-
             manifest_line.update(sample)
 
             manifest_f.write(f"{json.dumps(manifest_line, ensure_ascii=cfg.ensure_ascii)}\n")
+            if cfg.speed_perturb is not None:
+                manifest_sp_f.write(
+                    f"{json.dumps(manifest_line, ensure_ascii=cfg.ensure_ascii)}\n"
+                )
 
 
 def process_dataset(dataset: IterableDataset, cfg: HFDatasetConversionConfig):

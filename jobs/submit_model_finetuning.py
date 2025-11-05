@@ -74,8 +74,8 @@ def main(
     default_configs = [
         "parakeet-tdt-0.6b-v3-finetune_spec-aug",
         "canary-1b-v2-finetune_spec-aug",
-        "parakeet-tdt-0.6b-v3-finetune_",
-        "canary-1b-v2-finetune",
+        # "parakeet-tdt-0.6b-v3-finetune",
+        # "canary-1b-v2-finetune",
     ]
 
     # Use provided configs or default to all

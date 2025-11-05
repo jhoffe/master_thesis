@@ -1,0 +1,18 @@
+defaults:
+  - base_training_dataset
+
+manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/sharded_manifests/manifest__OP_0..295_CL_.json'
+# bucketing params
+use_lhotse: true
+
+# Bucket configuration
+use_bucketing: true
+num_buckets: 30
+batch_duration: 800.0 # in seconds
+quadratic_duration: 30 # in seconds
+num_cuts_for_bins_estimate: 20000 # number of cuts to use for estimating the bins
+bucket_buffer_size: 10000
+shuffle_buffer_size: 10000
+
+text_field: 'text'
+lang_field: 'target_lang'

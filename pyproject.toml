@@ -52,6 +52,8 @@ dependencies = [
   "megatron>=0.5.1",
   "nemo-toolkit[asr,tts]>=2.5.2",
   "requests>=2.32.5",
+  "speechbrain>=1.0.3",
+  "resampy>=0.4.3",
 ]
 requires-python = "~=3.10.0"
 
