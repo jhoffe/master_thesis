@@ -52,3 +52,6 @@ if __name__ == "__main__":
 
     submit_job("parakeet-tdt-0.6b-v3-finetune")
     submit_job("canary-1b-v2-finetune")
+
+    # submit_job("parakeet-tdt-0.6b-v3-finetune_spec-aug")
+    # submit_job("canary-1b-v2-finetune_spec-aug")

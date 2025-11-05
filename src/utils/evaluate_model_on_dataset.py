@@ -241,7 +241,7 @@ def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRMode
 
         if config.decoding_config is not None:
             logger.info("Changing decoding strategy...")
-            asr_model.change_decoding_strategy(decoding_config)
+            asr_model.change_decoding_strategy(config.decoding_config)
     else:
         asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.from_pretrained(
             model_name=config.model_id, map_location=device

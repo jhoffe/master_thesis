@@ -8,3 +8,10 @@ model_id: null
 restore_from: 'artifact://canary-1b-v2-finetune_26722971:latest/canary-1b-v2-finetune.nemo'
 nemo_model: true
 language: 'da'
+
+decoding_config:
+  strategy: 'beam'
+  beam:
+    ngram_lm_model: '/work3/s204071/master_thesis/kenlm_parakeet_0.6b.arpa.nemo'
+    ngram_lm_alpha: 0.2
+    beam_size: 4
