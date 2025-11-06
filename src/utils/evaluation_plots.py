@@ -81,6 +81,3 @@ def make_plots():
     )
 
     logger.info("All plots generated.")
-
-if __name__ == "__main__":
-    main()
