@@ -143,6 +143,12 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         pitch_data = pitch_data.rename(columns={"id_recording": "id"})
         
         df = df.merge(pitch_data, on="id", how="left")
+
+    # compute number of words in label column
+    #df["num_words"] = df["label"].apply(lambda x: len(x.split()))
+
+    # compute number of words per second
+    #df["words_per_sec"] = df["num_words"] / df["clip_length"]
         
     return df
 

@@ -132,6 +132,24 @@ def prepare_test_sets() -> None:
         logger.info(f"Dataset {dataset_name} loaded with {len(evaluation_dataset)} samples.")
         # compute clip lengths
         clip_lengths = [x["audio"]['array'].shape[0] / 16000 for x in evaluation_dataset]
+
+        # compute words pr sample (coral has "text" field, fleurs has "raw transcription" field)
+        if dataset_name == "coral-v2":
+            words_per_sample = [len(x["text"].split()) for x in evaluation_dataset]
+        elif dataset_name == "fleurs":
+            words_per_sample = [len(x["raw_transcription"].split()) for x in evaluation_dataset]
+        else:
+            raise ValueError(f"Unknown dataset: {dataset_name}")
+        
+        # compute rms energy
+        rms_energies = [np.sqrt(np.mean(x["audio"]['array']**2)) for x in evaluation_dataset]
+
+        # compute loudness in dB
+        loudness_db = [20 * np.log10(rms + 1e-9) for rms in rms_energies]
+        
+        # compute word rate (words per second)
+        word_rates = [words / length if length > 0 else 0.0 for words, length in zip(words_per_sample, clip_lengths)]
+
         logger.info(f"Processing samples in dataset: {dataset_name} with joblib...")
         n_jobs = int(os.getenv("N_JOBS", os.cpu_count() or 1))
         samples = list(evaluation_dataset)
@@ -158,6 +176,15 @@ def prepare_test_sets() -> None:
         
         # make clip length column
         processed_df["clip_length"] = np.array(clip_lengths)
+
+        # make word rate column
+        processed_df["word_rate"] = np.array(word_rates)
+
+        # make word count column
+        processed_df["word_count"] = np.array(words_per_sample)
+
+        # make loudness column
+        processed_df["loudness"] = np.array(loudness_db)
 
         # add dataset name column
         processed_df["dataset_name"] = dataset_name

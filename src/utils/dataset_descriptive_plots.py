@@ -24,6 +24,9 @@ METRICS = [
     "mean_pitch_hz",
     "median_pitch_hz",
     "voiced_ratio",
+    "word_rate",
+    "word_count",
+    "loudness",
 ]
 
 
@@ -35,6 +38,8 @@ FORMAT_DICT = {
     "mean_pitch_hz": "Mean Pitch (Hz)",
     "median_pitch_hz": "Median Pitch (Hz)",
     "voiced_ratio": "Voiced Ratio",
+    "word_rate": "Word Rate (words/s)",
+    "word_count": "Word Count",
 }
 
 

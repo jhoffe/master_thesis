@@ -293,6 +293,8 @@ def plot_box_metric(
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         fname = f"{metric}_box_by_model{'_faceted' if separate_by_dataset else ''}.png"
+        if showfliers:
+            fname = fname.replace(".png", "_with_outliers.png")
         fig.savefig(Path(save_dir) / fname, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
@@ -321,3 +323,10 @@ def make_all_plots(
     plot_box_metric(data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
     plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
     plot_box_metric(data, "semantic_distance", separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+
+    plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(data, "semantic_distance", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)

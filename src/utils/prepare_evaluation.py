@@ -25,6 +25,9 @@ MODELS = [
     "seamless-m4t-v2-large",
     "parakeet-tdt-0.6b-v3",
     "canary-1b-v2",
+    "canary-1b-v2_finetuned_spec-aug",
+    "parakeet-tdt-0.6b-v3_finetuned_spec-aug",
+
 ]
 
 DATASETS = [
