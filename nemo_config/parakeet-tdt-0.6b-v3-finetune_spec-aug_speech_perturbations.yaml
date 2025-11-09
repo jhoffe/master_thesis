@@ -1,18 +1,12 @@
 defaults:
-  - model: parakeet-tdt-0.6b-v3
+  - model: parakeet-tdt-0.6b-v3_speech_perturbations
   - trainer: parakeet-tdt-0.6b-v3
   - exp_manager: base_single
 
-name: 'parakeet-tdt-0.6b-v3-finetune'
+name: 'parakeet-tdt-0.6b-v3-finetune_spec-aug_speech_perturbations'
 
 seed: 15
 
 # use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
 init_from_pretrained_model: nvidia/parakeet-tdt-0.6b-v3 # path to nemo model
-
-model:
-  spec_augment:
-    _target_: nemo.collections.asr.modules.SpectrogramAugmentation
-    freq_masks: 0
-    time_masks: 0

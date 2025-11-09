@@ -1,15 +1,15 @@
 defaults:
-  - model: parakeet-tdt-0.6b-v3
-  - trainer: parakeet-tdt-0.6b-v3
-  - exp_manager: base_single
+  - model: canary-1b-v2_30-buckets
+  - trainer: canary-1b-v2
+  - exp_manager: base_finetune
 
-name: 'parakeet-tdt-0.6b-v3-finetune'
+name: 'canary-1b-v2-finetune_30-buckets'
 
 seed: 15
 
 # use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
-init_from_pretrained_model: nvidia/parakeet-tdt-0.6b-v3 # path to nemo model
+init_from_pretrained_model: nvidia/canary-1b-v2 # path to nemo model
 
 model:
   spec_augment:

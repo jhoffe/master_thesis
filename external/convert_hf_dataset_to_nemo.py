@@ -290,14 +290,23 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
     Returns:
         Tuple of (manifest_lines, manifest_sp_lines) where each is a list of manifest entries.
     """
-    audio_filepath = sample["audio"]["path"].split("::")[0].replace("zip://", "")
-    audio_filepath = os.path.abspath(os.path.join(basedir, audio_filepath))
-    audio_filepath = prepare_audio_filepath(audio_filepath)
+    raw_audio_path = sample["audio"]["path"].split("::")[0].replace("zip://", "")
+    raw_audio_path = os.path.normpath(raw_audio_path.lstrip(os.sep))
+
+    relative_dir = os.path.dirname(raw_audio_path)
+    filename_root = os.path.splitext(os.path.basename(raw_audio_path))[0]
+
+    def build_output_filepath(subdir_name: str) -> str:
+        parts = [basedir, subdir_name]
+        if relative_dir:
+            parts.append(relative_dir)
+        target_dir = os.path.join(*parts)
+        target_path = os.path.join(target_dir, f"{filename_root}.flac")
+        return prepare_audio_filepath(os.path.abspath(target_path))
 
     audio = sample["audio"]["array"]
     text = sample[cfg.text_column]
 
-    # Create a copy of sample metadata without large components
     sample_metadata = {
         k: v for k, v in sample.items() if k not in ["audio", cfg.text_column, "file"]
     }
@@ -305,10 +314,8 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
     manifest_lines = []
     manifest_sp_lines = []
 
-    # Process speed perturbations if configured
     if cfg.speed_perturb is not None:
         for speed in cfg.speed_perturb:
-            # Apply speed perturbation
             perturbed_audio = librosa.resample(
                 y=audio,
                 orig_sr=cfg.sampling_rate,
@@ -316,8 +323,7 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
                 res_type="kaiser_best",
             )
 
-            audio_filepath_perturbed = audio_filepath.split(".flac")[0]
-            audio_filepath_perturbed += f"_sp={speed:.2f}.flac"
+            audio_filepath_perturbed = build_output_filepath(f"sp_{speed:.2f}")
 
             soundfile.write(
                 audio_filepath_perturbed,
@@ -340,7 +346,8 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
             manifest_line.update(sample_metadata)
             manifest_sp_lines.append(manifest_line)
 
-    # Write the original audio file
+    audio_filepath = build_output_filepath("standard")
+
     soundfile.write(
         audio_filepath,
         audio,
@@ -348,7 +355,6 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
         format="flac",
     )
 
-    # Create manifest line for original audio
     manifest_line = {
         "audio_filepath": audio_filepath,
         "text": text,
@@ -364,7 +370,7 @@ def process_single_sample(sample, cfg: HFDatasetConversionConfig, basedir: str):
     manifest_lines.append(manifest_line)
 
     if cfg.speed_perturb is not None:
-        manifest_sp_lines.append(manifest_line)
+        manifest_sp_lines.append(dict(manifest_line))
 
     return manifest_lines, manifest_sp_lines
 

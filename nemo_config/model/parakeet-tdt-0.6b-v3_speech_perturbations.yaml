@@ -1,6 +1,6 @@
 defaults:
   - base_finetune
-  - train_ds: train_ds_parakeet
+  - train_ds: train_ds_parakeet_speech_perturbations
   - validation_ds: base_validation_dataset
   - test_ds: base_test_dataset
 

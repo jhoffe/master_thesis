@@ -15,19 +15,18 @@
 
 import importlib
 import math
-import sys
 from numbers import Number
+import sys
 from typing import Iterable, Literal
 
 import click
-import lightning.pytorch as pl
-import torch
 from lhotse import compute_num_samples
-from omegaconf import OmegaConf
-
+import lightning.pytorch as pl
+from loguru import logger
 from nemo.collections.asr.models.asr_model import ASRModel
 from nemo.core.neural_types import AudioSignal, LabelsType, LengthsType, MaskType, NeuralType
-from nemo.utils import logging
+from omegaconf import OmegaConf
+import torch
 
 
 class ProfilingBatchGenerator:
@@ -264,6 +263,13 @@ class FloatList(click.Option):
     help="Path to the training configuration file for MODULE_NAME.",
 )
 @click.option(
+    "-d",
+    "--dataset-config-path",
+    type=str,
+    default=None,
+    help="Path to the dataset configuration file.",
+)
+@click.option(
     "-o", "--optimizer-name", type=str, default="adamw", help="Name of optimizer to use."
 )
 @click.option(
@@ -335,6 +341,7 @@ def oomptimizer(
     pretrained_name: str | None,
     module_name: str | None,
     config_path: str | None,
+    dataset_config_path: str | None,
     optimizer_name: str,
     buckets: list[float],
     threshold: float,
@@ -380,8 +387,22 @@ def oomptimizer(
             fg="yellow",
         )
         sys.exit(1)
-    logging.setLevel(logging.CRITICAL)
     torch.cuda.set_per_process_memory_fraction(memory_fraction, device)
+
+    if dataset_config_path is not None:
+        logger.info(f"Loading dataset config from {dataset_config_path}.")
+        conf = OmegaConf.load(dataset_config_path)
+
+        if not hasattr(conf, "bucket_duration_bins"):
+            click.secho(
+                f"Training config at {dataset_config_path} is missing the 'bucket_duration_bins' attribute.",
+                fg="red",
+            )
+            sys.exit(1)
+
+        buckets: list[list[float]] = OmegaConf.to_container(conf.bucket_duration_bins)
+        buckets = [tuple(item) for item in buckets]
+        logger.info(f"Using bucket duration bins from dataset config: {buckets}.")
 
     trainer = pl.Trainer(barebones=True)
     trainer.log_every_n_steps = 1000000
@@ -428,6 +449,9 @@ def oomptimizer(
         and all(isinstance(v, Number) for v in item)
         for item in buckets
     )
+
+    logger
+
     # Determine modality for input and output.
     modalities = [
         (
@@ -583,6 +607,18 @@ def oomptimizer(
         "\tbucket_batch_size=[" + ",".join(str(bs) for seqlen, bs in final_profile) + "]",
         bold=True,
     )
+
+    def prepare_name(model_name: str, dataset_config_path: str) -> str:
+        safe_model_name = model_name.replace("/", "_").replace("\\", "_")
+        safe_dataset_name = dataset_config_path.split("/")[-1].replace(".", "_")
+        return f"{safe_model_name}__{safe_dataset_name}"
+
+    with open(
+        f"models/oomptimizer_{prepare_name(pretrained_name, dataset_config_path)}.yaml", "w"
+    ) as f:
+        f.write("bucket_batch_size: [")
+        f.write(",".join(str(bs) for seqlen, bs in final_profile))
+        f.write("]\n")
 
 
 if __name__ == "__main__":

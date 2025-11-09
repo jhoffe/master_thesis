@@ -16,11 +16,14 @@ if __name__ == "__main__":
         job_name=job_name,
         num_cores=32,
         walltime="24:00",
-        memory="2GB",
+        memory="8GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
         error_file=f"logs/{job_name}.%J.err",
+        email=os.environ.get("HPC_EMAIL_ADDRESS"),
+        notify_on_start=os.environ.get("HPC_NOTIFY_ON_START") == "1",
+        notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
     )
 
     with Submittor(opts) as s:

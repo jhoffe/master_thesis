@@ -72,10 +72,16 @@ def main(
 
     # Default configs to submit if none specified
     default_configs = [
-        "parakeet-tdt-0.6b-v3-finetune_spec-aug",
-        "canary-1b-v2-finetune_spec-aug",
+        # "parakeet-tdt-0.6b-v3-finetune_spec-aug",
+        # "canary-1b-v2-finetune_spec-aug",
         # "parakeet-tdt-0.6b-v3-finetune",
         # "canary-1b-v2-finetune",
+        # "canary-1b-v2-finetune_12-buckets",
+        "canary-1b-v2-finetune_speech_perturbations_30-buckets",
+        "canary-1b-v2-finetune_spec-aug_speech_perturbations_30-buckets",
+        "parakeet-tdt-0.6b-v3-finetune_speech_perturbations",
+        "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech_perturbations",
+        "parakeet-tdt-0.6b-v3-finetune",
     ]
 
     # Use provided configs or default to all

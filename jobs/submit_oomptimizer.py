@@ -26,7 +26,7 @@ def main(gpu_mem: Annotated[GPUMem, typer.Option()] = GPUMem.GB80):
         num_cores=4,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="00:30",
+        walltime="04:00",
         memory="8GB",
         working_directory=os.environ.get("HPC_PATH"),
         # Uncomment to direct outputs:

@@ -1,0 +1,4 @@
+defaults:
+  - base_finetune
+  - train_ds: train_ds_canary_30_buckets_speech_perturbations
+  - validation_ds: lhotse_validation_dataset

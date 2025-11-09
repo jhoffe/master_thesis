@@ -24,7 +24,7 @@ dependencies = [
   "ruff>=0.12.11",
   "rust-just>=1.43.0",
   "soundfile>=0.13.1",
-  "torch>=2.8.0",
+  "torch>=2.9.0",
   "torchcodec>=0.7.0",
   "tqdm>=4.67.1",
   "transformers>=4.53.0",
@@ -54,6 +54,7 @@ dependencies = [
   "requests>=2.32.5",
   "speechbrain>=1.0.3",
   "resampy>=0.4.3",
+  "torchaudio>=2.9.0",
 ]
 requires-python = "~=3.10.0"
 
@@ -79,13 +80,20 @@ explicit = true
 
 [tool.uv.sources]
 subjob = { git = "ssh://git@github.com/jhoffe/subjob" }
-torch = [
-  { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
-]
 torchvision = [
   { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+torchaudio = [
+  { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torch = [
+  { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
 nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo", branch = "thesis" }
 
 [tool.uv]
 package = true
+
+[tool.pyrefly]
+project-includes = ["**/*.py*"]
