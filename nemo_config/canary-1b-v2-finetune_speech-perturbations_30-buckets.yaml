@@ -1,9 +1,9 @@
 defaults:
-  - model: canary-1b-v2_12-buckets_speech_perturbations
+  - model: canary-1b-v2_30-buckets_speech_perturbations
   - trainer: canary-1b-v2
   - exp_manager: base_finetune
 
-name: 'canary-1b-v2-finetune_12-buckets_speech_perturbations'
+name: 'canary-1b-v2-finetune_30-buckets_speech-perturbations'
 
 seed: 15
 

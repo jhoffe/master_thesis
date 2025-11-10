@@ -11,9 +11,8 @@ wandb_logger_kwargs:
 checkpoint_callback_params:
   monitor: 'coralval_wer'
   mode: 'min'
-  save_top_k: 5
+  save_top_k: 1
   always_save_nemo: true
   save_nemo_on_train_end: true
-  save_last: true
   auto_insert_metric_name: false
   filename: '${name}_coralval_wer={coralval_wer:.2f}_fleursval_wer={fleursval_wer:.2f}_step={step}'

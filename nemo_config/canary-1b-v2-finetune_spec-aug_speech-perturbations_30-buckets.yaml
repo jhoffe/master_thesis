@@ -3,7 +3,7 @@ defaults:
   - trainer: canary-1b-v2
   - exp_manager: base_finetune
 
-name: 'canary-1b-v2-finetune_30-buckets_spec-aug_speech_perturbations'
+name: 'canary-1b-v2-finetune_30-buckets_spec-aug_speech-perturbations'
 
 seed: 15
 

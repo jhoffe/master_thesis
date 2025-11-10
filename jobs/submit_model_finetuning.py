@@ -77,10 +77,10 @@ def main(
         # "parakeet-tdt-0.6b-v3-finetune",
         # "canary-1b-v2-finetune",
         # "canary-1b-v2-finetune_12-buckets",
-        "canary-1b-v2-finetune_speech_perturbations_30-buckets",
-        "canary-1b-v2-finetune_spec-aug_speech_perturbations_30-buckets",
-        "parakeet-tdt-0.6b-v3-finetune_speech_perturbations",
-        "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech_perturbations",
+        "canary-1b-v2-finetune_speech-perturbations_30-buckets",
+        "canary-1b-v2-finetune_spec-aug_speech-perturbations_30-buckets",
+        "parakeet-tdt-0.6b-v3-finetune_speech-perturbations",
+        "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech-perturbations",
         "parakeet-tdt-0.6b-v3-finetune",
     ]
 
