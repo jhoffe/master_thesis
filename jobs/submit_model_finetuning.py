@@ -81,7 +81,6 @@ def main(
         "canary-1b-v2-finetune_spec-aug_speech-perturbations_30-buckets",
         "parakeet-tdt-0.6b-v3-finetune_speech-perturbations",
         "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech-perturbations",
-        "parakeet-tdt-0.6b-v3-finetune",
     ]
 
     # Use provided configs or default to all
