@@ -1,0 +1,9 @@
+defaults:
+  - base_model
+
+name: 'parakeet-tdt-0.6b-v3_finetune_speed-perturbations'
+
+# Evaluation parameters
+model_id: null
+restore_from: 'artifact://parakeet-tdt-0.6b-v3-finetune_speech-perturbations_26885395:latest/parakeet-tdt-0.6b-v3-finetune_speech-perturbations.nemo'
+nemo_model: true
