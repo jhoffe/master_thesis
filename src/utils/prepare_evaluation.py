@@ -57,6 +57,7 @@ EVALUATION_COMBINATIONS = [
 ]
 
 SENTENCE_TRANSFORMER_MODEL = "KennethTM/MiniLM-L6-danish-encoder"
+#SENTENCE_TRANSFORMER_MODEL = "google/embeddinggemma-300m"
 
 def prepare_evaluation_data() -> None:
     """

@@ -106,6 +106,9 @@ def plot_summary_scatter(
     """
     data = df.copy()
 
+    # filter out models not in MODELS
+    data = data[data["model"].isin(MODELS)]
+
     # stable orders
     if models_order is not None:
         model_order = [m for m in models_order if m in data["model"].unique()]
