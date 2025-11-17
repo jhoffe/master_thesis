@@ -1,7 +1,7 @@
 defaults:
   - base_model
 
-name: 'parakeet-tdt-0.6b-v3_finetuned_speed-perturbations'
+name: 'parakeet-tdt-0.6b-v3_finetune_speed-perturbations'
 
 # Evaluation parameters
 model_id: null
