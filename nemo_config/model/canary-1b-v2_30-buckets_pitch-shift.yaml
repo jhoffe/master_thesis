@@ -1,0 +1,5 @@
+defaults:
+  - base_finetune
+  - base_pitch-shift
+  - train_ds: train_ds_canary_30_buckets
+  - validation_ds: lhotse_validation_dataset

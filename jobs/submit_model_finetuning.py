@@ -13,7 +13,7 @@ def submit_job(config_name: str):
     job_name = f"finetune-model-{config_name}"
 
     opts = LSFSubmissionOptions(
-        queue="gpua100",
+        queue="gpuh100",
         job_name=job_name,
         num_cores=9,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
@@ -77,10 +77,12 @@ def main(
         # "parakeet-tdt-0.6b-v3-finetune",
         # "canary-1b-v2-finetune",
         # "canary-1b-v2-finetune_12-buckets",
-        "canary-1b-v2-finetune_speech-perturbations_30-buckets",
-        "canary-1b-v2-finetune_spec-aug_speech-perturbations_30-buckets",
-        "parakeet-tdt-0.6b-v3-finetune_speech-perturbations",
-        "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech-perturbations",
+        # "canary-1b-v2-finetune_speech-perturbations_30-buckets",
+        # "canary-1b-v2-finetune_spec-aug_speech-perturbations_30-buckets",
+        # "parakeet-tdt-0.6b-v3-finetune_speech-perturbations",
+        # "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech-perturbations",
+        "canary-1b-v2-finetune_30-buckets_pitch-shift",
+        "parakeet-tdt-0.6b-v3-finetune_pitch-shift",
     ]
 
     # Use provided configs or default to all
