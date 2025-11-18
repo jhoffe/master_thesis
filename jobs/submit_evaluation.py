@@ -26,7 +26,7 @@ def run_for_model(
         ]:
             walltime = "03:00"
     else:
-        walltime = "00:20"
+        walltime = "00:25"
         if model_arg in [
             "hviske-v2",
             "hviske-v3-conversation",
