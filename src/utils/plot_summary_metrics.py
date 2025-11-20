@@ -9,45 +9,20 @@ import seaborn as sns
 
 sns.set(style="whitegrid")
 
-# =========================
-# Configuration
-# =========================
 MODELS = [
+    "whisper-large-v3",
+    "whisper-large-v3-turbo",
     "roest-wav2vec2-315m-v2",
     "roest-wav2vec2-1B-v2",
     "roest-wav2vec2-2B-v2",
     "hviske-v3-conversation",
     "hviske-v2",
     "roest-whisper-large-v1",
-    "whisper-large-v3",
-    "whisper-large-v3-turbo",
     "seamless-m4t-v2-large",
     "parakeet-tdt-0.6b-v3",
     "canary-1b-v2",
 ]
 
-DATASETS = ["coral-v2", "fleurs"]
-
-SUBSETS = {
-    "coral-v2": "read_aloud",
-    "fleurs": "da_dk",
-}
-
-SPLITS = {
-    "coral-v2": "test",
-    "fleurs": "test",
-}
-
-EVALUATION_COMBINATIONS = [
-    {
-        "model": m,
-        "dataset_name": d,
-        "dataset_subset": SUBSETS[d],
-        "dataset_split": SPLITS[d],
-    }
-    for m in MODELS
-    for d in DATASETS
-]
 
 FORMAT_DICT = {
     "co2_g": "$CO_2$ Emissions (g)",
@@ -59,6 +34,25 @@ FORMAT_DICT = {
     "model": "Model",
     "coral-v2": "CoRal v2",
     "fleurs": "Fleurs",
+    "whisper-large-v3": "Whisper-L",
+    "whisper-large-v3-turbo": "Whisper-L-Turbo",
+    "roest-wav2vec2-315m-v2": "Røst-W2V2-315M",
+    "roest-wav2vec2-1B-v2": "Røst-W2V2-1B",
+    "roest-wav2vec2-2B-v2": "Røst-W2V2-2B",
+    "hviske-v3-conversation": "Hviske-v3-Conv",
+    "hviske-v2": "Hviske-v2",
+    "seamless-m4t-v2-large": "Seamless-M4T-L",
+    "roest-whisper-large-v1": "Røst-Whisper-L",
+    "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
+    "canary-1b-v2": "Canary-1B",
+    "parakeet-tdt-0.6b-v3_finetune": "Parakeet-TDT_FT",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug": "Parakeet-TDT_FT+SA",
+    "parakeet-tdt-0.6b-v3_finetune_speed-perturbations": "Parakeet-TDT_FT+SP",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations": "Parakeet-TDT_FT+SA+SP",
+    "canary-1b-v2_finetune": "Canary-1B_FT",
+    "canary-1b-v2_finetune_spec-aug": "Canary-1B_FT+SA",
+    "canary-1b-v2_finetune_speed-perturbations": "Canary-1B_FT+SP",
+    "canary-1b-v2_finetune_spec-aug_speed-perturbations": "Canary-1B_FT+SA+SP",
 }
 
 def build_model_handles(model_order: Sequence[str], model_palette: Dict[str, str]) -> List[Line2D]:
@@ -86,6 +80,7 @@ def plot_summary_scatter(
     df: pd.DataFrame,
     x: str,
     y: str,
+    models: Optional[Sequence[str]] = None,
     save_dir: Optional[str] = None,
     width: int = 8,
     height: int = 6,
@@ -94,9 +89,7 @@ def plot_summary_scatter(
     fontsize: int = 12,
     separate_by_dataset: bool = False,
     add_labels: bool = False,
-    models_order: Optional[Sequence[str]] = None,
-    model_legend_loc: str = "upper left",
-    dataset_legend_loc: str = "lower right",
+    models_order: Optional[Sequence[str]] = None
 ):
     """
     Scatter for summary dataframe.
@@ -107,7 +100,8 @@ def plot_summary_scatter(
     data = df.copy()
 
     # filter out models not in MODELS
-    data = data[data["model"].isin(MODELS)]
+    if models is not None:
+        data = data[data["model"].isin(models)]
 
     # stable orders
     if models_order is not None:
@@ -161,7 +155,6 @@ def plot_summary_scatter(
             handles=build_model_handles(model_order=model_order, model_palette=model_palette),
             labels=[_fmt(m) for m in model_order],
             title=model_title,
-            loc=model_legend_loc,
             fontsize=fontsize,
             frameon=True,
         )
@@ -172,7 +165,6 @@ def plot_summary_scatter(
             handles=build_dataset_handles(ds_order=ds_order, ds_markers=ds_markers),
             labels=[_fmt(d) for d in ds_order],
             title=dataset_title,
-            loc=dataset_legend_loc,
             fontsize=fontsize,
             frameon=True,
         )
@@ -235,7 +227,6 @@ def plot_summary_scatter(
             handles=build_model_handles(model_order=model_order, model_palette=model_palette),
             labels=[_fmt(m) for m in model_order],
             title=model_title,
-            loc=model_legend_loc,
             fontsize=fontsize,
             frameon=True,
         )
@@ -254,6 +245,7 @@ def plot_summary_scatter(
 
 def make_all_summary_plots(
     df: pd.DataFrame,
+    models: Optional[Sequence[str]] = None,
     save_dir: Optional[str] = None,
     width: int = 12,
     height: int = 7,
@@ -261,8 +253,6 @@ def make_all_summary_plots(
     point_size: int = 100,
     separate_by_dataset: bool = False,
     models_order: Optional[Sequence[str]] = None,
-    model_legend_loc: str = "upper left",
-    dataset_legend_loc: str = "lower right",
     fontsize: int = 14
 ) -> None:
     
@@ -277,8 +267,6 @@ def make_all_summary_plots(
         point_size: Size of the scatter points.
         separate_by_dataset: Whether to create faceted plots by dataset.
         models_order: Optional order of models for consistent coloring.
-        model_legend_loc: Location of the model legend.
-        dataset_legend_loc: Location of the dataset legend.
     """
     summary_df = df.copy()
 
@@ -286,10 +274,9 @@ def make_all_summary_plots(
     logger.info("Plotting WER vs energy in same facet...")
     plot_summary_scatter(
         summary_df, 
+        models=models,
         x="energy_kWh", 
-        y="WER", 
-        model_legend_loc="upper right", 
-        dataset_legend_loc="upper center", 
+        y="WER",
         fontsize=fontsize, 
         save_dir=save_dir,
         width=width,
@@ -303,10 +290,9 @@ def make_all_summary_plots(
     logger.info("Plotting WER vs energy faceted by dataset...")
     plot_summary_scatter(
         summary_df, 
+        models=models,
         x="energy_kWh", 
-        y="WER", 
-        model_legend_loc="upper right", 
-        dataset_legend_loc="lower right", 
+        y="WER",
         fontsize=fontsize, 
         save_dir=save_dir,
         width=width,
@@ -319,11 +305,10 @@ def make_all_summary_plots(
     # WER vs RTFx
     logger.info("Plotting WER vs RTFx...")
     plot_summary_scatter(
-        summary_df, 
+        summary_df,
+        models=models,
         x="RTFx", 
-        y="WER", 
-        model_legend_loc="upper center", 
-        dataset_legend_loc="lower right", 
+        y="WER",
         fontsize=fontsize, 
         save_dir=save_dir,
         width=width,

@@ -2,7 +2,7 @@ import ast
 import json
 from pathlib import Path
 import re
-from typing import List
+from typing import List, Dict
 
 from carbontracker import parser
 from evaluate.loading import load as load_metric
@@ -40,18 +40,48 @@ SPLITS = {
     "fleurs": "test",
 }
 
-EVALUATION_COMBINATIONS = [
-    {
-        "model": model,
-        "dataset_name": dataset,
-        "dataset_subset": SUBSETS[dataset],
-        "dataset_split": SPLITS[dataset]
-    }
-    for model in MODELS
-    for dataset in DATASETS
-]
-
 SENTENCE_TRANSFORMER_MODEL = "KennethTM/MiniLM-L6-danish-encoder"
+
+
+def provide_eval_combinations(models: List[str], datasets: List[str], subsets: dict, splits: dict) -> List[dict]:
+    return [
+        {
+            "model": model,
+            "dataset_name": dataset,
+            "dataset_subset": subsets[dataset],
+            "dataset_split": splits[dataset]
+        }
+        for model in models
+        for dataset in datasets
+    ]
+
+
+def filter_eval_grid(
+    df: pd.DataFrame,
+    models: List[str] = MODELS,
+    datasets: List[str] = DATASETS,
+    subsets: Dict[str, str] = SUBSETS,
+    splits: Dict[str, str] = SPLITS,
+) -> pd.DataFrame:
+    """
+    Return df filtered to the exact evaluation combinations you specified.
+    Enforces categorical ordering for model and dataset_name.
+    """
+    eval_combos = [
+        {
+            "model": m,
+            "dataset_name": d,
+            "dataset_subset": subsets[d],
+            "dataset_split": splits[d],
+        }
+        for m in models
+        for d in datasets
+    ]
+    key_cols = ["model", "dataset_name", "dataset_subset", "dataset_split"]
+    merged = df.merge(pd.DataFrame(eval_combos), on=key_cols, how="inner").copy()
+    merged["model"] = pd.Categorical(merged["model"], categories=models, ordered=True)
+    merged["dataset_name"] = pd.Categorical(merged["dataset_name"], categories=datasets, ordered=True)
+    return merged
 
 
 def to_dict_safe(x):
