@@ -4,9 +4,7 @@ Usage:
     python src/scripts/evaluate_model.py [key=value] [key=value] ...
 """
 
-
 from dotenv import load_dotenv
-from hydra.core.config_store import ConfigStore
 from loguru import logger
 
 from utils.ignore_warnings import ignore_warnings
@@ -20,7 +18,7 @@ def main() -> None:
         config:
             The Hydra configuration object.
     """
-    
+
     logger.info("Starting processing of results data...")
 
     prepare_test_sets()

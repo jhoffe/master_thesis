@@ -8,7 +8,6 @@ from evaluate.loading import load as load_metric
 from hydra.core.hydra_config import HydraConfig
 from loguru import logger
 import nemo.collections.asr as nemo_asr
-from omegaconf import DictConfig
 import pandas as pd
 import torch
 from transformers import (

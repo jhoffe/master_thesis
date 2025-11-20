@@ -2,6 +2,7 @@
 Prepare evaluation data by combining detailed results, computing sentence embeddings,
 and calculating average metrics.
 """
+
 from pathlib import Path
 
 from loguru import logger
@@ -55,14 +56,15 @@ EVALUATION_COMBINATIONS = [
         "model": model,
         "dataset_name": dataset,
         "dataset_subset": SUBSETS[dataset],
-        "dataset_split": SPLITS[dataset]
+        "dataset_split": SPLITS[dataset],
     }
     for model in MODELS
     for dataset in DATASETS
 ]
 
 SENTENCE_TRANSFORMER_MODEL = "KennethTM/MiniLM-L6-danish-encoder"
-#SENTENCE_TRANSFORMER_MODEL = "google/embeddinggemma-300m"
+# SENTENCE_TRANSFORMER_MODEL = "google/embeddinggemma-300m"
+
 
 def prepare_evaluation_data() -> None:
     """
@@ -77,9 +79,7 @@ def prepare_evaluation_data() -> None:
     detailed_results_df = combine_all_detailed_results(eval_combination=EVALUATION_COMBINATIONS)
     logger.info("Saving combined detailed results to parquet...")
     save_to_parquet(
-        df=detailed_results_df,
-        base_path=base_path,
-        file_name="combined_detailed_results.parquet"
+        df=detailed_results_df, base_path=base_path, file_name="combined_detailed_results.parquet"
     )
     logger.info(f"Saved {len(detailed_results_df)} rows of detailed results.")
 
@@ -93,9 +93,11 @@ def prepare_evaluation_data() -> None:
     save_to_parquet(
         df=detailed_results_with_embeddings_df,
         base_path=base_path,
-        file_name="combined_detailed_results_with_embeddings.parquet"
+        file_name="combined_detailed_results_with_embeddings.parquet",
     )
-    logger.info(f"Saved {len(detailed_results_with_embeddings_df)} rows of detailed results with embeddings.")
+    logger.info(
+        f"Saved {len(detailed_results_with_embeddings_df)} rows of detailed results with embeddings."
+    )
 
     logger.info("Computing average metrics for detailed results...")
     average_metrics_df = compute_average_metrics_for_detailed_results(
@@ -105,9 +107,7 @@ def prepare_evaluation_data() -> None:
 
     logger.info("Saving average metrics to parquet...")
     save_to_parquet(
-        df=average_metrics_df,
-        base_path=base_path,
-        file_name="average_metrics.parquet"
+        df=average_metrics_df, base_path=base_path, file_name="average_metrics.parquet"
     )
     logger.info(f"Saved {len(average_metrics_df)} rows of average metrics.")
     logger.info("Evaluation data preparation complete.")

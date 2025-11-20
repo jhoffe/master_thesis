@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import pandas as pd
 from datasets import Dataset
 from loguru import logger
+import pandas as pd
 
 from utils.deep_evaluation_analysis_utils import (
     FORMAT_DICT,
@@ -15,36 +15,24 @@ from utils.deep_evaluation_analysis_utils import (
 )
 from utils.evaluation_utils import load_from_parquet
 
-
 # ==============================
 # Configuration
 # ==============================
 
-TARGET_METRICS = [
-    "WER", 
-    "CER", "semantic_distance"
-    "semantic_distance"
-]
+TARGET_METRICS = ["WER", "CER", "semantic_distancesemantic_distance"]
 FEATURE_METRICS = [
-    "mean_pitch_hz", 
-    "median_pitch_hz", 
-    "voiced_ratio", 
-    "word_rate", 
-    "word_count", 
-    "loudness", 
-    "clip_length"
+    "mean_pitch_hz",
+    "median_pitch_hz",
+    "voiced_ratio",
+    "word_rate",
+    "word_count",
+    "loudness",
+    "clip_length",
 ]
 
-MODELS = [
-    "roest-whisper-large-v1", 
-    "parakeet-tdt-0.6b-v3", 
-    "canary-1b-v2"
-]
+MODELS = ["roest-whisper-large-v1", "parakeet-tdt-0.6b-v3", "canary-1b-v2"]
 
-DATASETS = [
-    "fleurs",
-    "coral-v2"
-]
+DATASETS = ["fleurs", "coral-v2"]
 
 GROUPS = [
     "dialect_group",
@@ -58,7 +46,9 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
     """Perform deep evaluation analysis by loading evaluation data, getting top WER samples, and generating correlation plots."""
 
     logger.info("Loading evaluation data...")
-    df = load_from_parquet(Path("reports/metrics/combined_detailed_results_with_embeddings.parquet"))
+    df = load_from_parquet(
+        Path("reports/metrics/combined_detailed_results_with_embeddings.parquet")
+    )
 
     logger.info("Filtering evaluation data to specified grid...")
     df_filtered = df[df["model"].isin(MODELS) & df["dataset_name"].isin(DATASETS)]
@@ -68,16 +58,20 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
         top_samples = get_top_n_wer_samples(
             df_filtered=df_filtered,
             top_n=10,
-        dataset_names=DATASETS,
-        models=MODELS,
-    )
-    
+            dataset_names=DATASETS,
+            models=MODELS,
+        )
+
         for dataset_name in DATASETS:
             logger.info(f"Loading dataset: {dataset_name}...")
             if dataset_name == "coral-v2":
-                dataset = Dataset.load_from_disk("data/huggingface/datasets/test-sets/CoRal-project--coral-v2-read_aloud-test-unfiltered")
+                dataset = Dataset.load_from_disk(
+                    "data/huggingface/datasets/test-sets/CoRal-project--coral-v2-read_aloud-test-unfiltered"
+                )
             elif dataset_name == "fleurs":
-                dataset = Dataset.load_from_disk("data/huggingface/datasets/test-sets/google--fleurs-da_dk-test-unfiltered")
+                dataset = Dataset.load_from_disk(
+                    "data/huggingface/datasets/test-sets/google--fleurs-da_dk-test-unfiltered"
+                )
             ids = top_samples[dataset_name]
             for model in MODELS:
                 df_samples = get_samples(
@@ -92,11 +86,15 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
                 output_path = Path(f"{save_dir}/{model}_top_wer_samples.parquet")
                 df_samples.to_parquet(output_path)
 
-                logger.info(f"Saved top WER samples for model {model} on dataset {dataset_name} to {output_path}")
+                logger.info(
+                    f"Saved top WER samples for model {model} on dataset {dataset_name} to {output_path}"
+                )
 
     for dataset in DATASETS:
         for model in MODELS:
-            logger.info(f"Generating Spearman correlation plot for model {model} on dataset {dataset}...")
+            logger.info(
+                f"Generating Spearman correlation plot for model {model} on dataset {dataset}..."
+            )
             spearman_correlation_plot(
                 df_filtered=df_filtered,
                 target_metrics=TARGET_METRICS,
@@ -128,30 +126,18 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
         "51 to 60",
         "61 to 70",
         "71 to 80",
-        "81<"
+        "81<",
     ]
 
     df_filtered_coral["age_group"] = pd.cut(
-        df_filtered_coral["age"],
-        bins=age_bins,
-        labels=age_labels,
-        right=True,
-        include_lowest=True
+        df_filtered_coral["age"], bins=age_bins, labels=age_labels, right=True, include_lowest=True
     )
-    
+
     for group_col in GROUPS:
         logger.info(f"Generating mean WER by {group_col} and model plot for CoRal-v2 dataset...")
-        mean_wer_by_group(
-            df=df_filtered_coral, 
-            group_col=group_col, 
-            format_dict=FORMAT_DICT
-        )
+        mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
         for model_name, df_model in df_filtered_coral.groupby("model"):
             logger.info(f"Kruskal-Wallis test for model {model_name} on CoRal-v2 dataset...")
             kruskal_wallis(
-                df=df_model, 
-                model_name=model_name, 
-                format_dict=FORMAT_DICT, 
-                group_col=group_col
+                df=df_model, model_name=model_name, format_dict=FORMAT_DICT, group_col=group_col
             )
-

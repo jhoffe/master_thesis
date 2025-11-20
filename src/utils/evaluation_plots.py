@@ -1,12 +1,10 @@
 from pathlib import Path
 
-import datasets
 from loguru import logger
 
 from utils.evaluation_utils import (
-    load_from_parquet,
-    provide_eval_combinations,
     filter_eval_grid,
+    load_from_parquet,
 )
 from utils.plot_sentence_metrics import (
     make_all_plots,
@@ -44,6 +42,7 @@ SPLITS = {
     "fleurs": "test",
 }
 
+
 def make_plots():
     logger.info("Loading sentence wise evaluation data...")
     sentence_df = load_from_parquet(
@@ -68,9 +67,7 @@ def make_plots():
     )
 
     logger.info("Loading summary evaluation data...")
-    summary_df = load_from_parquet(
-        Path("reports/metrics/average_metrics.parquet")
-    )
+    summary_df = load_from_parquet(Path("reports/metrics/average_metrics.parquet"))
 
     logger.info("Generating summary evaluation plots...")
     make_all_summary_plots(

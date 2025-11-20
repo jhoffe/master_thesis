@@ -10,5 +10,6 @@ def main():
     make_plots()
     logger.info("Evaluation plots generation completed.")
 
+
 if __name__ == "__main__":
     main()

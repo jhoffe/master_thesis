@@ -55,19 +55,33 @@ FORMAT_DICT = {
     "canary-1b-v2_finetune_spec-aug_speed-perturbations": "Canary-1B_FT+SA+SP",
 }
 
+
 def build_model_handles(model_order: Sequence[str], model_palette: Dict[str, str]) -> List[Line2D]:
-        return [
-            Line2D([0], [0], marker="o", linestyle="None",
-                   markerfacecolor=model_palette[m], markeredgecolor="black",
-                   markersize=11)
-            for m in model_order
-        ]
+    return [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            linestyle="None",
+            markerfacecolor=model_palette[m],
+            markeredgecolor="black",
+            markersize=11,
+        )
+        for m in model_order
+    ]
+
 
 def build_dataset_handles(ds_order: Sequence[str], ds_markers: Dict[str, str]) -> List[Line2D]:
     return [
-        Line2D([0], [0], marker=ds_markers[d], linestyle="None",
-                markerfacecolor="gray", markeredgecolor="black",
-                markersize=11)
+        Line2D(
+            [0],
+            [0],
+            marker=ds_markers[d],
+            linestyle="None",
+            markerfacecolor="gray",
+            markeredgecolor="black",
+            markersize=11,
+        )
         for d in ds_order
     ]
 
@@ -89,7 +103,7 @@ def plot_summary_scatter(
     fontsize: int = 12,
     separate_by_dataset: bool = False,
     add_labels: bool = False,
-    models_order: Optional[Sequence[str]] = None
+    models_order: Optional[Sequence[str]] = None,
 ):
     """
     Scatter for summary dataframe.
@@ -131,7 +145,8 @@ def plot_summary_scatter(
         plt.figure(figsize=(width, height))
         ax = sns.scatterplot(
             data=data,
-            x=x, y=y,
+            x=x,
+            y=y,
             hue="model",
             style="dataset_name",
             hue_order=model_order,
@@ -142,10 +157,10 @@ def plot_summary_scatter(
             alpha=alpha,
             edgecolor="black",
             linewidth=0.4,
-            legend=False
+            legend=False,
         )
 
-        ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize+3)
+        ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize + 3)
         ax.set_xlabel(x_label, fontsize=fontsize)
         ax.set_ylabel(y_label, fontsize=fontsize)
         ax.tick_params(axis="both", labelsize=fontsize)
@@ -169,8 +184,8 @@ def plot_summary_scatter(
             frameon=True,
         )
         ax.add_artist(leg_dataset)
-        plt.setp(leg_model.get_title(), fontsize=fontsize+1) # for legend title
-        plt.setp(leg_dataset.get_title(), fontsize=fontsize+1) # for legend title
+        plt.setp(leg_model.get_title(), fontsize=fontsize + 1)  # for legend title
+        plt.setp(leg_dataset.get_title(), fontsize=fontsize + 1)  # for legend title
 
         if add_labels:
             for _, r in data.iterrows():
@@ -187,9 +202,13 @@ def plot_summary_scatter(
         }
 
         g = sns.FacetGrid(
-            data, col="dataset_name", col_order=ds_order,
-            height=height, aspect=width / (height * max(1, len(ds_order))),
-            sharex=False, sharey=True
+            data,
+            col="dataset_name",
+            col_order=ds_order,
+            height=height,
+            aspect=width / (height * max(1, len(ds_order))),
+            sharex=False,
+            sharey=True,
         )
 
         # draw each facet with its own marker
@@ -197,7 +216,8 @@ def plot_summary_scatter(
             sub = data[data["dataset_name"] == ds]
             sns.scatterplot(
                 data=sub,
-                x=x, y=y,
+                x=x,
+                y=y,
                 hue="model",
                 hue_order=model_order,
                 palette=model_palette,
@@ -213,13 +233,13 @@ def plot_summary_scatter(
             ax.set_xlabel(x_label, fontsize=fontsize)
             ax.set_ylabel(y_label, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
-            ax.set_title(_fmt(ds), fontsize=fontsize+2)
+            ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
             if add_labels:
                 for _, r in sub.iterrows():
                     ax.text(r[x], r[y], _fmt(r["model"]), fontsize=7, alpha=0.75)
 
-        g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize+3)
+        g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize + 3)
 
         # model legend on last facet
         ax0 = g.axes.flat[-1]
@@ -233,7 +253,7 @@ def plot_summary_scatter(
         ax0.add_artist(leg_model)
 
         fig = g.fig
-        plt.setp(leg_model.get_title(), fontsize=fontsize+1) # for legend title
+        plt.setp(leg_model.get_title(), fontsize=fontsize + 1)  # for legend title
 
     fig.tight_layout()
     if save_dir:
@@ -253,9 +273,8 @@ def make_all_summary_plots(
     point_size: int = 100,
     separate_by_dataset: bool = False,
     models_order: Optional[Sequence[str]] = None,
-    fontsize: int = 14
+    fontsize: int = 14,
 ) -> None:
-    
     """
     Make all summary plots for given metrics.
     Args:
@@ -273,11 +292,11 @@ def make_all_summary_plots(
     # WER vs CO2
     logger.info("Plotting WER vs energy in same facet...")
     plot_summary_scatter(
-        summary_df, 
+        summary_df,
         models=models,
-        x="energy_kWh", 
+        x="energy_kWh",
         y="WER",
-        fontsize=fontsize, 
+        fontsize=fontsize,
         save_dir=save_dir,
         width=width,
         height=height,
@@ -289,11 +308,11 @@ def make_all_summary_plots(
 
     logger.info("Plotting WER vs energy faceted by dataset...")
     plot_summary_scatter(
-        summary_df, 
+        summary_df,
         models=models,
-        x="energy_kWh", 
+        x="energy_kWh",
         y="WER",
-        fontsize=fontsize, 
+        fontsize=fontsize,
         save_dir=save_dir,
         width=width,
         height=height,
@@ -307,9 +326,9 @@ def make_all_summary_plots(
     plot_summary_scatter(
         summary_df,
         models=models,
-        x="RTFx", 
+        x="RTFx",
         y="WER",
-        fontsize=fontsize, 
+        fontsize=fontsize,
         save_dir=save_dir,
         width=width,
         height=height,
@@ -318,4 +337,3 @@ def make_all_summary_plots(
         separate_by_dataset=separate_by_dataset,
         models_order=models_order,
     )
-    

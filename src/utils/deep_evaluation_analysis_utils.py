@@ -1,16 +1,16 @@
 from pathlib import Path
 from typing import Dict, List
 
+from datasets import Dataset
+from loguru import logger
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scikit_posthocs as sp
-import seaborn as sns
-from datasets import Dataset
-from loguru import logger
 from scipy import stats
 from scipy.stats import kruskal
+import seaborn as sns
 from statsmodels.stats.multitest import multipletests
 
 FORMAT_DICT = {
@@ -84,11 +84,8 @@ SUB_DIALECT_TO_DIALECT = {
 
 
 def get_top_n_wer_samples(
-        df: pd.DataFrame,
-        dataset_names: List[str],
-        models: List[str],
-        top_n: int = 10
-    ) -> Dict[str, Dict[str, float]]:
+    df: pd.DataFrame, dataset_names: List[str], models: List[str], top_n: int = 10
+) -> Dict[str, Dict[str, float]]:
     """
     Get the top N samples with the highest WER for each model and dataset.
 
@@ -115,7 +112,9 @@ def get_top_n_wer_samples(
     return {"coral-v2": sample_ids_coral, "fleurs": sample_ids_fleurs}
 
 
-def get_samples(dataset: Dataset, dataframe: pd.DataFrame, model: str, ids: Dict[str, Dict[str, float]]) -> None:
+def get_samples(
+    dataset: Dataset, dataframe: pd.DataFrame, model: str, ids: Dict[str, Dict[str, float]]
+) -> None:
     """Get a sample from the dataset by its ID.
 
     Args:
@@ -128,7 +127,7 @@ def get_samples(dataset: Dataset, dataframe: pd.DataFrame, model: str, ids: Dict
     Returns:
         None
     """
-    
+
     logger.info(f"Getting samples for model: {model}")
     dataset_entries = []
     entry_dict = {}
@@ -149,27 +148,27 @@ def get_samples(dataset: Dataset, dataframe: pd.DataFrame, model: str, ids: Dict
             "WER": wer,
             "Semantic Distance": sem_dist,
             "Prediction": prediction,
-            "Label": label
+            "Label": label,
         }
-    
+
     df_samples = pd.DataFrame.from_dict(entry_dict, orient="index")
     return df_samples
 
 
 def star_from_p(p):
     if p < 0.001:
-        return '***'
+        return "***"
     elif p < 0.01:
-        return '**'
+        return "**"
     elif p < 0.05:
-        return '*'
+        return "*"
     else:
-        return 'ns'
-    
+        return "ns"
+
 
 def _fmt(format_dict: Dict[str, str], label: str) -> str:
     return format_dict.get(label, label)
-    
+
 
 def spearman_correlation_plot(
     df_filtered: pd.DataFrame,
@@ -191,8 +190,12 @@ def spearman_correlation_plot(
     if len(df_md) < 2:
         return  # not enough data for correlation
 
-    valid_targets = [m for m in target_metrics if m in df_md.columns and df_md[m].notna().sum() > 1]
-    valid_features = [m for m in feature_metrics if m in df_md.columns and df_md[m].notna().sum() > 1]
+    valid_targets = [
+        m for m in target_metrics if m in df_md.columns and df_md[m].notna().sum() > 1
+    ]
+    valid_features = [
+        m for m in feature_metrics if m in df_md.columns and df_md[m].notna().sum() > 1
+    ]
     if not valid_targets or not valid_features:
         return  # not enough valid metrics for correlation
 
@@ -211,7 +214,9 @@ def spearman_correlation_plot(
         yticklabels=[_fmt(format_dict, m) for m in valid_targets],
         cbar_kws={"label": "Spearman $\\rho$"},
     )
-    plt.title(f"Spearman Correlation: Sentence Measures vs Acoustic Features\nModel: {_fmt(format_dict, model)}, Dataset: {_fmt(format_dict, dataset)}")
+    plt.title(
+        f"Spearman Correlation: Sentence Measures vs Acoustic Features\nModel: {_fmt(format_dict, model)}, Dataset: {_fmt(format_dict, dataset)}"
+    )
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
     plt.tight_layout()
@@ -241,7 +246,7 @@ def spearman_correlation_plot(
     pvals_adj = np.full_like(pvals, np.nan, dtype=float)
 
     if mask_valid.sum() > 0:
-        _, p_corrected, _, _ = multipletests(pvals[mask_valid], alpha=alpha, method='fdr_bh')
+        _, p_corrected, _, _ = multipletests(pvals[mask_valid], alpha=alpha, method="fdr_bh")
         pvals_adj[mask_valid] = p_corrected
 
     p_adj_dict = {pairs[i]: pvals_adj[i] for i in range(len(pairs))}
@@ -250,22 +255,28 @@ def spearman_correlation_plot(
     for i, target in enumerate(valid_targets):
         for j, feature in enumerate(valid_features):
             p_adj = p_adj_dict[(target, feature)]
-            tag = 'NA' if np.isnan(p_adj) else star_from_p(p_adj)
+            tag = "NA" if np.isnan(p_adj) else star_from_p(p_adj)
             # put stars in top right corner of each cell
-            ax.text(j + 0.85, i + 0.25, tag, color='black', ha='right', va='center', fontsize=11)
+            ax.text(j + 0.85, i + 0.25, tag, color="black", ha="right", va="center", fontsize=11)
 
     # optional: add a caption about FDR
-    ax.figure.text(0.5, -0.02,
-                "Stars reflect Benjamini-Hochberg FDR-adjusted two-sided p-values per model dataset matrix.",
-                ha='center', va='top', fontsize=9)
+    ax.figure.text(
+        0.5,
+        -0.02,
+        "Stars reflect Benjamini-Hochberg FDR-adjusted two-sided p-values per model dataset matrix.",
+        ha="center",
+        va="top",
+        fontsize=9,
+    )
     save_path = Path("reports/plots/deep_analysis/")
     save_path.mkdir(parents=True, exist_ok=True)
-    plt.savefig(save_path / f"spearman_correlation_{model}_{dataset}.png", bbox_inches='tight')
+    plt.savefig(save_path / f"spearman_correlation_{model}_{dataset}.png", bbox_inches="tight")
     plt.close()
 
 
 def epsilon_squared(H, n, k):
     return (H - k + 1) / (n - k)
+
 
 def kruskal_wallis(
     df: pd.DataFrame,
@@ -274,29 +285,27 @@ def kruskal_wallis(
     group_col: str,
 ) -> None:
     """Perform Kruskal-Wallis test and Dunn post-hoc analysis on WER across dialect groups for CoRal-v2 dataset."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print(f"Model: {model_name}")
-    print("="*80)
-    
+    print("=" * 80)
+
     # Skip if not enough data
     if df[group_col].nunique() < 3:
         print(f"Not enough {_fmt(format_dict, group_col)} for statistical test.")
         return
-    
+
     # Run Kruskal–Wallis
     groups = [g["WER"].to_numpy() for _, g in df.groupby(group_col)]
     H, p = kruskal(*groups)
     eps2 = epsilon_squared(H, len(df), df[group_col].nunique())
     print(f"Kruskal-Wallis: H = {H:.3f}, p = {p:.3e}, k = {len(groups)}")
     print(f"Epsilon squared ≈ {eps2:.3f}")
-    
+
     # Dunn post-hoc
-    posthoc_grouped = sp.posthoc_dunn(
-        df, val_col="WER", group_col=group_col, p_adjust="holm"
-    )
+    posthoc_grouped = sp.posthoc_dunn(df, val_col="WER", group_col=group_col, p_adjust="holm")
     print("\nPairwise adjusted p-values:")
     print(posthoc_grouped)
-    
+
     # Heatmap of p-values
     ph = posthoc_grouped.clip(lower=0.0001)
     plt.figure(figsize=(12, 8))
@@ -309,11 +318,17 @@ def kruskal_wallis(
         annot=True,
         fmt=".4f",
     )
-    plt.title(f"Pairwise Dunn Test: WER Differences by CoRal-v2 {_fmt(format_dict, group_col)} for {_fmt(format_dict, model_name)}", pad=20)
+    plt.title(
+        f"Pairwise Dunn Test: WER Differences by CoRal-v2 {_fmt(format_dict, group_col)} for {_fmt(format_dict, model_name)}",
+        pad=20,
+    )
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
     plt.tight_layout()
-    plt.savefig(f"reports/plots/deep_analysis/dunn_posthoc_wer_{group_col}_{model_name}_coral_v2.png", bbox_inches='tight')
+    plt.savefig(
+        f"reports/plots/deep_analysis/dunn_posthoc_wer_{group_col}_{model_name}_coral_v2.png",
+        bbox_inches="tight",
+    )
     plt.close()
 
 
@@ -326,18 +341,9 @@ def mean_wer_by_group(
     # Order dialects by overall mean (across models)
     # only sort for dialect_group
     if group_col == "dialect_group":
-        group_order = (
-            df.groupby(group_col)["WER"]
-            .mean()
-            .sort_values()
-            .index
-        )
+        group_order = df.groupby(group_col)["WER"].mean().sort_values().index
     else:
-        group_order = (
-            df.groupby(group_col)["WER"]
-            .mean()
-            .index
-        )
+        group_order = df.groupby(group_col)["WER"].mean().index
 
     plt.figure(figsize=(12, 7))
     sns.barplot(
@@ -347,10 +353,10 @@ def mean_wer_by_group(
         hue="model",
         order=group_order,
         orient="h",
-        estimator=np.mean,        # mean bars
-        errorbar=("se"),       # ± standard error
-        capsize=0.25,              # small caps on error bars
-        err_kws={"linewidth": 2}, # style of error bars
+        estimator=np.mean,  # mean bars
+        errorbar=("se"),  # ± standard error
+        capsize=0.25,  # small caps on error bars
+        err_kws={"linewidth": 2},  # style of error bars
     )
 
     plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
@@ -362,12 +368,7 @@ def mean_wer_by_group(
     full_labels = [_fmt(format_dict, label) for label in labels]
 
     # for each bar, add a marker that has the median WER for that age group and model
-    median_df_age = (
-        df
-        .groupby([group_col, "model"])["WER"]
-        .median()
-        .reset_index()
-    )
+    median_df_age = df.groupby([group_col, "model"])["WER"].median().reset_index()
 
     for i, row in median_df_age.iterrows():
         group_value = row[group_col]
@@ -382,9 +383,19 @@ def mean_wer_by_group(
         bar_width = total_bar_width / num_models
         x_pos = median_wer
         y_pos = group_index - total_bar_width / 2 + bar_width / 2 + model_index * bar_width
-        plt.plot(x_pos, y_pos, marker="D", color="black", markersize=6, label="Median WER" if i == 0 else "")
+        plt.plot(
+            x_pos,
+            y_pos,
+            marker="D",
+            color="black",
+            markersize=6,
+            label="Median WER" if i == 0 else "",
+        )
 
     plt.legend(handles, full_labels, title="Model")
     plt.tight_layout()
-    plt.savefig(f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png", bbox_inches='tight')
+    plt.savefig(
+        f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png",
+        bbox_inches="tight",
+    )
     plt.close()
