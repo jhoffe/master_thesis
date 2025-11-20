@@ -1,15 +1,15 @@
 defaults:
-  - model: parakeet-tdt-0.6b-v3
-  - trainer: parakeet-tdt-0.6b-v3
+  - model: parakeet
+  - trainer: parakeet
   - exp_manager: base_single
   - optim@model.optim: adamw
-  - preprocessor@model.preprocessor: base
-  - spec_augment@model.spec_augment: base
+  - preprocessor@model.preprocessor: pitch_shift
+  - spec_augment@model.spec_augment: disabled
   - train_ds@model.train_ds: train_ds_parakeet
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-tdt-0.6b-v3-finetune_spec-aug'
+name: 'parakeet-finetune_pitch-shift'
 
 seed: 15
 

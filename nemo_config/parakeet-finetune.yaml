@@ -1,6 +1,6 @@
 defaults:
-  - model: parakeet-tdt-0.6b-v3
-  - trainer: parakeet-tdt-0.6b-v3
+  - model: parakeet
+  - trainer: parakeet
   - exp_manager: base_single
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: base
@@ -9,7 +9,7 @@ defaults:
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-tdt-0.6b-v3-finetune'
+name: 'parakeet-finetune'
 
 seed: 15
 

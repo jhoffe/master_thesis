@@ -1,6 +1,6 @@
 defaults:
-  - model: canary-1b-v2
-  - trainer: canary-1b-v2
+  - model: canary
+  - trainer: canary
   - exp_manager: base_finetune
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: base
@@ -8,7 +8,7 @@ defaults:
   - train_ds@model.train_ds: train_ds_canary_30_buckets_speech_perturbations
   - validation_ds@model.validation_ds: lhotse_validation_dataset
 
-name: 'canary-1b-v2-finetune_30-buckets_speech-perturbations'
+name: 'canary-finetune_30-buckets_speech-perturbations'
 
 seed: 15
 

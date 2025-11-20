@@ -66,23 +66,23 @@ def main(
         python jobs/submit_model_finetuning.py
 
         # Submit specific configs
-        python jobs/submit_model_finetuning.py parakeet-tdt-0.6b-v3-finetune canary-1b-v2-finetune
+        python jobs/submit_model_finetuning.py parakeet-finetune canary-finetune
     """
     load_dotenv()
 
     # Default configs to submit if none specified
     default_configs = [
-        # "parakeet-tdt-0.6b-v3-finetune_spec-aug",
-        # "canary-1b-v2-finetune_spec-aug",
-        # "parakeet-tdt-0.6b-v3-finetune",
-        # "canary-1b-v2-finetune",
-        # "canary-1b-v2-finetune_12-buckets",
-        # "canary-1b-v2-finetune_speech-perturbations_30-buckets",
-        # "canary-1b-v2-finetune_spec-aug_speech-perturbations_30-buckets",
-        # "parakeet-tdt-0.6b-v3-finetune_speech-perturbations",
-        # "parakeet-tdt-0.6b-v3-finetune_spec-aug_speech-perturbations",
-        "canary-1b-v2-finetune_30-buckets_pitch-shift",
-        "parakeet-tdt-0.6b-v3-finetune_pitch-shift",
+        # "parakeet-finetune_spec-aug",
+        # "canary-finetune_spec-aug",
+        # "parakeet-finetune",
+        # "canary-finetune",
+        # "canary-finetune_12-buckets",
+        # "canary-finetune_speech-perturbations_30-buckets",
+        # "canary-finetune_spec-aug_speech-perturbations_30-buckets",
+        # "parakeet-finetune_speech-perturbations",
+        # "parakeet-finetune_spec-aug_speech-perturbations",
+        "canary-finetune_30-buckets_pitch-shift",
+        "parakeet-finetune_pitch-shift",
     ]
 
     # Use provided configs or default to all
