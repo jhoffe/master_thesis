@@ -81,7 +81,7 @@ def main(
         # "canary-finetune_spec-aug_speech-perturbations_30-buckets",
         # "parakeet-finetune_speech-perturbations",
         # "parakeet-finetune_spec-aug_speech-perturbations",
-        "canary-finetune_30-buckets_pitch-shift",
+        "canary-finetune_pitch-shift",
         "parakeet-finetune_pitch-shift",
     ]
 

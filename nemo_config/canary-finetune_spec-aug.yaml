@@ -8,7 +8,7 @@ defaults:
   - train_ds@model.train_ds: train_ds_canary_30_buckets
   - validation_ds@model.validation_ds: lhotse_validation_dataset
 
-name: 'canary-finetune_spec-aug_30-buckets'
+name: 'canary-finetune_spec-aug'
 
 seed: 15
 

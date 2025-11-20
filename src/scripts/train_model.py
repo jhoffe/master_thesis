@@ -201,7 +201,7 @@ def setup_dataloaders(asr_model, cfg):
     return asr_model
 
 
-@hydra_runner(config_path="../../nemo_config", config_name="canary-finetune_30-buckets")
+@hydra_runner(config_path="../../nemo_config", config_name="canary-finetune")
 def main(cfg):
     logging.info(f"Hydra config:\n{OmegaConf.to_yaml(cfg)}")
 
