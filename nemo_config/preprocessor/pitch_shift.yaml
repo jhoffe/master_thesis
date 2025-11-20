@@ -1,7 +1,6 @@
 defaults:
   - base
 
-preprocessor:
-  _target_: nemo.collections.asr.modules.AudioToMelSpectrogramWithPitchShiftPreprocessor
-  pitch_shift_p: 0.4
-  steps_p: [[-2, 0.25], [-1, 0.25], [1, 0.25], [2, 0.25]]
+_target_: nemo.collections.asr.modules.AudioToMelSpectrogramWithPitchShiftPreprocessor
+pitch_shift_p: 0.4
+steps_p: [[-2, 0.25], [-1, 0.25], [1, 0.25], [2, 0.25]]

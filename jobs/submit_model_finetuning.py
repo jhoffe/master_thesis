@@ -51,19 +51,23 @@ def submit_job(config_name: str, walltime: str, wait_for: str | None = None):
 def main():
     """
     Submit model finetuning jobs to the cluster.
-
-    Examples:
-        # Submit all default configs
-        python jobs/submit_model_finetuning.py
-
-        # Submit specific configs
-        python jobs/submit_model_finetuning.py parakeet-finetune canary-finetune
     """
     load_dotenv()
 
+    experiments = [
+        "",
+        "_pitch-shift",
+        "_spec-aug_pitch-shift",
+        "_spec-aug_speed-perturbations_pitch-shift",
+        "_spec-aug_speed-perturbations",
+        "_spec-aug",
+        "_speed-perturbations_pitch-shift",
+        "_speed-perturbations",
+    ]
+
     # Default configs to submit if none specified
-    canary_configs = []
-    parakeet_configs = []
+    canary_configs = [f"canary-finetune{exp}" for exp in experiments]
+    parakeet_configs = [f"parakeet-finetune{exp}" for exp in experiments]
 
     job_id = None
 
