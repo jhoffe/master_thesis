@@ -229,7 +229,16 @@ def main(cfg):
     # Setup Optimizer
     asr_model.setup_optimization(cfg.model.optim)
 
+    if hasattr(cfg.model, "spec_augment"):
+        asr_model.change_spec_augment(cfg.model.spec_augment)
+
+    if hasattr(cfg.model, "preprocessor"):
+        asr_model.change_preprocessor(cfg.model.preprocessor)
+
     trainer.fit(asr_model)
+
+    # Updating the cfg with the actual used config
+    wandb.config.update(OmegaConf.to_container(cfg, resolve=True))
 
     logging.info("Logging the fine-tuned model as a WandB artifact.")
     artifact = wandb.Artifact(

@@ -19,7 +19,7 @@ spec_augment:
   time_masks: 2
   freq_width: 27
   time_width: 0.06
-  use_vectorized_code: true
+  use_vectorized_spec_augment: true
 
 preprocessor:
   _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
