@@ -28,7 +28,7 @@ FORMAT_DICT = {
     "model": "Model",
     "coral-v2": "CoRal v2",
     "fleurs": "Fleurs",
-    "roest-whisper-large-v1": "Røst-Whisper-L",
+    "roest-whisper-large-v1": "Røst-Whisper",
     "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
     "canary-1b-v2": "Canary-1B",
     "parakeet-tdt-0.6b-v3_finetune": "Parakeet-TDT_FT",
