@@ -1,5 +1,5 @@
 manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/train/tarred_audio_manifest.json'
-sample_rate: ${model.sample_rate}
+sample_rate: 16000
 
 num_workers: 4
 prefetch_factor: 2

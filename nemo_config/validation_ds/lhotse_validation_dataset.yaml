@@ -3,12 +3,12 @@ ds_item:
     manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/val/sharded_manifests/manifest__OP_0..3_CL_.json'
     tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud/val/audio__OP_0..3_CL_.tar'
     is_tarred: true
-    sample_rate: ${model.sample_rate}
+    sample_rate: 16000
     batch_size: 16
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    log_prediction: ${model.log_prediction}
+    log_prediction: false
 
     force_map_dataset: true
     force_finite: true
@@ -29,12 +29,12 @@ ds_item:
     manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/google_fleurs/validation/sharded_manifests/manifest__OP_0..1_CL_.json'
     tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/google_fleurs/validation/audio__OP_0..1_CL_.tar'
     is_tarred: true
-    sample_rate: ${model.sample_rate}
+    sample_rate: 16000
     batch_size: 16
     shuffle: false
     use_start_end_token: false
     num_workers: 2
-    log_prediction: ${model.log_prediction}
+    log_prediction: false
 
     force_map_dataset: true
     force_finite: true

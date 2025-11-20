@@ -1,5 +1,5 @@
 _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
-sample_rate: ${model.sample_rate}
+sample_rate: 16000
 normalize: 'per_feature'
 window_size: 0.025
 window_stride: 0.01
