@@ -21,4 +21,4 @@ from utils.deep_evaluation_analysis import (
 )
 
 if __name__ == "__main__":
-    deep_evaluation_analysis()
+    deep_evaluation_analysis(skip_samples=True)
