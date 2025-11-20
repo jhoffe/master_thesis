@@ -4,7 +4,23 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-A short description of the project.
+Fine-tuning NeMo speech-to-text models (Canary 1B, Parakeet 0.6B) on Danish domain data (CoRal read-aloud + Fleurs) with a suite of augmentation variants (spec-augment, speech perturbations, pitch shift). The repo includes Hydra configs for NeMo training/evaluation, dataset conversion utilities, and HPC submission scripts for running experiments on LSF.
+
+## Getting Started
+
+- Requirements: Python 3.10, `uv` (dep manager), `just` (task runner, optional), access to GPU if training locally, and HPC LSF access if submitting cluster jobs.
+- Setup:
+  - Copy `.env.default` to `.env` and fill required values (HF auth, dataset paths, W&B keys, HPC host/path if using the cluster).
+  - Install dependencies: `uv sync` (or `pip install -r requirements.txt` if you prefer pip; ensure CUDA-compatible PyTorch).
+  - Activate the environment: `source .venv/bin/activate` (if using `uv sync`).
+- Data:
+  - Convert/download datasets with the provided recipes, e.g., `just nemo-download-coral` and `just nemo-download-fleurs`; outputs land in `NEMO_DATASET_PATH`/`NEMO_DATASET_PROCESSED_PATH`.
+- Train:
+  - Local: `python src/scripts/train_model.py --config-path nemo_config --config-name canary-finetune.yaml`.
+  - Cluster: `python jobs/submit_model_finetuning.py` (uses `.env` HPC settings; pass config names as args to override defaults).
+- Evaluate:
+  - Local: `python src/scripts/evaluate_model.py model=canary-1b-v2_finetune dataset=coral`.
+  - Cluster: `python jobs/submit_evaluation.py` to submit a batch of eval jobs.
 
 ## Environment Variables
 
@@ -21,6 +37,7 @@ Copy `.env.default` to `.env` and fill in the values you need:
 | `WANDB_ENTITY`                                     | Yes if logging              | W&B entity/org.                                                                   | `your-entity`                |
 | `HPC_HOST`                                         | Yes for rsync helpers       | SSH host for syncing results via `just` recipes.                                  | `user@cluster`               |
 | `HPC_PATH`                                         | Yes for job submission      | Remote working directory used by LSF submissions.                                 | `/cluster/home/user/project` |
+| `HPC_PATH_JONAS`                                   | Optional                    | Alternate remote path used by `just download-jonas-results`.                      | `/cluster/home/jonas/project` |
 | `HPC_EMAIL_ADDRESS`                                | Optional                    | Email for job notifications.                                                      | `you@example.com`            |
 | `HPC_NOTIFY_ON_START` / `HPC_NOTIFY_ON_COMPLETION` | Optional                    | Set to `1` to enable LSF email notifications.                                     | `0`                          |
 | `N_JOBS`                                           | Optional                    | Parallel workers for test-set prep (defaults to CPU count).                       | `8`                          |

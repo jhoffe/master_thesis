@@ -2,3 +2,15 @@ preprocessor:
   _target_: nemo.collections.asr.modules.AudioToMelSpectrogramWithPitchShiftPreprocessor
   pitch_shift_p: 0.5
   steps_p: [[-2, 0.5], [2, 0.5]]
+  sample_rate: ${model.sample_rate}
+  normalize: 'per_feature'
+  window_size: 0.025
+  window_stride: 0.01
+  window: 'hann'
+  features: 128
+  n_fft: 512
+  log: true
+  frame_splicing: 1
+  dither: 0.00001
+  pad_to: 0
+  pad_value: 0.0
