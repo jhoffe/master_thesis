@@ -6,6 +6,21 @@
 
 A short description of the project.
 
+## Finetuning Experiments
+
+| Experiment | Base model | Config path | Data / augmentations |
+| --- | --- | --- | --- |
+| `canary-finetune` | `nvidia/canary-1b-v2` | `nemo_config/canary-finetune.yaml` | CoRal read-aloud train set (`train_ds_canary_30_buckets`), 30 lhotse buckets, no spec augment, base preprocessor. |
+| `canary-finetune_spec-aug` | `nvidia/canary-1b-v2` | `nemo_config/canary-finetune_spec-aug.yaml` | Same dataset/bucketing as above with spec augment (2 freq masks, 2 time masks). |
+| `canary-finetune_speech-perturbations` | `nvidia/canary-1b-v2` | `nemo_config/canary-finetune_speech-perturbations.yaml` | Speech-perturbed CoRal variant (`train_ds_canary_30_buckets_speech_perturbations`), 30 buckets, no spec augment. |
+| `canary-finetune_spec-aug_speech-perturbations` | `nvidia/canary-1b-v2` | `nemo_config/canary-finetune_spec-aug_speech-perturbations.yaml` | Speech-perturbed train set with 30 buckets + spec augment enabled. |
+| `canary-finetune_pitch-shift` | `nvidia/canary-1b-v2` | `nemo_config/canary-finetune_pitch-shift.yaml` | CoRal 30-bucket train set, pitch-shift preprocessor (±2 semitone steps at 0.5 prob), spec augment disabled. |
+| `parakeet-finetune` | `nvidia/parakeet-tdt-0.6b-v3` | `nemo_config/parakeet-finetune.yaml` | CoRal read-aloud tarred train set (`train_ds_parakeet`, batch size 16), no spec augment. |
+| `parakeet-finetune_spec-aug` | `nvidia/parakeet-tdt-0.6b-v3` | `nemo_config/parakeet-finetune_spec-aug.yaml` | Same tarred train set with spec augment enabled. |
+| `parakeet-finetune_speech-perturbations` | `nvidia/parakeet-tdt-0.6b-v3` | `nemo_config/parakeet-finetune_speech-perturbations.yaml` | Speech perturbations block configured (`train_ds_parakeet_speech_perturbations` available), spec augment disabled; validation/test use base sets. |
+| `parakeet-finetune_spec-aug_speech-perturbations` | `nvidia/parakeet-tdt-0.6b-v3` | `nemo_config/parakeet-finetune_spec-aug_speech-perturbations.yaml` | Speech perturbations block + spec augment enabled; uses base validation/test datasets. |
+| `parakeet-finetune_pitch-shift` | `nvidia/parakeet-tdt-0.6b-v3` | `nemo_config/parakeet-finetune_pitch-shift.yaml` | CoRal tarred train set, pitch-shift preprocessor (±2 semitone steps at 0.5 prob), spec augment disabled. |
+
 ## Project Organization
 
 ```
@@ -58,4 +73,3 @@ A short description of the project.
 ```
 
 --------
-
