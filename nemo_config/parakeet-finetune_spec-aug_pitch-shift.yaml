@@ -9,7 +9,7 @@ defaults:
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-finetune_spec-aug'
+name: 'parakeet-finetune_spec-aug_pitch-shift'
 
 seed: 15
 

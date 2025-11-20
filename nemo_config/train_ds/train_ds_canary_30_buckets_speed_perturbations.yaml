@@ -1,9 +1,9 @@
 defaults:
   - base_training_dataset
-  - speech_perturbations
+  - speed_perturbations
 
-manifest_filepath: ${.speech_perturbations.sharded_manifest}
-tarred_audio_filepaths: ${.speech_perturbations.tar_archives}
+manifest_filepath: ${.speed_perturbations.sharded_manifest}
+tarred_audio_filepaths: ${.speed_perturbations.tar_archives}
 # bucketing params
 use_lhotse: true
 

@@ -5,10 +5,10 @@ defaults:
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: pitch_shift
   - spec_augment@model.spec_augment: base
-  - train_ds@model.train_ds: train_ds_canary_30_buckets_speech_perturbations
+  - train_ds@model.train_ds: train_ds_canary_30_buckets_speed_perturbations
   - validation_ds@model.validation_ds: lhotse_validation_dataset
 
-name: 'canary-finetune_spec-aug_speech-perturbations'
+name: 'canary-finetune_spec-aug_speed-perturbations_pitch-shift'
 
 seed: 15
 

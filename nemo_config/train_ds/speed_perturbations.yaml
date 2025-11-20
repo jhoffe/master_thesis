@@ -1,4 +1,4 @@
-speech_perturbations:
+speed_perturbations:
   root: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud_sp/train'
   sharded_manifest: '${.root}/sharded_manifests/manifest__OP_0..881_CL_.json'
   tarred_manifest: '${.root}/tarred_audio_manifest.json'

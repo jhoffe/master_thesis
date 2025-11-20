@@ -1,0 +1,9 @@
+defaults:
+  - base_training_dataset
+  - speed_perturbations
+
+manifest_filepath: ${.speed_perturbations.sharded_manifest}
+tarred_audio_filepaths: ${.speed_perturbations.tar_archives}
+
+batch_size: 16
+shuffle: true

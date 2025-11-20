@@ -26,22 +26,22 @@ Fine-tuning NeMo speech-to-text models (Canary 1B, Parakeet 0.6B) on Danish doma
 
 Copy `.env.default` to `.env` and fill in the values you need:
 
-| Variable                                           | Required?                   | Purpose / notes                                                                   | Example                      |
-| -------------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------- | ---------------------------- |
-| `HF_AUTH_TOKEN`                                    | Yes for private HF datasets | Token used when downloading Hugging Face datasets (e.g., CoRal/Fleurs with auth). | `hf_xxx`                     |
-| `HF_HUB_CACHE`                                     | Optional                    | Local Hugging Face cache path.                                                    | `./data/raw/huggingface`     |
-| `NEMO_DATASET_PATH`                                | Yes                         | Where raw HF datasets are written by the conversion scripts.                      | `data/raw`                   |
-| `NEMO_DATASET_PROCESSED_PATH`                      | Yes                         | Where processed/tarred NeMo data is stored and read by configs.                   | `data/processed`             |
-| `WANDB_API_KEY`                                    | Yes if logging              | Auth key for Weights & Biases.                                                    | `xxxxxxxx`                   |
-| `WANDB_PROJECT`                                    | Yes if logging              | Target W&B project (also used by NeMo exp_manager).                               | `your-project`               |
-| `WANDB_ENTITY`                                     | Yes if logging              | W&B entity/org.                                                                   | `your-entity`                |
-| `HPC_HOST`                                         | Yes for rsync helpers       | SSH host for syncing results via `just` recipes.                                  | `user@cluster`               |
-| `HPC_PATH`                                         | Yes for job submission      | Remote working directory used by LSF submissions.                                 | `/cluster/home/user/project` |
+| Variable                                           | Required?                   | Purpose / notes                                                                   | Example                       |
+| -------------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------- | ----------------------------- |
+| `HF_AUTH_TOKEN`                                    | Yes for private HF datasets | Token used when downloading Hugging Face datasets (e.g., CoRal/Fleurs with auth). | `hf_xxx`                      |
+| `HF_HUB_CACHE`                                     | Optional                    | Local Hugging Face cache path.                                                    | `./data/raw/huggingface`      |
+| `NEMO_DATASET_PATH`                                | Yes                         | Where raw HF datasets are written by the conversion scripts.                      | `data/raw`                    |
+| `NEMO_DATASET_PROCESSED_PATH`                      | Yes                         | Where processed/tarred NeMo data is stored and read by configs.                   | `data/processed`              |
+| `WANDB_API_KEY`                                    | Yes if logging              | Auth key for Weights & Biases.                                                    | `xxxxxxxx`                    |
+| `WANDB_PROJECT`                                    | Yes if logging              | Target W&B project (also used by NeMo exp_manager).                               | `your-project`                |
+| `WANDB_ENTITY`                                     | Yes if logging              | W&B entity/org.                                                                   | `your-entity`                 |
+| `HPC_HOST`                                         | Yes for rsync helpers       | SSH host for syncing results via `just` recipes.                                  | `user@cluster`                |
+| `HPC_PATH`                                         | Yes for job submission      | Remote working directory used by LSF submissions.                                 | `/cluster/home/user/project`  |
 | `HPC_PATH_JONAS`                                   | Optional                    | Alternate remote path used by `just download-jonas-results`.                      | `/cluster/home/jonas/project` |
-| `HPC_EMAIL_ADDRESS`                                | Optional                    | Email for job notifications.                                                      | `you@example.com`            |
-| `HPC_NOTIFY_ON_START` / `HPC_NOTIFY_ON_COMPLETION` | Optional                    | Set to `1` to enable LSF email notifications.                                     | `0`                          |
-| `N_JOBS`                                           | Optional                    | Parallel workers for test-set prep (defaults to CPU count).                       | `8`                          |
-| `RANDOM_SEED`                                      | Optional                    | Global seed used in scripts/configs.                                              | `42`                         |
+| `HPC_EMAIL_ADDRESS`                                | Optional                    | Email for job notifications.                                                      | `you@example.com`             |
+| `HPC_NOTIFY_ON_START` / `HPC_NOTIFY_ON_COMPLETION` | Optional                    | Set to `1` to enable LSF email notifications.                                     | `0`                           |
+| `N_JOBS`                                           | Optional                    | Parallel workers for test-set prep (defaults to CPU count).                       | `8`                           |
+| `RANDOM_SEED`                                      | Optional                    | Global seed used in scripts/configs.                                              | `42`                          |
 
 ## Finetuning Experiments
 
