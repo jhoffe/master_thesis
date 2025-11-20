@@ -1,20 +1,16 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
-from typing import Dict, List, Optional
-from scipy import stats
-from datasets import (
-    Dataset
-)
-from loguru import logger
-from scipy.stats import kruskal
+from typing import Dict, List
+
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import scikit_posthocs as sp
 import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-
+from datasets import Dataset
+from loguru import logger
+from scipy import stats
+from scipy.stats import kruskal
 from statsmodels.stats.multitest import multipletests
 
 FORMAT_DICT = {
