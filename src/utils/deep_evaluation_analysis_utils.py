@@ -1,20 +1,16 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
-from typing import Dict, List, Optional
-from scipy import stats
-from datasets import (
-    Dataset
-)
-from loguru import logger
-from scipy.stats import kruskal
+from typing import Dict, List
+
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import scikit_posthocs as sp
 import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-
+from datasets import Dataset
+from loguru import logger
+from scipy import stats
+from scipy.stats import kruskal
 from statsmodels.stats.multitest import multipletests
 
 FORMAT_DICT = {
@@ -43,6 +39,8 @@ FORMAT_DICT = {
     "canary-1b-v2_finetune_spec-aug": "Canary-1B_FT+SA",
     "canary-1b-v2_finetune_speed-perturbations": "Canary-1B_FT+SP",
     "canary-1b-v2_finetune_spec-aug_speed-perturbations": "Canary-1B_FT+SA+SP",
+    "dialect_group": "Dialect Group",
+    "age_group": "Age Group",
 }
 
 # --- Dialect-to-group mapping ---
@@ -270,8 +268,10 @@ def epsilon_squared(H, n, k):
     return (H - k + 1) / (n - k)
 
 def kruskal_wallis(
-    df_model: pd.DataFrame,
+    df: pd.DataFrame,
     model_name: str,
+    format_dict: Dict[str, str],
+    group_col: str,
 ) -> None:
     """Perform Kruskal-Wallis test and Dunn post-hoc analysis on WER across dialect groups for CoRal-v2 dataset."""
     print("\n" + "="*80)
@@ -279,20 +279,20 @@ def kruskal_wallis(
     print("="*80)
     
     # Skip if not enough data
-    if df_model["dialect_group"].nunique() < 3:
-        print("Not enough dialect groups for statistical test.")
+    if df[group_col].nunique() < 3:
+        print(f"Not enough {_fmt(format_dict, group_col)} for statistical test.")
         return
     
     # Run Kruskal–Wallis
-    groups = [g["WER"].to_numpy() for _, g in df_model.groupby("dialect_group")]
+    groups = [g["WER"].to_numpy() for _, g in df.groupby(group_col)]
     H, p = kruskal(*groups)
-    eps2 = epsilon_squared(H, len(df_model), df_model["dialect_group"].nunique())
+    eps2 = epsilon_squared(H, len(df), df[group_col].nunique())
     print(f"Kruskal-Wallis: H = {H:.3f}, p = {p:.3e}, k = {len(groups)}")
     print(f"Epsilon squared ≈ {eps2:.3f}")
     
     # Dunn post-hoc
     posthoc_grouped = sp.posthoc_dunn(
-        df_model, val_col="WER", group_col="dialect_group", p_adjust="holm"
+        df, val_col="WER", group_col=group_col, p_adjust="holm"
     )
     print("\nPairwise adjusted p-values:")
     print(posthoc_grouped)
@@ -309,9 +309,82 @@ def kruskal_wallis(
         annot=True,
         fmt=".4f",
     )
-    plt.title(f"Pairwise Dunn Test: WER Differences by CoRal-v2 Dialect Group for {model_names.get(model_name, model_name)}", pad=20)
+    plt.title(f"Pairwise Dunn Test: WER Differences by CoRal-v2 {_fmt(format_dict, group_col)} for {_fmt(format_dict, model_name)}", pad=20)
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
     plt.tight_layout()
-    plt.savefig(f"../reports/plots/deep_analysis/dunn_posthoc_wer_dialect_groups_{model_name}_coral_v2.png", bbox_inches='tight')
+    plt.savefig(f"reports/plots/deep_analysis/dunn_posthoc_wer_{group_col}_{model_name}_coral_v2.png", bbox_inches='tight')
+    plt.close()
+
+
+def mean_wer_by_group(
+    df: pd.DataFrame,
+    format_dict: Dict[str, str],
+    group_col: str,
+) -> None:
+    """Plot mean WER by group for CoRal-v2 dataset."""
+    # Order dialects by overall mean (across models)
+    # only sort for dialect_group
+    if group_col == "dialect_group":
+        group_order = (
+            df.groupby(group_col)["WER"]
+            .mean()
+            .sort_values()
+            .index
+        )
+    else:
+        group_order = (
+            df.groupby(group_col)["WER"]
+            .mean()
+            .index
+        )
+
+    plt.figure(figsize=(12, 7))
+    sns.barplot(
+        data=df,
+        y=group_col,
+        x="WER",
+        hue="model",
+        order=group_order,
+        orient="h",
+        estimator=np.mean,        # mean bars
+        errorbar=("se"),       # ± standard error
+        capsize=0.25,              # small caps on error bars
+        err_kws={"linewidth": 2}, # style of error bars
+    )
+
+    plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
+    plt.xlabel("Mean WER")
+    plt.ylabel(_fmt(format_dict, group_col))
+    plt.legend(title="Model")
+    # set the model names in the legend to be full names
+    handles, labels = plt.gca().get_legend_handles_labels()
+    full_labels = [_fmt(format_dict, label) for label in labels]
+
+    # for each bar, add a marker that has the median WER for that age group and model
+    median_df_age = (
+        df
+        .groupby([group_col, "model"])["WER"]
+        .median()
+        .reset_index()
+    )
+
+    for i, row in median_df_age.iterrows():
+        group_value = row[group_col]
+        model = row["model"]
+        median_wer = row["WER"]
+        # find the position of the bar
+        group_index = list(group_order).index(group_value)
+        model_index = list(df["model"].unique()).index(model)
+        # calculate the x position of the bar
+        num_models = len(df["model"].unique())
+        total_bar_width = 0.8  # default total width for seaborn barplot
+        bar_width = total_bar_width / num_models
+        x_pos = median_wer
+        y_pos = group_index - total_bar_width / 2 + bar_width / 2 + model_index * bar_width
+        plt.plot(x_pos, y_pos, marker="D", color="black", markersize=6, label="Median WER" if i == 0 else "")
+
+    plt.legend(handles, full_labels, title="Model")
+    plt.tight_layout()
+    plt.savefig(f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png", bbox_inches='tight')
     plt.close()
