@@ -2,7 +2,7 @@ import ast
 import json
 from pathlib import Path
 import re
-from typing import List, Dict
+from typing import Dict, List
 
 from carbontracker import parser
 from evaluate.loading import load as load_metric
@@ -43,13 +43,15 @@ SPLITS = {
 SENTENCE_TRANSFORMER_MODEL = "KennethTM/MiniLM-L6-danish-encoder"
 
 
-def provide_eval_combinations(models: List[str], datasets: List[str], subsets: dict, splits: dict) -> List[dict]:
+def provide_eval_combinations(
+    models: List[str], datasets: List[str], subsets: dict, splits: dict
+) -> List[dict]:
     return [
         {
             "model": model,
             "dataset_name": dataset,
             "dataset_subset": subsets[dataset],
-            "dataset_split": splits[dataset]
+            "dataset_split": splits[dataset],
         }
         for model in models
         for dataset in datasets
@@ -80,7 +82,9 @@ def filter_eval_grid(
     key_cols = ["model", "dataset_name", "dataset_subset", "dataset_split"]
     merged = df.merge(pd.DataFrame(eval_combos), on=key_cols, how="inner").copy()
     merged["model"] = pd.Categorical(merged["model"], categories=models, ordered=True)
-    merged["dataset_name"] = pd.Categorical(merged["dataset_name"], categories=datasets, ordered=True)
+    merged["dataset_name"] = pd.Categorical(
+        merged["dataset_name"], categories=datasets, ordered=True
+    )
     return merged
 
 
@@ -92,7 +96,9 @@ def to_dict_safe(x):
     return ast.literal_eval(x if isinstance(x, str) else str(x))
 
 
-def get_path_to_latest_detailed_results_parquet(eval_combination: dict, base="experiments/evaluate_model") -> Path:
+def get_path_to_latest_detailed_results_parquet(
+    eval_combination: dict, base="experiments/evaluate_model"
+) -> Path:
     """
     Returns the path to the latest detailed_results.parquet for the given eval combination.
     eval_combination: str
@@ -100,7 +106,10 @@ def get_path_to_latest_detailed_results_parquet(eval_combination: dict, base="ex
     base: str
         The base directory where evaluation results are stored.
     """
-    root = Path(base) / f"{eval_combination['model']}_{eval_combination['dataset_name']}_{eval_combination['dataset_subset']}_{eval_combination['dataset_split']}"
+    root = (
+        Path(base)
+        / f"{eval_combination['model']}_{eval_combination['dataset_name']}_{eval_combination['dataset_subset']}_{eval_combination['dataset_split']}"
+    )
 
     # find every detailed_results.parquet under root, ignore .hydra
     files = [p for p in root.rglob("detailed_results.parquet") if ".hydra" not in p.parts]
@@ -144,7 +153,7 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         # next, we replace it with a new 'id' column that is simply a range from 1 to len(df)
         ids = [f"rec_{idx}" for idx in range(1, len(df) + 1)]
         df["id"] = ids
-    
+
     if eval_combination["dataset_name"] == "coral-v2":
         pitch_data = pd.read_parquet("reports/metrics/coral-v2-summary.parquet")
         # drop dataset_name column and clip_length column
@@ -171,23 +180,28 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         pitch_data = pitch_data.drop(columns=colums_to_drop)
         # rename id_recording to id in pitch_data
         pitch_data = pitch_data.rename(columns={"id_recording": "id"})
-        
+
         df = df.merge(pitch_data, on="id", how="left")
 
     # compute number of words in label column
-    #df["num_words"] = df["label"].apply(lambda x: len(x.split()))
+    # df["num_words"] = df["label"].apply(lambda x: len(x.split()))
 
     # compute number of words per second
-    #df["words_per_sec"] = df["num_words"] / df["clip_length"]
-        
+    # df["words_per_sec"] = df["num_words"] / df["clip_length"]
+
     return df
 
 
-def load_results_json_for_config(eval_combination: dict, base="experiments/evaluate_model") -> dict | None:
+def load_results_json_for_config(
+    eval_combination: dict, base="experiments/evaluate_model"
+) -> dict | None:
     """
     Return dict loaded from the newest results.json for this config.
     """
-    root = Path(base) / f"{eval_combination['model']}_{eval_combination['dataset_name']}_{eval_combination['dataset_subset']}_{eval_combination['dataset_split']}"
+    root = (
+        Path(base)
+        / f"{eval_combination['model']}_{eval_combination['dataset_name']}_{eval_combination['dataset_subset']}_{eval_combination['dataset_split']}"
+    )
     files = [p for p in root.rglob("results.json") if ".hydra" not in p.parts]
     if not files:
         return None
@@ -204,10 +218,10 @@ def load_carbon_log(eval_combination: dict, base="carbon_logs") -> dict:
     Returns:
         A dictionary with the carbon log data.
     """
-    model = eval_combination['model']
-    dataset_name = eval_combination['dataset_name']
-    dataset_subset = eval_combination['dataset_subset']
-    dataset_split = eval_combination['dataset_split']
+    model = eval_combination["model"]
+    dataset_name = eval_combination["dataset_name"]
+    dataset_subset = eval_combination["dataset_subset"]
+    dataset_split = eval_combination["dataset_split"]
 
     logs = parser.parse_all_logs(log_dir=base)
 
@@ -218,20 +232,22 @@ def load_carbon_log(eval_combination: dict, base="carbon_logs") -> dict:
     target_prefix = f"eval-{model}-{dataset_name}-{dataset_subset}-{dataset_split}"
 
     matching_logs = [
-        log for log in logs
-        if re.search(pattern, log['output_filename'])
-        and target_prefix in log['output_filename']
+        log
+        for log in logs
+        if re.search(pattern, log["output_filename"]) and target_prefix in log["output_filename"]
     ]
 
     if matching_logs:
-        selected_log = matching_logs[-1] # get the latest log
+        selected_log = matching_logs[-1]  # get the latest log
         return selected_log
     else:
         logger.warning(f"No carbon log found for {target_prefix}")
         return None
 
 
-def combine_all_detailed_results(eval_combination: List[dict], base="experiments/evaluate_model") -> pd.DataFrame:
+def combine_all_detailed_results(
+    eval_combination: List[dict], base="experiments/evaluate_model"
+) -> pd.DataFrame:
     """Load and combine all detailed results for the given eval combination.
 
     Args:
@@ -314,9 +330,9 @@ def compute_sentence_embeddings(df: pd.DataFrame, model_name: str) -> pd.DataFra
 
     logger.info(f"Loading sentence transformer model: {model_name}")
     model = SentenceTransformer(model_name)
-    
-    predictions = df['prediction'].tolist()
-    labels = df['label'].tolist()
+
+    predictions = df["prediction"].tolist()
+    labels = df["label"].tolist()
 
     logger.info("Computing embeddings for predictions...")
     pred_embeddings = model.encode(predictions, normalize_embeddings=True, batch_size=256)
@@ -324,24 +340,30 @@ def compute_sentence_embeddings(df: pd.DataFrame, model_name: str) -> pd.DataFra
     logger.info("Computing embeddings for labels...")
     label_embeddings = model.encode(labels, normalize_embeddings=True, batch_size=256)
 
-    df['prediction_embedding'] = list(pred_embeddings)
-    df['label_embedding'] = list(label_embeddings)
+    df["prediction_embedding"] = list(pred_embeddings)
+    df["label_embedding"] = list(label_embeddings)
 
     logger.info("Embeddings computed.")
 
     # finally, we need the semantic distance between prediction_embedding and label_embedding
-    df['semantic_distance'] = df.apply(lambda x: _semantic_distance(x['label_embedding'], x['prediction_embedding']), axis=1)
+    df["semantic_distance"] = df.apply(
+        lambda x: _semantic_distance(x["label_embedding"], x["prediction_embedding"]), axis=1
+    )
     return df
 
 
 def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFrame:
     metrics = {}
-    
+
     # compute WER and CER again (load from evaluate to be sure)
     wer_metric = load_metric("wer")
     cer_metric = load_metric("cer")
-    metrics["WER"] = wer_metric.compute(predictions=df["prediction"].tolist(), references=df["label"].tolist())
-    metrics["CER"] = cer_metric.compute(predictions=df["prediction"].tolist(), references=df["label"].tolist())
+    metrics["WER"] = wer_metric.compute(
+        predictions=df["prediction"].tolist(), references=df["label"].tolist()
+    )
+    metrics["CER"] = cer_metric.compute(
+        predictions=df["prediction"].tolist(), references=df["label"].tolist()
+    )
 
     # compute median CER and WER
     metrics["CER_median"] = df["CER"].median()
@@ -375,15 +397,17 @@ def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFram
     # add values from carbon log, if present
     carbon_log = load_carbon_log(eval_combination)
     if carbon_log:
-        metrics['co2_g'] = carbon_log['actual']['co2eq (g)']
-        metrics['energy_kWh'] = carbon_log['actual']['energy (kWh)']
-        metrics['duration_s'] = carbon_log['actual']['duration (s)']
+        metrics["co2_g"] = carbon_log["actual"]["co2eq (g)"]
+        metrics["energy_kWh"] = carbon_log["actual"]["energy (kWh)"]
+        metrics["duration_s"] = carbon_log["actual"]["duration (s)"]
 
     metrics_df = pd.DataFrame([metrics])
     return metrics_df
 
 
-def compute_average_metrics_for_detailed_results(df: pd.DataFrame, eval_combinations: List[dict]) -> dict:
+def compute_average_metrics_for_detailed_results(
+    df: pd.DataFrame, eval_combinations: List[dict]
+) -> dict:
     """Compute average metrics for the detailed results DataFrame.
 
     Args:
@@ -397,10 +421,10 @@ def compute_average_metrics_for_detailed_results(df: pd.DataFrame, eval_combinat
     for eval_combination in eval_combinations:
         logger.info(f"Computing average metrics for {eval_combination}...")
         subset_df = df[
-            (df["model"] == eval_combination["model"]) &
-            (df["dataset_name"] == eval_combination["dataset_name"]) &
-            (df["dataset_subset"] == eval_combination["dataset_subset"]) &
-            (df["dataset_split"] == eval_combination["dataset_split"])
+            (df["model"] == eval_combination["model"])
+            & (df["dataset_name"] == eval_combination["dataset_name"])
+            & (df["dataset_subset"] == eval_combination["dataset_subset"])
+            & (df["dataset_split"] == eval_combination["dataset_split"])
         ]
         if not subset_df.empty:
             avg_metrics_df = compute_avg_metrics(subset_df, eval_combination)

@@ -1,7 +1,6 @@
-spec_augment:
-  _target_: nemo.collections.asr.modules.SpectrogramAugmentation
-  freq_masks: 2
-  time_masks: 5
-  freq_width: 27
-  time_width: 0.06
-  use_vectorized_spec_augment: true
+_target_: nemo.collections.asr.modules.SpectrogramAugmentation
+freq_masks: 2
+time_masks: 5
+freq_width: 27
+time_width: 0.06
+use_vectorized_spec_augment: true

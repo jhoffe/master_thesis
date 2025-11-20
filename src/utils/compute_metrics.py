@@ -262,7 +262,9 @@ def compute_metrics_of_dataset_using_nemo(
     start_time = time.time()
 
     if carbon_tracker_log_name is not None:
-        carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
+        carbon_tracker = CarbonTracker(
+            epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name
+        )
         carbon_tracker.epoch_start()
 
     transcriptions = transcriber.transcribe(

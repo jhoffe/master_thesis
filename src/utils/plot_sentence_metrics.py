@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -93,7 +93,8 @@ def plot_bar_metric(
     if separate_by_dataset:
         g = sns.catplot(
             data=data,
-            x="model", y=metric,
+            x="model",
+            y=metric,
             col="dataset_name",
             kind="bar",
             errorbar=("se", z),
@@ -113,9 +114,11 @@ def plot_bar_metric(
 
         # facet titles (format dataset names)
         for ax, ds in zip(g.axes.flat, ds_categories):
-            ax.set_title(_fmt(ds), fontsize=fontsize+2)
+            ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
-        g.fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize+3)
+        g.fig.suptitle(
+            f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
+        )
 
         # single color per facet
         for ax, ds in zip(g.axes.flat, ds_categories):
@@ -129,7 +132,8 @@ def plot_bar_metric(
         plt.figure(figsize=(width, height))
         ax = sns.barplot(
             data=data,
-            x="model", y=metric,
+            x="model",
+            y=metric,
             hue="dataset_name",
             errorbar=("se", z),
             capsize=capsize,
@@ -142,7 +146,9 @@ def plot_bar_metric(
         # labels/titles
         ax.set_xlabel(x_lab, fontsize=fontsize)
         ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
+        ax.set_title(
+            f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
+        )
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
 
@@ -151,9 +157,12 @@ def plot_bar_metric(
             handles, _labels = ax.get_legend_handles_labels()
             ax.legend_.remove()
             ax.legend(
-                handles, [_fmt(d) for d in ds_categories],
+                handles,
+                [_fmt(d) for d in ds_categories],
                 title=_fmt("dataset_name"),
-                loc="best", fontsize=fontsize, frameon=True
+                loc="best",
+                fontsize=fontsize,
+                frameon=True,
             )
 
         fig = ax.get_figure()
@@ -174,7 +183,7 @@ def plot_box_metric(
     height: int = 8,
     showfliers: bool = False,
     separate_by_dataset: bool = False,
-    fontsize: int = 12,                 # NEW
+    fontsize: int = 12,  # NEW
 ):
     """
     Box plot of per-sample metric distribution per model.
@@ -197,7 +206,8 @@ def plot_box_metric(
         plt.figure(figsize=(width, height))
         ax = sns.boxplot(
             data=data,
-            x="model", y=metric,
+            x="model",
+            y=metric,
             hue="dataset_name",
             order=model_order,
             hue_order=ds_categories,
@@ -207,19 +217,23 @@ def plot_box_metric(
         )
         ax.set_xlabel(x_lab, fontsize=fontsize)
         ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
+        ax.set_title(
+            f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
+        )
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
-
 
         # format legend labels + title
         if ax.legend_ is not None:
             handles, _labels = ax.get_legend_handles_labels()
             ax.legend_.remove()
             ax.legend(
-                handles, [_fmt(d) for d in ds_categories],
+                handles,
+                [_fmt(d) for d in ds_categories],
                 title=_fmt("dataset_name"),
-                loc="best", fontsize=fontsize, frameon=True
+                loc="best",
+                fontsize=fontsize,
+                frameon=True,
             )
 
         fig = ax.get_figure()
@@ -227,7 +241,9 @@ def plot_box_metric(
     else:
         # manual faceting: one subplot per dataset, single color per dataset
         n = len(ds_categories)
-        fig, axes = plt.subplots(1, n, figsize=(width, height), sharey=True, constrained_layout=True)
+        fig, axes = plt.subplots(
+            1, n, figsize=(width, height), sharey=True, constrained_layout=True
+        )
         if n == 1:
             axes = [axes]
 
@@ -235,7 +251,8 @@ def plot_box_metric(
             sub = data[data["dataset_name"] == ds]
             sns.boxplot(
                 data=sub,
-                x="model", y=metric,
+                x="model",
+                y=metric,
                 order=model_order,
                 showfliers=showfliers,
                 color=ds_palette[ds],
@@ -248,13 +265,15 @@ def plot_box_metric(
             for line in ax.lines:
                 line.set_color("black")
 
-            ax.set_title(_fmt(ds), fontsize=fontsize+2)         # formatted facet title
+            ax.set_title(_fmt(ds), fontsize=fontsize + 2)  # formatted facet title
             ax.set_xlabel(x_lab, fontsize=fontsize)
             ax.set_ylabel(y_lab, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
             _format_xtick_labels(ax, rotation=60, ha="right")
 
-        fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize+3)
+        fig.suptitle(
+            f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
+        )
 
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -275,24 +294,87 @@ def make_all_plots(
     """
     Convenience wrapper that filters to your grid and emits all standard plots.
     """
-    
+
     plot_bar_metric(data, "CER", ci_level=ci, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(data, "CER", ci_level=ci, separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+    plot_bar_metric(
+        data,
+        "CER",
+        ci_level=ci,
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
     plot_bar_metric(data, "WER", ci_level=ci, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(data, "WER", ci_level=ci, separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(data, "semantic_distance", ci_level=ci, separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+    plot_bar_metric(
+        data,
+        "WER",
+        ci_level=ci,
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
+    plot_bar_metric(
+        data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
+    )
+    plot_bar_metric(
+        data,
+        "semantic_distance",
+        ci_level=ci,
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
 
     plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+    plot_box_metric(
+        data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
+    )
     plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+    plot_box_metric(
+        data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
+    )
     plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(data, "semantic_distance", separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
+    plot_box_metric(
+        data,
+        "semantic_distance",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
 
     plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(
+        data,
+        "CER",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+        showfliers=True,
+    )
     plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(data, "semantic_distance", separate_by_dataset=True, save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(
+        data,
+        "WER",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+        showfliers=True,
+    )
+    plot_box_metric(
+        data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True
+    )
+    plot_box_metric(
+        data,
+        "semantic_distance",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+        showfliers=True,
+    )

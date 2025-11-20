@@ -1,12 +1,10 @@
 from pathlib import Path
 
-import datasets
 from loguru import logger
 
 from utils.evaluation_utils import (
-    load_from_parquet,
-    provide_eval_combinations,
     filter_eval_grid,
+    load_from_parquet,
 )
 from utils.plot_sentence_metrics import (
     make_all_plots,
@@ -20,12 +18,12 @@ from utils.plot_summary_metrics import (
 # =========================
 MODELS = [
     "roest-whisper-large-v1",
-    #"parakeet-tdt-0.6b-v3",
+    # "parakeet-tdt-0.6b-v3",
     "parakeet-tdt-0.6b-v3_finetune",
     "parakeet-tdt-0.6b-v3_finetune_spec-aug",
     "parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
     "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
-    #"canary-1b-v2",
+    # "canary-1b-v2",
     "canary-1b-v2_finetune",
     "canary-1b-v2_finetune_spec-aug",
     "canary-1b-v2_finetune_speed-perturbations",
@@ -43,6 +41,7 @@ SPLITS = {
     "coral-v2": "test",
     "fleurs": "test",
 }
+
 
 def make_plots():
     logger.info("Loading sentence wise evaluation data...")
@@ -68,9 +67,7 @@ def make_plots():
     )
 
     logger.info("Loading summary evaluation data...")
-    summary_df = load_from_parquet(
-        Path("reports/metrics/average_metrics.parquet")
-    )
+    summary_df = load_from_parquet(Path("reports/metrics/average_metrics.parquet"))
 
     logger.info("Generating summary evaluation plots...")
     make_all_summary_plots(

@@ -1,9 +1,9 @@
+from loguru import logger
+
 from utils.dataset_descriptive_plots import (
     make_coral_plots,
     make_fleurs_plots,
 )
-
-from loguru import logger
 
 if __name__ == "__main__":
     logger.info("Generating dataset descriptive plots for CoRal-v2...")
