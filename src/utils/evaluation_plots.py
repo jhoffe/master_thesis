@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import datasets
 from loguru import logger
 
 from utils.evaluation_utils import (
     load_from_parquet,
+    provide_eval_combinations,
+    filter_eval_grid,
 )
 from utils.plot_sentence_metrics import (
     make_all_plots,
@@ -41,22 +44,19 @@ SPLITS = {
     "fleurs": "test",
 }
 
-EVALUATION_COMBINATIONS = [
-    {
-        "model": m,
-        "dataset_name": d,
-        "dataset_subset": SUBSETS[d],
-        "dataset_split": SPLITS[d],
-    }
-    for m in MODELS
-    for d in DATASETS
-]
-
-
 def make_plots():
     logger.info("Loading sentence wise evaluation data...")
     sentence_df = load_from_parquet(
         Path("reports/metrics/combined_detailed_results_with_embeddings.parquet")
+    )
+
+    logger.info("Filtering evaluation data to specified grid...")
+    sentence_df = filter_eval_grid(
+        sentence_df,
+        models=MODELS,
+        datasets=DATASETS,
+        subsets=SUBSETS,
+        splits=SPLITS,
     )
 
     logger.info("Generating sentence level evaluation plots...")
@@ -75,6 +75,7 @@ def make_plots():
     logger.info("Generating summary evaluation plots...")
     make_all_summary_plots(
         summary_df,
+        models=MODELS,
         save_dir=Path("reports/plots/summary"),
         width=12,
         height=7,

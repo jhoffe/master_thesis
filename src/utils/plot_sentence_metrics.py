@@ -8,66 +8,6 @@ import seaborn as sns
 
 sns.set(style="whitegrid")
 
-# =========================
-# Configuration
-# =========================
-MODELS = [
-    "roest-wav2vec2-315m-v2",
-    "roest-wav2vec2-1B-v2",
-    "roest-wav2vec2-2B-v2",
-    "hviske-v3-conversation",
-    "hviske-v2",
-    "roest-whisper-large-v1",
-    "whisper-large-v3",
-    "whisper-large-v3-turbo",
-    "seamless-m4t-v2-large",
-    "parakeet-tdt-0.6b-v3",
-    "canary-1b-v2",
-]
-
-DATASETS = ["coral-v2", "fleurs"]
-
-SUBSETS = {
-    "coral-v2": "read_aloud",
-    "fleurs": "da_dk",
-}
-
-SPLITS = {
-    "coral-v2": "test",
-    "fleurs": "test",
-}
-
-
-# =========================
-# Data utilities
-# =========================
-def filter_eval_grid(
-    df: pd.DataFrame,
-    models: List[str] = MODELS,
-    datasets: List[str] = DATASETS,
-    subsets: Dict[str, str] = SUBSETS,
-    splits: Dict[str, str] = SPLITS,
-) -> pd.DataFrame:
-    """
-    Return df filtered to the exact evaluation combinations you specified.
-    Enforces categorical ordering for model and dataset_name.
-    """
-    eval_combos = [
-        {
-            "model": m,
-            "dataset_name": d,
-            "dataset_subset": subsets[d],
-            "dataset_split": splits[d],
-        }
-        for m in models
-        for d in datasets
-    ]
-    key_cols = ["model", "dataset_name", "dataset_subset", "dataset_split"]
-    merged = df.merge(pd.DataFrame(eval_combos), on=key_cols, how="inner").copy()
-    merged["model"] = pd.Categorical(merged["model"], categories=models, ordered=True)
-    merged["dataset_name"] = pd.Categorical(merged["dataset_name"], categories=datasets, ordered=True)
-    return merged
-
 
 # =========================
 # Formatting utilities
@@ -82,11 +22,40 @@ FORMAT_DICT = {
     "model": "Model",
     "coral-v2": "CoRal v2",
     "fleurs": "Fleurs",
+    "whisper-large-v3": "Whisper-L",
+    "whisper-large-v3-turbo": "Whisper-L-Turbo",
+    "roest-wav2vec2-315m-v2": "Røst-W2V2-315M",
+    "roest-wav2vec2-1B-v2": "Røst-W2V2-1B",
+    "roest-wav2vec2-2B-v2": "Røst-W2V2-2B",
+    "hviske-v3-conversation": "Hviske-v3-Conv",
+    "hviske-v2": "Hviske-v2",
+    "seamless-m4t-v2-large": "Seamless-M4T-L",
+    "roest-whisper-large-v1": "Røst-Whisper-L",
+    "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
+    "canary-1b-v2": "Canary-1B",
+    "parakeet-tdt-0.6b-v3_finetune": "Parakeet-TDT_FT",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug": "Parakeet-TDT_FT+SA",
+    "parakeet-tdt-0.6b-v3_finetune_speed-perturbations": "Parakeet-TDT_FT+SP",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations": "Parakeet-TDT_FT+SA+SP",
+    "canary-1b-v2_finetune": "Canary-1B_FT",
+    "canary-1b-v2_finetune_spec-aug": "Canary-1B_FT+SA",
+    "canary-1b-v2_finetune_speed-perturbations": "Canary-1B_FT+SP",
+    "canary-1b-v2_finetune_spec-aug_speed-perturbations": "Canary-1B_FT+SA+SP",
 }
 
 
 def _fmt(label: str) -> str:
     return FORMAT_DICT.get(label, label)
+
+
+def _format_xtick_labels(ax, rotation: int = 60, ha: str = "right") -> None:
+    """Format current x-tick labels via FORMAT_DICT and apply rotation/alignment."""
+    ticks = ax.get_xticklabels()
+    formatted = []
+    for t in ticks:
+        text = t.get_text()
+        formatted.append(_fmt(text))
+    ax.set_xticklabels(formatted, rotation=rotation, ha=ha)
 
 
 # =========================
@@ -101,7 +70,7 @@ def plot_bar_metric(
     height: int = 6,
     separate_by_dataset: bool = False,
     capsize: float = 0.2,
-    fontsize: int = 12,                 # NEW
+    fontsize: int = 12,
 ):
     """
     Bar plot of mean metric per model with SEM-based symmetric intervals.
@@ -140,9 +109,7 @@ def plot_bar_metric(
             ax.set_xlabel(x_lab, fontsize=fontsize)
             ax.set_ylabel(y_lab, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
-            for label in ax.get_xticklabels():
-                label.set_rotation(60)
-                label.set_horizontalalignment("right")
+            _format_xtick_labels(ax, rotation=60, ha="right")
 
         # facet titles (format dataset names)
         for ax, ds in zip(g.axes.flat, ds_categories):
@@ -177,7 +144,7 @@ def plot_bar_metric(
         ax.set_ylabel(y_lab, fontsize=fontsize)
         ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
         ax.tick_params(axis="both", labelsize=fontsize)
-        plt.xticks(rotation=60, ha="right")
+        _format_xtick_labels(ax, rotation=60, ha="right")
 
         # clean legend with formatted dataset names + title
         if ax.legend_ is not None:
@@ -242,7 +209,8 @@ def plot_box_metric(
         ax.set_ylabel(y_lab, fontsize=fontsize)
         ax.set_title(f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize+3)
         ax.tick_params(axis="both", labelsize=fontsize)
-        plt.xticks(rotation=60, ha="right")
+        _format_xtick_labels(ax, rotation=60, ha="right")
+
 
         # format legend labels + title
         if ax.legend_ is not None:
@@ -284,9 +252,7 @@ def plot_box_metric(
             ax.set_xlabel(x_lab, fontsize=fontsize)
             ax.set_ylabel(y_lab, fontsize=fontsize)
             ax.tick_params(axis="both", labelsize=fontsize)
-            for label in ax.get_xticklabels():
-                label.set_rotation(60)
-                label.set_horizontalalignment("right")
+            _format_xtick_labels(ax, rotation=60, ha="right")
 
         fig.suptitle(f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize+3)
 
@@ -300,7 +266,7 @@ def plot_box_metric(
 
 
 def make_all_plots(
-    raw_df: pd.DataFrame,
+    data: pd.DataFrame,
     save_dir: Optional[str] = "figures_seaborn",
     ci: str = 95,
     width: int = 12,
@@ -309,7 +275,7 @@ def make_all_plots(
     """
     Convenience wrapper that filters to your grid and emits all standard plots.
     """
-    data = filter_eval_grid(raw_df)
+    
     plot_bar_metric(data, "CER", ci_level=ci, save_dir=save_dir, width=width, height=height)
     plot_bar_metric(data, "CER", ci_level=ci, separate_by_dataset=True, save_dir=save_dir, width=width, height=height)
     plot_bar_metric(data, "WER", ci_level=ci, save_dir=save_dir, width=width, height=height)

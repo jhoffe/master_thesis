@@ -24,10 +24,15 @@ MODELS = [
     "roest-whisper-large-v1",
     "seamless-m4t-v2-large",
     "parakeet-tdt-0.6b-v3",
+    "parakeet-tdt-0.6b-v3_finetune",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug",
+    "parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
+    "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
     "canary-1b-v2",
-    "canary-1b-v2_finetuned_spec-aug",
-    "parakeet-tdt-0.6b-v3_finetuned_spec-aug",
-
+    "canary-1b-v2_finetune",
+    "canary-1b-v2_finetune_spec-aug",
+    "canary-1b-v2_finetune_speed-perturbations",
+    "canary-1b-v2_finetune_spec-aug_speed-perturbations",
 ]
 
 DATASETS = [

@@ -261,9 +261,9 @@ def compute_metrics_of_dataset_using_nemo(
 
     start_time = time.time()
 
-    # if carbon_tracker_log_name is not None:
-    #    carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
-    #    carbon_tracker.epoch_start()
+    if carbon_tracker_log_name is not None:
+        carbon_tracker = CarbonTracker(epochs=1, log_dir="carbon_logs", log_file_prefix=carbon_tracker_log_name)
+        carbon_tracker.epoch_start()
 
     transcriptions = transcriber.transcribe(
         dataset["audio"],
@@ -272,9 +272,9 @@ def compute_metrics_of_dataset_using_nemo(
         **kwargs,
     )
 
-    # if carbon_tracker_log_name is not None:
-    #    carbon_tracker.epoch_end()
-    #    carbon_tracker.stop()
+    if carbon_tracker_log_name is not None:
+        carbon_tracker.epoch_end()
+        carbon_tracker.stop()
 
     end_time = time.time()
     duration = end_time - start_time

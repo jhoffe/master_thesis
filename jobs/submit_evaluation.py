@@ -104,9 +104,11 @@ if __name__ == "__main__":
         # "canary-1b-v2_finetuned_spec-aug",
         # "parakeet-tdt-0.6b-v3_finetuned_spec-aug",
         "parakeet-tdt-0.6b-v3_finetune",
+        "parakeet-tdt-0.6b-v3_finetune_spec-aug",
         "parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
         "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
         "canary-1b-v2_finetune",
+        "canary-1b-v2_finetune_spec-aug",
         "canary-1b-v2_finetune_speed-perturbations",
         "canary-1b-v2_finetune_spec-aug_speed-perturbations",
     ]
