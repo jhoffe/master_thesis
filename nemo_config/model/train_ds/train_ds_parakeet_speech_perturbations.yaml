@@ -1,8 +1,0 @@
-defaults:
-  - base_training_dataset
-
-manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud_sp/train/tarred_audio_manifest.json'
-tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud_sp/train/audio__OP_0..881_CL_.tar'
-
-batch_size: 16
-shuffle: true

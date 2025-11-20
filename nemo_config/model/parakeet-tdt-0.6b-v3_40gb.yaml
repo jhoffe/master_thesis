@@ -1,7 +1,0 @@
-defaults:
-  - base_finetune
-  - train_ds: lhotse_training_dataset_parakeet_40gb
-  - validation_ds: base_validation_dataset
-  - test_ds: base_test_dataset
-
-batch_dim_index: 1

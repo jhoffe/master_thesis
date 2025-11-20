@@ -1,7 +1,12 @@
 defaults:
-  - model: canary-1b-v2_30-buckets
+  - model: canary-1b-v2
   - trainer: canary-1b-v2
   - exp_manager: base_finetune
+  - optim@model.optim: adamw
+  - preprocessor@model.preprocessor: base
+  - spec_augment@model.spec_augment: base
+  - train_ds@model.train_ds: train_ds_canary_30_buckets
+  - validation_ds@model.validation_ds: lhotse_validation_dataset
 
 name: 'canary-1b-v2-finetune_spec-aug_30-buckets'
 

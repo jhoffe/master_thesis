@@ -1,4 +1,2 @@
 defaults:
   - base_finetune
-
-batch_dim_index: 1

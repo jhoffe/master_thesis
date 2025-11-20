@@ -283,49 +283,49 @@ nemo-oomptimize:
     @echo "OOMptimizing nvidia/canary-1b-v2 with 30 buckets"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/canary-1b-v2" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_canary_30_buckets.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_canary_30_buckets.yaml" \
         --memory-fraction=0.9
     
     @echo "OOMptimizing nvidia/canary-1b-v2 with 30 buckets with speed perturbations"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/canary-1b-v2" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_canary_30_buckets_speech_perturbations.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_canary_30_buckets_speech_perturbations.yaml" \
         --memory-fraction=0.9
 
     @echo "OOMptimizing nvidia/canary-1b-v2 with 12 buckets"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/canary-1b-v2" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_canary_12_buckets.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_canary_12_buckets.yaml" \
         --memory-fraction=0.9
     
     @echo "OOMptimizing nvidia/canary-1b-v2 with 12 buckets with speed perturbations"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/canary-1b-v2" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_canary_12_buckets_speech_perturbations.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_canary_12_buckets_speech_perturbations.yaml" \
         --memory-fraction=0.9
 
     @echo "OOMptimizing nvidia/parakeet-tdt-0.6b-v3 with 30 buckets"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/parakeet-tdt-0.6b-v3" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_parakeet_30_buckets.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_parakeet_30_buckets.yaml" \
         --memory-fraction=0.9
 
     @echo "OOMptimizing nvidia/parakeet-tdt-0.6b-v3 with 30 buckets with speech perturbations"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/parakeet-tdt-0.6b-v3" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_parakeet_30_buckets_speech_perturbations.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_parakeet_30_buckets_speech_perturbations.yaml" \
         --memory-fraction=0.9
 
     @echo "OOMptimizing nvidia/parakeet-tdt-0.6b-v3 with 12 buckets"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/parakeet-tdt-0.6b-v3" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_parakeet_12_buckets.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_parakeet_12_buckets.yaml" \
         --memory-fraction=0.9
 
     @echo "OOMptimizing nvidia/parakeet-tdt-0.6b-v3 with 12 buckets with speech perturbations"
     {{python}} external/oomptimizer.py \
         --pretrained-name="nvidia/parakeet-tdt-0.6b-v3" \
-        --dataset-config-path="nemo_config/model/train_ds/train_ds_parakeet_12_buckets_speech_perturbations.yaml" \
+        --dataset-config-path="nemo_config/train_ds/train_ds_parakeet_12_buckets_speech_perturbations.yaml" \
         --memory-fraction=0.9
 
 # Submit OOMptimizer job

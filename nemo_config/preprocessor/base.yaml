@@ -1,8 +1,3 @@
-defaults:
-  - base_finetune
-  - train_ds: lhotse_training_dataset_canary_40gb
-  - validation_ds: lhotse_validation_dataset
-
 preprocessor:
   _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
   sample_rate: ${model.sample_rate}

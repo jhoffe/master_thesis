@@ -1,0 +1,4 @@
+spec_augment:
+  _target_: nemo.collections.asr.modules.SpectrogramAugmentation
+  freq_masks: 0
+  time_masks: 0

@@ -1,7 +1,13 @@
 defaults:
-  - model: parakeet-tdt-0.6b-v3_pitch-shift
+  - model: parakeet-tdt-0.6b-v3
   - trainer: parakeet-tdt-0.6b-v3
   - exp_manager: base_single
+  - optim@model.optim: adamw
+  - preprocessor@model.preprocessor: pitch_shift
+  - spec_augment@model.spec_augment: disabled
+  - train_ds@model.train_ds: train_ds_parakeet
+  - validation_ds@model.validation_ds: base_validation_dataset
+  - test_ds@model.test_ds: base_test_dataset
 
 name: 'parakeet-tdt-0.6b-v3-finetune_pitch-shift'
 
@@ -10,9 +16,3 @@ seed: 15
 # use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
 init_from_pretrained_model: nvidia/parakeet-tdt-0.6b-v3 # path to nemo model
-
-model:
-  spec_augment:
-    _target_: nemo.collections.asr.modules.SpectrogramAugmentation
-    freq_masks: 0
-    time_masks: 0

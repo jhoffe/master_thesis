@@ -1,8 +1,9 @@
 defaults:
   - base_training_dataset
+  - speech_perturbations
 
-manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud_sp/train/sharded_manifests/manifest__OP_0..881_CL_.json'
-tarred_audio_filepaths: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/CoRal-project_coral-v2_read-aloud_sp/train/audio__OP_0..881_CL_.tar'
+manifest_filepath: ${.speech_perturbations.sharded_manifest}
+tarred_audio_filepaths: ${.speech_perturbations.tar_archives}
 # bucketing params
 use_lhotse: true
 
