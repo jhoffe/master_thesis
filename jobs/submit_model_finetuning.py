@@ -1,26 +1,25 @@
-from __future__ import annotations
-
 import os
+from time import sleep
 
 from dotenv import load_dotenv
 from subjob import Submittor
 from subjob.lsf import LSFSubmissionOptions
 from subjob.lsf.options import GPUMode
-import typer
 
 
-def submit_job(config_name: str):
+def submit_job(config_name: str, walltime: str, wait_for: str | None = None):
     job_name = f"finetune-model-{config_name}"
 
     opts = LSFSubmissionOptions(
         queue="gpuh100",
         job_name=job_name,
-        num_cores=9,
+        num_cores=24,
         gpu_mode=GPUMode.EXCLUSIVE_PROCESS,
         gpu_num=1,
-        walltime="24:00",
-        memory="7GB",
+        walltime=walltime,
+        memory="4GB",
         working_directory=os.environ.get("HPC_PATH"),
+        dependency=wait_for,
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
         error_file=f"logs/{job_name}.%J.err",
@@ -28,7 +27,6 @@ def submit_job(config_name: str):
             "NUMBA_CUDA_USE_NVIDIA_BINDING": "0",
             "WANDB_JOB_TYPE": "training",
         },
-        additional_resources=["select[gpu80gb]"],
         email=os.environ.get("HPC_EMAIL_ADDRESS"),
         notify_on_start=os.environ.get("HPC_NOTIFY_ON_START") == "1",
         notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
@@ -47,17 +45,10 @@ def submit_job(config_name: str):
             ]
         )
 
+    return s.get_job_id()
 
-app = typer.Typer()
 
-
-@app.command()
-def main(
-    config_names: list[str] = typer.Argument(
-        None,
-        help="List of config names to submit. If not provided, submits all default configs.",
-    ),
-):
+def main():
     """
     Submit model finetuning jobs to the cluster.
 
@@ -71,30 +62,21 @@ def main(
     load_dotenv()
 
     # Default configs to submit if none specified
-    default_configs = [
-        # "parakeet-finetune_spec-aug",
-        # "canary-finetune_spec-aug",
-        # "parakeet-finetune",
-        # "canary-finetune",
-        # "canary-finetune_12-buckets",
-        # "canary-finetune_speech-perturbations_30-buckets",
-        # "canary-finetune_spec-aug_speech-perturbations_30-buckets",
-        # "parakeet-finetune_speech-perturbations",
-        # "parakeet-finetune_spec-aug_speech-perturbations",
-        "canary-finetune_pitch-shift",
-        "parakeet-finetune_pitch-shift",
-    ]
+    canary_configs = []
+    parakeet_configs = []
 
-    # Use provided configs or default to all
-    configs_to_submit = config_names if config_names else default_configs
+    job_id = None
 
-    typer.echo(f"Submitting {len(configs_to_submit)} job(s)...")
-    for config_name in configs_to_submit:
-        typer.echo(f"  - Submitting: {config_name}")
-        submit_job(config_name)
+    for config_name in canary_configs:
+        job_id = submit_job(config_name, walltime="20:00", wait_for=job_id)
+        sleep(2)  # Slight delay to avoid overwhelming the scheduler
 
-    typer.echo("✓ All jobs submitted successfully!")
+    job_id = None
+
+    for config_name in parakeet_configs:
+        job_id = submit_job(config_name, walltime="17:00", wait_for=job_id)
+        sleep(2)  # Slight delay to avoid overwhelming the scheduler
 
 
 if __name__ == "__main__":
-    app()
+    main()
