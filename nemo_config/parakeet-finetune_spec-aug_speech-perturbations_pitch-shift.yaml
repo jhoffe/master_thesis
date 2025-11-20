@@ -1,0 +1,18 @@
+defaults:
+  - model: parakeet
+  - trainer: parakeet
+  - exp_manager: base_single
+  - optim@model.optim: adamw
+  - preprocessor@model.preprocessor: pitch_shift
+  - spec_augment@model.spec_augment: base
+  - speech_perturbations@model.speech_perturbations: base
+  - validation_ds@model.validation_ds: base_validation_dataset
+  - test_ds@model.test_ds: base_test_dataset
+
+name: 'parakeet-finetune_spec-aug_speech-perturbations'
+
+seed: 15
+
+# use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
+# We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
+init_from_pretrained_model: nvidia/parakeet-tdt-0.6b-v3 # path to nemo model

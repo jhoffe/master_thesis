@@ -1,0 +1,17 @@
+defaults:
+  - model: canary
+  - trainer: canary
+  - exp_manager: base_finetune
+  - optim@model.optim: adamw
+  - preprocessor@model.preprocessor: pitch_shift
+  - spec_augment@model.spec_augment: base
+  - train_ds@model.train_ds: train_ds_canary_30_buckets
+  - validation_ds@model.validation_ds: lhotse_validation_dataset
+
+name: 'canary-finetune_spec-aug'
+
+seed: 15
+
+# use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
+# We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
+init_from_pretrained_model: nvidia/canary-1b-v2 # path to nemo model
