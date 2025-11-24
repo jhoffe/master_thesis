@@ -10,7 +10,7 @@ import wandb
 from utils.deep_evaluation_analysis_utils import format
 
 THEME = load_theme("scientific").set_font(sans_serif="DejaVu Sans").set_transforms(trim=True)
-SAVE_PATH = os.path.abspath(os.getcwd())
+SAVE_PATH = os.path.join(os.getcwd(), "reports", "figures", "training_plots")
 
 
 def get_training_runs():
