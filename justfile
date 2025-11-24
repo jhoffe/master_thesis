@@ -376,3 +376,8 @@ train-kenlm-parakeet:
 [group('lm')]
 train-kenlm: train-kenlm-parakeet
     @echo "KenLM training complete."
+
+# Generates training plots from WandB runs
+[group('results')]
+make-train-plots:
+    {{python}} src/scripts/make_train_plots.py

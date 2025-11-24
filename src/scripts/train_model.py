@@ -62,7 +62,7 @@ import lightning.pytorch as pl
 from nemo.collections.asr.models import ASRModel
 from nemo.core.config import hydra_runner
 from nemo.utils import logging, model_utils
-from nemo.utils.exp_manager import exp_manager
+from nemo.utils.exp_manager import exp_manager, clean_exp_ckpt
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import OmegaConf
@@ -237,6 +237,9 @@ def main(cfg):
 
     # Updating the cfg with the actual used config
     wandb.config.update(OmegaConf.to_container(cfg, resolve=True))
+
+    # Remove PTL ckpt file, and potentially also remove .nemo file to conserve storage space.
+    clean_exp_ckpt(logging_path, remove_ckpt=True, remove_nemo=False)
 
     logging.info("Logging the fine-tuned model as a WandB artifact.")
     artifact = wandb.Artifact(

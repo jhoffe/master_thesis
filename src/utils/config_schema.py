@@ -3,7 +3,7 @@ from enum import Enum
 import warnings
 
 from pydantic.dataclasses import dataclass
-from pydantic.types import DirectoryPath, PositiveFloat, PositiveInt
+from pydantic.types import DirectoryPath, FilePath, PositiveFloat, PositiveInt
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -44,6 +44,11 @@ class ModelConfigSchema:
     language: str | None = None
 
     decoding_config: dict | None = None
+
+    # Adapter parameters
+    adapter_path: FilePath | None = None
+    adapter_name: str | None = None
+    adapter_config: dict | None = None
 
 
 @dataclass(frozen=True)

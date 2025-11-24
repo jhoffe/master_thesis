@@ -200,6 +200,35 @@ def load_hf_asr_pipeline(config: ModelConfigSchema) -> AutomaticSpeechRecognitio
     return transcriber
 
 
+def prepare_for_adapters(
+    asr_model: nemo_asr.models.ASRModel, config: ModelConfigSchema
+) -> nemo_asr.models.ASRModel:
+    """Prepare the ASR model for adapter usage.
+
+    Args:
+        asr_model:
+            The ASR model to prepare.
+        config:
+            The model configuration.
+    Returns:
+        The ASR model prepared for adapter usage.
+    """
+
+    if config.adapter_path is not None and config.adapter_name is not None:
+        logger.info(f"Loading adapter {config.adapter_name!r} from {config.adapter_path!r}...")
+        asr_model.load_adapters(
+            adapter_name=config.adapter_name,
+            adapter_path=config.adapter_path,
+            adapter_config=config.adapter_config,
+        )
+        asr_model.set_active_adapters([config.adapter_name])
+        logger.info(f"Loaded and activated adapter {config.adapter_name!r}.")
+    else:
+        logger.warning("No adapter path or name provided, skipping adapter loading.")
+
+    return asr_model
+
+
 def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRModel:
     """Load the ASR pipeline.
 

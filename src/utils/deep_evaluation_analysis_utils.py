@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from datasets import Dataset
 from loguru import logger
@@ -13,7 +13,7 @@ from scipy.stats import kruskal
 import seaborn as sns
 from statsmodels.stats.multitest import multipletests
 
-FORMAT_DICT = {
+_FORMAT_DICT: dict[Union[str, tuple[str, ...]], str] = {
     "WER": "WER",
     "CER": "CER",
     "mean_pitch_hz": "Mean Pitch (Hz)",
@@ -26,11 +26,11 @@ FORMAT_DICT = {
     "clip_length": "Clip Length (s)",
     "dataset_name": "Dataset",
     "model": "Model",
-    "coral-v2": "CoRal v2",
+    ("coral", "coral-v2"): "CoRal v2",
     "fleurs": "Fleurs",
     "roest-whisper-large-v1": "Røst-Whisper",
-    "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
-    "canary-1b-v2": "Canary-1B",
+    ("parakeet", "parakeet-tdt-0.6b-v3"): "Parakeet-TDT",
+    ("canary", "canary-1b-v2"): "Canary-1B",
     "parakeet-tdt-0.6b-v3_finetune": "Parakeet-TDT_FT",
     "parakeet-tdt-0.6b-v3_finetune_spec-aug": "Parakeet-TDT_FT+SA",
     "parakeet-tdt-0.6b-v3_finetune_speed-perturbations": "Parakeet-TDT_FT+SP",
@@ -42,6 +42,32 @@ FORMAT_DICT = {
     "dialect_group": "Dialect Group",
     "age_group": "Age Group",
 }
+
+
+def make_format_dict(format_dict: dict[Union[str, tuple[str, ...]], str]) -> dict[str, str]:
+    """Expand FORMAT_DICT to map each individual string in tuple keys to the same value.
+
+    Args:
+        format_dict (dict[Union[str, Sequence[str]], str]): Original format dictionary with string or tuple keys.
+
+    Returns:
+        dict[str, str]: Expanded format dictionary with only string keys.
+    """
+    expanded_dict = {}
+    for key, value in format_dict.items():
+        if isinstance(key, tuple):
+            for sub_key in key:
+                expanded_dict[sub_key] = value
+        else:
+            expanded_dict[key] = value
+    return expanded_dict
+
+
+def format(label: str) -> str:
+    return FORMAT_DICT.get(label, label)
+
+
+FORMAT_DICT = make_format_dict(_FORMAT_DICT)
 
 # --- Dialect-to-group mapping ---
 SUB_DIALECT_TO_DIALECT = {

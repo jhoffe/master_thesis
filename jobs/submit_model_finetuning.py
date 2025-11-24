@@ -55,10 +55,10 @@ def main():
     load_dotenv()
 
     experiments = [
-        "",
-        "_pitch-shift",
-        "_spec-aug_pitch-shift",
-        "_spec-aug_speed-perturbations_pitch-shift",
+        # "",
+        # "_pitch-shift",
+        # "_spec-aug_pitch-shift",
+        # "_spec-aug_speed-perturbations_pitch-shift",
         "_spec-aug_speed-perturbations",
         "_spec-aug",
         "_speed-perturbations_pitch-shift",
@@ -72,13 +72,14 @@ def main():
     job_id = None
 
     for config_name in canary_configs:
-        job_id = submit_job(config_name, walltime="20:00", wait_for=job_id)
-        sleep(2)  # Slight delay to avoid overwhelming the scheduler
+        pass
+        # job_id = submit_job(config_name, walltime="24:00", wait_for=job_id)
+        # sleep(2)  # Slight delay to avoid overwhelming the scheduler
 
     job_id = None
 
     for config_name in parakeet_configs:
-        job_id = submit_job(config_name, walltime="17:00", wait_for=job_id)
+        job_id = submit_job(config_name, walltime="24:00", wait_for=job_id)
         sleep(2)  # Slight delay to avoid overwhelming the scheduler
 
 
