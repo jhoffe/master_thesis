@@ -11,6 +11,7 @@ from utils.deep_evaluation_analysis_utils import (
     get_top_n_wer_samples,
     kruskal_wallis,
     mean_wer_by_group,
+    mean_wer_by_group_bootstrapped,
     spearman_correlation_plot,
 )
 from utils.evaluation_utils import load_from_parquet
@@ -19,7 +20,7 @@ from utils.evaluation_utils import load_from_parquet
 # Configuration
 # ==============================
 
-TARGET_METRICS = ["WER", "CER", "semantic_distancesemantic_distance"]
+TARGET_METRICS = ["WER", "CER", "semantic_distance"]
 FEATURE_METRICS = [
     "mean_pitch_hz",
     "median_pitch_hz",
@@ -135,7 +136,10 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
 
     for group_col in GROUPS:
         logger.info(f"Generating mean WER by {group_col} and model plot for CoRal-v2 dataset...")
-        mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
+        #mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
+        mean_wer_by_group_bootstrapped(
+            df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT
+        )
         for model_name, df_model in df_filtered_coral.groupby("model"):
             logger.info(f"Kruskal-Wallis test for model {model_name} on CoRal-v2 dataset...")
             kruskal_wallis(

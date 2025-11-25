@@ -17,7 +17,7 @@ def run_for_model(
 ) -> str | None:
     job_name = f"eval-{model_arg}-{dataset_arg}"
     if dataset_arg == "coral":
-        walltime = "01:30"
+        walltime = "02:00"
         if model_arg in [
             "hviske-v2",
             "hviske-v3-conversation",
@@ -26,7 +26,7 @@ def run_for_model(
         ]:
             walltime = "03:00"
     else:
-        walltime = "00:25"
+        walltime = "00:30"
         if model_arg in [
             "hviske-v2",
             "hviske-v3-conversation",
@@ -49,9 +49,9 @@ def run_for_model(
         # Uncomment to direct outputs:
         output_file=f"logs/{job_name}.%J.out",
         error_file=f"logs/{job_name}.%J.err",
-        email=os.environ.get("HPC_EMAIL_ADDRESS"),
-        notify_on_start=os.environ.get("HPC_NOTIFY_ON_START") == "1",
-        notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
+        #email=os.environ.get("HPC_EMAIL_ADDRESS"),
+        #notify_on_start=os.environ.get("HPC_NOTIFY_ON_START") == "1",
+        #notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
     )
 
     with Submittor(opts) as s:
@@ -90,27 +90,25 @@ if __name__ == "__main__":
     load_dotenv()
 
     models = [
-        # "hviske-v2",
-        # "hviske-v3-conversation",
-        # "roest-whisper-large-v1",
-        # "seamless-m4t-v2-large",
-        # "whisper-large-v3-turbo",
-        # "whisper-large-v3",
-        # "roest-wav2vec2-315m-v2",
-        # "roest-wav2vec2-1B-v2",
-        # "roest-wav2vec2-2B-v2",
-        # "parakeet-tdt-0.6b-v3",
-        # "canary-1b-v2",
-        # "canary-1b-v2_finetuned_spec-aug",
-        # "parakeet-tdt-0.6b-v3_finetuned_spec-aug",
-        "parakeet-tdt-0.6b-v3_finetune",
-        "parakeet-tdt-0.6b-v3_finetune_spec-aug",
-        "parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
-        "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
-        "canary-1b-v2_finetune",
-        "canary-1b-v2_finetune_spec-aug",
-        "canary-1b-v2_finetune_speed-perturbations",
-        "canary-1b-v2_finetune_spec-aug_speed-perturbations",
+        #"hviske-v2",
+        #"hviske-v3-conversation",
+        #"roest-whisper-large-v1",
+        #"seamless-m4t-v2-large",
+        "whisper-large-v3-turbo",
+        "whisper-large-v3",
+        #"roest-wav2vec2-315m-v2",
+        #"roest-wav2vec2-1B-v2",
+        #"roest-wav2vec2-2B-v2",
+        #"parakeet-tdt-0.6b-v3",
+        #"canary-1b-v2",
+        #"parakeet-tdt-0.6b-v3_finetune",
+        #"parakeet-tdt-0.6b-v3_finetune_spec-aug",
+        #"parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
+        #"parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
+        #"canary-1b-v2_finetune",
+        #"canary-1b-v2_finetune_spec-aug",
+        #"canary-1b-v2_finetune_speed-perturbations",
+        #"canary-1b-v2_finetune_spec-aug_speed-perturbations",
     ]
 
     for experiment in models:

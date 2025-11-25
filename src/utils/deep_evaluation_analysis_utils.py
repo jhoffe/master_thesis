@@ -425,3 +425,152 @@ def mean_wer_by_group(
         bbox_inches="tight",
     )
     plt.close()
+
+
+def _bootstrap_mean_ci(x, level=95, B=5000, rng=None):
+    """Percentile bootstrap CI for the mean of 1D array x."""
+    x = np.asarray(x)
+    n = len(x)
+    if rng is None:
+        rng = np.random.default_rng()
+    boot = np.empty(B, dtype=float)
+    for b in range(B):
+        sample = rng.choice(x, size=n, replace=True)
+        boot[b] = sample.mean()
+    alpha = 1 - level / 100
+    low, high = np.quantile(boot, [alpha / 2, 1 - alpha / 2])
+    return x.mean(), low, high
+
+
+def mean_wer_by_group_bootstrapped(
+    df: pd.DataFrame,
+    format_dict: Dict[str, str],
+    group_col: str,
+) -> None:
+    """Plot mean WER by group for CoRal-v2 dataset with bootstrap CIs."""
+    rng = np.random.default_rng()
+
+    # Order groups
+    if group_col == "dialect_group":
+        group_order = df.groupby(group_col)["WER"].mean().sort_values().index
+    else:
+        group_order = df.groupby(group_col)["WER"].mean().index
+
+    models = list(df["model"].unique())
+
+    # ---------- bootstrap summary: one row per (group, model) ----------
+    summary_rows = []
+    for (grp, model), sub in df.groupby([group_col, "model"], observed=True):
+        mean, ci_low, ci_high = _bootstrap_mean_ci(
+            sub["WER"].to_numpy(), level=95, B=5000, rng=rng
+        )
+        summary_rows.append(
+            {
+                group_col: grp,
+                "model": model,
+                "mean": mean,
+                "ci_low": ci_low,
+                "ci_high": ci_high,
+            }
+        )
+    summary = pd.DataFrame(summary_rows)
+    summary[group_col] = pd.Categorical(summary[group_col],
+                                        categories=group_order,
+                                        ordered=True)
+    summary["model"] = pd.Categorical(summary["model"],
+                                      categories=models,
+                                      ordered=True)
+    summary = summary.sort_values([group_col, "model"])
+
+    # ---------- barplot of means ----------
+    plt.figure(figsize=(12, 7))
+    ax = sns.barplot(
+        data=summary,
+        y=group_col,
+        x="mean",
+        hue="model",
+        order=group_order,
+        orient="h",
+        ci=None,          # we add CIs manually
+    )
+
+    # ---------- bootstrap CIs, aligned by reading tick positions ----------
+    yticks = np.array(ax.get_yticks())
+    yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+
+    for model_index, model in enumerate(models):
+        container = ax.containers[model_index]          # bars for this model
+
+        for bar in container:
+            y_center = bar.get_y() + bar.get_height() / 2
+            # find nearest tick to this bar and its label
+            idx = int(np.argmin(np.abs(yticks - y_center)))
+            grp_label = yticklabels[idx]
+
+            row = summary[
+                (summary[group_col] == grp_label) &
+                (summary["model"] == model)
+            ].iloc[0]
+
+            mean = row["mean"]
+            ci_low = row["ci_low"]
+            ci_high = row["ci_high"]
+
+            ax.errorbar(
+                mean,
+                y_center,
+                xerr=[[mean - ci_low], [ci_high - mean]],
+                fmt="none",
+                ecolor="black",
+                capsize=4,
+                capthick=1.2,
+                linewidth=1.2,
+            )
+
+    # ---------- median diamonds (your original logic) ----------
+    median_df = df.groupby([group_col, "model"])["WER"].median().reset_index()
+
+    for i, row in median_df.iterrows():
+        group_value = row[group_col]
+        model = row["model"]
+        median_wer = row["WER"]
+
+        group_index = list(group_order).index(group_value)
+        model_index = models.index(model)
+
+        num_models = len(models)
+        total_bar_height = 0.8  # seaborn default
+        bar_height = total_bar_height / num_models
+
+        x_pos = median_wer
+        y_pos = (
+            group_index
+            - total_bar_height / 2
+            + bar_height / 2
+            + model_index * bar_height
+        )
+
+        plt.plot(
+            x_pos,
+            y_pos,
+            marker="D",
+            color="black",
+            markersize=6,
+            label="Median WER" if i == 0 else "",
+        )
+
+    # ---------- labels, legend, save ----------
+    plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
+    plt.xlabel("Mean WER")
+    plt.ylabel(_fmt(format_dict, group_col))
+
+    handles, labels = ax.get_legend_handles_labels()
+    full_labels = [_fmt(format_dict, label) for label in labels]
+    plt.legend(handles, full_labels, title="Model")
+
+    plt.tight_layout()
+    plt.savefig(
+        f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png",
+        bbox_inches="tight",
+    )
+    plt.close()
