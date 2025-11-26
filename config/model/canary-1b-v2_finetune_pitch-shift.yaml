@@ -1,0 +1,10 @@
+defaults:
+  - base_model
+
+name: 'canary_finetune_pitch-shift'
+
+# Evaluation parameters
+model_id: null
+restore_from: 'artifact://canary-finetune_pitch-shift_27111633:latest/canary_finetune_pitch-shift.nemo'
+nemo_model: true
+language: 'da'

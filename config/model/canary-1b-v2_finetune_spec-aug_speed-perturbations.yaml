@@ -1,10 +1,10 @@
 defaults:
   - base_model
 
-name: 'canary-1b-v2_finetune_spec-aug_speed-perturbations'
+name: 'canary_finetune_spec-aug_speed-perturbations'
 
 # Evaluation parameters
 model_id: null
-restore_from: 'artifact://canary-1b-v2-finetune_30-buckets_spec-aug_speech-perturbations_26885394:latest/canary-1b-v2-finetune_30-buckets_spec-aug_speech-perturbations.nemo'
+restore_from: 'artifact://canary-finetune_spec-aug_speed-perturbations_27154105:latest/canary-finetune_spec-aug_speed-perturbations.nemo'
 nemo_model: true
 language: 'da'

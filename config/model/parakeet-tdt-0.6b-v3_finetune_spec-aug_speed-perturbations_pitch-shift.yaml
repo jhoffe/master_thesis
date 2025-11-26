@@ -1,0 +1,9 @@
+defaults:
+  - base_model
+
+name: 'parakeet_finetune_spec-aug_speed-perturbations_pitch-shift'
+
+# Evaluation parameters
+model_id: null
+restore_from: 'artifact://parakeet-finetune_spec-aug_speed-perturbations_pitch-shift_27133893:latest/parakeet-finetune_spec-aug_speed-perturbations_pitch-shift.nemo'
+nemo_model: true
