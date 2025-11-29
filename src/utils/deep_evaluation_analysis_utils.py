@@ -26,21 +26,29 @@ _FORMAT_DICT: dict[Union[str, tuple[str, ...]], str] = {
     "clip_length": "Clip Length (s)",
     "dataset_name": "Dataset",
     "model": "Model",
-    ("coral", "coral-v2"): "CoRal v2",
+    ("coral", "coral-v2"): "CoRal-v2",
     "fleurs": "Fleurs",
     "roest-whisper-large-v1": "Røst-Whisper",
     ("parakeet", "parakeet-tdt-0.6b-v3"): "Parakeet-TDT",
     ("canary", "canary-1b-v2"): "Canary-1B",
-    "parakeet-tdt-0.6b-v3_finetune": "Parakeet-TDT_FT",
-    "parakeet-tdt-0.6b-v3_finetune_spec-aug": "Parakeet-TDT_FT+SA",
-    "parakeet-tdt-0.6b-v3_finetune_speed-perturbations": "Parakeet-TDT_FT+SP",
-    "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations": "Parakeet-TDT_FT+SA+SP",
-    "canary-1b-v2_finetune": "Canary-1B_FT",
-    "canary-1b-v2_finetune_spec-aug": "Canary-1B_FT+SA",
-    "canary-1b-v2_finetune_speed-perturbations": "Canary-1B_FT+SP",
-    "canary-1b-v2_finetune_spec-aug_speed-perturbations": "Canary-1B_FT+SA+SP",
     "dialect_group": "Dialect Group",
     "age_group": "Age Group",
+    "parakeet_finetune": "Parakeet-TDT-FT",
+    "parakeet_finetune_pitch-shift": "Parakeet-TDT-FT+PS",
+    "parakeet_finetune_spec-aug": "Parakeet-TDT-FT+SA",
+    "parakeet_finetune_speed-perturbations": "Parakeet-TDT-FT+SP",
+    "parakeet_finetune_spec-aug_pitch-shift": "Parakeet-TDT-FT+SA+PS",
+    "parakeet_finetune_spec-aug_speed-perturbations": "Parakeet-TDT-FT+SA+SP",
+    "parakeet_finetune_speed-perturbations_pitch-shift": "Parakeet-TDT-FT+SP+PS",
+    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift": "Parakeet-TDT-FT+SA+SP+PS",
+    "canary_finetune": "Canary-1B-FT",
+    "canary_finetune_pitch-shift": "Canary-1B-FT+PS",
+    "canary_finetune_spec-aug": "Canary-1B-FT+SA",
+    "canary_finetune_speed-perturbations": "Canary-1B-FT+SP",
+    "canary_finetune_spec-aug_pitch-shift": "Canary-1B-FT+SA+PS",
+    "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
+    "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
+    "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
 }
 
 
@@ -129,6 +137,8 @@ def get_top_n_wer_samples(
     for dataset_name in dataset_names:
         for model in models:
             model_samples = df[(df["model"] == model) & (df["dataset_name"] == dataset_name)]
+            if model_samples.empty:
+                continue
             top_samples = model_samples.nlargest(top_n, "WER")
             sample_id_to_wer = {row["id"]: row["WER"] for _, row in top_samples.iterrows()}
             if dataset_name == "coral-v2":
@@ -204,6 +214,7 @@ def spearman_correlation_plot(
     target_metrics: List[str],
     feature_metrics: List[str],
     alpha: float = 0.05,
+    save_path: Path = Path("reports/plots/deep_analysis/")
 ) -> None:
     """
     Generate and save Spearman correlation heatmaps between target metrics and feature metrics
@@ -294,7 +305,6 @@ def spearman_correlation_plot(
         va="top",
         fontsize=9,
     )
-    save_path = Path("reports/plots/deep_analysis/")
     save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(save_path / f"spearman_correlation_{model}_{dataset}.png", bbox_inches="tight")
     plt.close()
@@ -309,6 +319,7 @@ def kruskal_wallis(
     model_name: str,
     format_dict: Dict[str, str],
     group_col: str,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
 ) -> None:
     """Perform Kruskal-Wallis test and Dunn post-hoc analysis on WER across dialect groups for CoRal-v2 dataset."""
     print("\n" + "=" * 80)
@@ -351,8 +362,9 @@ def kruskal_wallis(
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
     plt.tight_layout()
+    save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(
-        f"reports/plots/deep_analysis/dunn_posthoc_wer_{group_col}_{model_name}_coral_v2.png",
+        save_path / f"dunn_posthoc_wer_{group_col}_{model_name}_coral_v2.png",
         bbox_inches="tight",
     )
     plt.close()
@@ -362,6 +374,7 @@ def mean_wer_by_group(
     df: pd.DataFrame,
     format_dict: Dict[str, str],
     group_col: str,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
 ) -> None:
     """Plot mean WER by group for CoRal-v2 dataset."""
     # Order dialects by overall mean (across models)
@@ -420,8 +433,9 @@ def mean_wer_by_group(
 
     plt.legend(handles, full_labels, title="Model")
     plt.tight_layout()
+    save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(
-        f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png",
+        save_path / f"mean_wer_by_{group_col}_and_model_coral_v2.png",
         bbox_inches="tight",
     )
     plt.close()
@@ -446,6 +460,7 @@ def mean_wer_by_group_bootstrapped(
     df: pd.DataFrame,
     format_dict: Dict[str, str],
     group_col: str,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
 ) -> None:
     """Plot mean WER by group for CoRal-v2 dataset with bootstrap CIs."""
     rng = np.random.default_rng()
@@ -569,8 +584,9 @@ def mean_wer_by_group_bootstrapped(
     plt.legend(handles, full_labels, title="Model")
 
     plt.tight_layout()
+    save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(
-        f"reports/plots/deep_analysis/mean_wer_by_{group_col}_and_model_coral_v2.png",
+        save_path / f"mean_wer_by_{group_col}_and_model_coral_v2.png",
         bbox_inches="tight",
     )
     plt.close()

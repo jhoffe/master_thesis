@@ -5,6 +5,6 @@ name: 'canary_finetune'
 
 # Evaluation parameters
 model_id: null
-restore_from: 'artifact://canary-finetune_27111632:latest/canary_finetune.nemo'
+restore_from: 'artifact://canary-finetune_27111632:latest/canary-finetune.nemo'
 nemo_model: true
 language: 'da'

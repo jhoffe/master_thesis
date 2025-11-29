@@ -126,7 +126,11 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
 
     df columns: id, prediction, label, clip_length, CER, WER
     """
-    newest = get_path_to_latest_detailed_results_parquet(eval_combination, base)
+    try:
+        newest = get_path_to_latest_detailed_results_parquet(eval_combination, base)
+    except FileNotFoundError:
+        logger.warning(f"No detailed_results.parquet found for {eval_combination}")
+        return None
 
     # read with pyarrow to avoid partial row group reads
     df = pd.read_parquet(newest, engine="pyarrow")
@@ -262,7 +266,8 @@ def combine_all_detailed_results(
     dfs = []
     for eval_combination in eval_combination:
         df = load_latest_detailed_results_parsed(eval_combination=eval_combination, base=base)
-        dfs.append(df)
+        if df is not None:
+            dfs.append(df)
     combined_df = pd.concat(dfs, ignore_index=True)
     return combined_df
 

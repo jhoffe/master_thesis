@@ -31,7 +31,26 @@ FEATURE_METRICS = [
     "clip_length",
 ]
 
-MODELS = ["roest-whisper-large-v1", "parakeet-tdt-0.6b-v3", "canary-1b-v2"]
+BASE_MODELS = ["roest-whisper-large-v1", "parakeet-tdt-0.6b-v3", "canary-1b-v2"]
+
+FINETUNED_MODELS = [
+    "parakeet_finetune",
+    "parakeet_finetune_pitch-shift",
+    "parakeet_finetune_spec-aug",
+    "parakeet_finetune_speed-perturbations",
+    "parakeet_finetune_spec-aug_pitch-shift",
+    "parakeet_finetune_spec-aug_speed-perturbations",
+    "parakeet_finetune_speed-perturbations_pitch-shift",
+    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift",
+    "canary_finetune",
+    "canary_finetune_pitch-shift",
+    "canary_finetune_spec-aug",
+    "canary_finetune_speed-perturbations",
+    "canary_finetune_spec-aug_pitch-shift",
+    "canary_finetune_spec-aug_speed-perturbations",
+    "canary_finetune_speed-perturbations_pitch-shift",
+    "canary_finetune_spec-aug_speed-perturbations_pitch-shift",
+]
 
 DATASETS = ["fleurs", "coral-v2"]
 
@@ -43,13 +62,22 @@ GROUPS = [
 ALPHA = 0.05
 
 
-def deep_evaluation_analysis(skip_samples: bool) -> None:
+def _get_models(finetuning: bool) -> list[str]:
+    if finetuning:
+        return FINETUNED_MODELS
+    else:
+        return BASE_MODELS
+
+
+def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False) -> None:
     """Perform deep evaluation analysis by loading evaluation data, getting top WER samples, and generating correlation plots."""
 
     logger.info("Loading evaluation data...")
     df = load_from_parquet(
         Path("reports/metrics/combined_detailed_results_with_embeddings.parquet")
     )
+
+    MODELS = _get_models(finetuning)
 
     logger.info("Filtering evaluation data to specified grid...")
     df_filtered = df[df["model"].isin(MODELS) & df["dataset_name"].isin(DATASETS)]
@@ -61,7 +89,7 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
             top_n=10,
             dataset_names=DATASETS,
             models=MODELS,
-        )
+        )            
 
         for dataset_name in DATASETS:
             logger.info(f"Loading dataset: {dataset_name}...")
@@ -103,6 +131,7 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
                 model=model,
                 dataset=dataset,
                 format_dict=FORMAT_DICT,
+                save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),
             )
 
     # Focus on CoRal-v2
@@ -138,10 +167,17 @@ def deep_evaluation_analysis(skip_samples: bool) -> None:
         logger.info(f"Generating mean WER by {group_col} and model plot for CoRal-v2 dataset...")
         #mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
         mean_wer_by_group_bootstrapped(
-            df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT
+            df=df_filtered_coral, 
+            group_col=group_col, 
+            format_dict=FORMAT_DICT,
+            save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),
         )
         for model_name, df_model in df_filtered_coral.groupby("model"):
             logger.info(f"Kruskal-Wallis test for model {model_name} on CoRal-v2 dataset...")
             kruskal_wallis(
-                df=df_model, model_name=model_name, format_dict=FORMAT_DICT, group_col=group_col
+                df=df_model, 
+                model_name=model_name, 
+                format_dict=FORMAT_DICT, 
+                group_col=group_col,
+                save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),
             )

@@ -18,16 +18,18 @@ from utils.plot_summary_metrics import (
 # =========================
 MODELS = [
     "roest-whisper-large-v1",
-    # "parakeet-tdt-0.6b-v3",
-    "parakeet-tdt-0.6b-v3_finetune",
-    "parakeet-tdt-0.6b-v3_finetune_spec-aug",
-    "parakeet-tdt-0.6b-v3_finetune_speed-perturbations",
-    "parakeet-tdt-0.6b-v3_finetune_spec-aug_speed-perturbations",
-    # "canary-1b-v2",
-    "canary-1b-v2_finetune",
-    "canary-1b-v2_finetune_spec-aug",
-    "canary-1b-v2_finetune_speed-perturbations",
-    "canary-1b-v2_finetune_spec-aug_speed-perturbations",
+    #"parakeet-tdt-0.6b-v3",
+    "parakeet_finetune",
+    "parakeet_finetune_pitch-shift",
+    "parakeet_finetune_spec-aug",
+    "parakeet_finetune_spec-aug_pitch-shift",
+    "parakeet_finetune_spec-aug_speed-perturbations",
+    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift",
+    #"canary-1b-v2",
+    #"canary_finetune_pitch-shift",
+    "canary_finetune_spec-aug_pitch-shift",
+    "canary_finetune_spec-aug_speed-perturbations",
+    "canary_finetune_spec-aug_speed-perturbations_pitch-shift",
 ]
 
 DATASETS = ["coral-v2", "fleurs"]
