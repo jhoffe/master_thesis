@@ -1,16 +1,55 @@
 import os
+import pickle
+from pathlib import Path
 
 from aquarel import load_theme
 import dotenv
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import typer
 import wandb
 
 from utils.deep_evaluation_analysis_utils import format
 
+
+class NoOpContextManager:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
 THEME = load_theme("scientific").set_font(sans_serif="DejaVu Sans").set_transforms(trim=True)
 SAVE_PATH = os.path.join(os.getcwd(), "reports", "figures", "training_plots")
+CACHE_PATH = os.path.join(os.getcwd(), ".cache", "training_runs_cache.pkl")
+
+app = typer.Typer()
+
+
+def load_cached_runs():
+    """Load processed runs from cache if available."""
+    if os.path.exists(CACHE_PATH):
+        with open(CACHE_PATH, "rb") as f:
+            return pickle.load(f)
+    return None
+
+
+def save_cached_runs(processed_runs: list[dict]):
+    """Save processed runs to cache."""
+    os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+    with open(CACHE_PATH, "wb") as f:
+        pickle.dump(processed_runs, f)
+
+
+def clear_cache():
+    """Remove the cache file if it exists."""
+    if os.path.exists(CACHE_PATH):
+        os.remove(CACHE_PATH)
+        print(f"Cache cleared: {CACHE_PATH}")
+    else:
+        print("No cache file found.")
 
 
 def get_training_runs():
@@ -263,11 +302,124 @@ def plot_val_wer(processed_runs: list[dict]):
     _plot("parakeet", "fleurs")
 
 
-if __name__ == "__main__":
+def plot_val_wer_grid(processed_runs: list[dict]):
+    """Plot val_wer for parakeet and canary on both fleurs and coral in a 2x2 grid with shared y-axis."""
+    with THEME:
+        fig, axes = plt.subplots(2, 2, figsize=(22, 10), sharey=True)
+
+        # Define the grid layout: (model, dataset) pairs
+        plot_configs = [
+            ("parakeet", "coral", axes[0, 0]),
+            ("parakeet", "fleurs", axes[0, 1]),
+            ("canary", "coral", axes[1, 0]),
+            ("canary", "fleurs", axes[1, 1]),
+        ]
+
+        # Collect handles and labels for a single legend
+        handles_dict = {}
+
+        for model, dataset, ax in plot_configs:
+            for run_data in processed_runs:
+                if run_data["run_metadata"]["model"] != model:
+                    continue
+
+                steps, coral_wers, fleurs_wers = zip(*run_data["val_wer"])
+
+                augs = []
+                if run_data["run_metadata"]["spec_augment"]:
+                    augs.append("SpecAugment")
+                if run_data["run_metadata"]["pitch_shift"]:
+                    augs.append("Pitch Shift")
+                if run_data["run_metadata"]["speed_perturb"]:
+                    augs.append("Speed Perturbation")
+
+                label = "+".join(augs) if augs else "No Augmentations"
+
+                # Plot validation WERs
+                line = ax.plot(
+                    steps,
+                    coral_wers if dataset == "coral" else fleurs_wers,
+                    linewidth=1.5,
+                    alpha=0.65,
+                    label=label,
+                )
+
+                # Store handle for legend (avoid duplicates)
+                if label not in handles_dict:
+                    handles_dict[label] = line[0]
+
+            ax.set_xlabel("Steps")
+
+            # Set y-label only for leftmost plots
+            if ax in [axes[0, 0], axes[1, 0]]:
+                ax.set_ylabel("WER")
+
+        # Add column titles (datasets) at the top
+        axes[0, 0].set_title(format("coral"), fontsize=14, fontweight="bold", pad=10)
+        axes[0, 1].set_title(format("fleurs"), fontsize=14, fontweight="bold", pad=10)
+
+        # Add row titles (models) rotated 90 degrees on the left
+        fig.text(
+            0.02,
+            0.75,
+            format("parakeet"),
+            va="center",
+            ha="center",
+            rotation=90,
+            fontsize=14,
+            fontweight="bold",
+        )
+        fig.text(
+            0.02,
+            0.25,
+            format("canary"),
+            va="center",
+            ha="center",
+            rotation=90,
+            fontsize=14,
+            fontweight="bold",
+        )
+
+        # Create a single legend at the bottom with full width
+        fig.legend(
+            handles=handles_dict.values(),
+            labels=handles_dict.keys(),
+            bbox_to_anchor=(0.5, 0.02),
+            loc="lower center",
+            ncol=len(handles_dict) // 2,
+            frameon=True,
+            fontsize=13,
+        )
+
+        plt.tight_layout(rect=[0.03, 0.08, 1, 1])
+
+        os.makedirs(SAVE_PATH, exist_ok=True)
+        plt.savefig(os.path.join(SAVE_PATH, "val_wer_grid.png"), dpi=300)
+
+
+@app.command()
+def main(
+    reset_cache: bool = typer.Option(
+        False, "--reset-cache", help="Clear cache and redownload data"
+    ),
+):
+    """Generate training plots from WandB runs."""
     dotenv.load_dotenv()
 
-    runs = get_training_runs()
-    processed_runs = [process_run(run) for run in tqdm(runs)]
+    if reset_cache:
+        clear_cache()
+
+    # Try to load from cache
+    processed_runs = load_cached_runs()
+
+    if processed_runs is None:
+        print("No cache found. Downloading and processing runs from WandB...")
+        runs = get_training_runs()
+        processed_runs = [process_run(run) for run in tqdm(runs, desc="Processing runs")]
+        save_cached_runs(processed_runs)
+        print(f"Cached {len(processed_runs)} processed runs to {CACHE_PATH}")
+    else:
+        print(f"Loaded {len(processed_runs)} processed runs from cache.")
 
     # Plot training losses
     for run_data in processed_runs:
@@ -279,3 +431,10 @@ if __name__ == "__main__":
 
     # Plot combined validation WERs
     plot_val_wer(processed_runs)
+
+    # Plot validation WERs in 2x2 grid
+    plot_val_wer_grid(processed_runs)
+
+
+if __name__ == "__main__":
+    app()
