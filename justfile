@@ -381,3 +381,27 @@ train-kenlm: train-kenlm-parakeet
 [group('results')]
 make-train-plots:
     {{python}} src/scripts/make_train_plots.py
+
+# Generates LaTeX tables from evaluation results
+[group('results')]
+make-latex-table:
+
+# Process results
+[group('results')]
+prep-eval:
+    {{python}} jobs/prepare_evaluation.py
+    
+# Make evaluation plots
+[group('results')]
+make-eval-plots:
+    {{python}} src/scripts/evaluation_plots.py
+
+# Make evaluation plots
+[group('results')]
+make-deep-plots:
+    {{python}} src/scripts/deep_evaluation_analysis.py
+
+# Make evaluation plots
+[group('results')]
+make-finetune-plots:
+    {{python}} src/scripts/finetuning_evaluation_plots.py

@@ -85,10 +85,10 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False) -> No
     if not skip_samples:
         logger.info("Getting top 10 WER samples for each model on each dataset...")
         top_samples = get_top_n_wer_samples(
-            df_filtered=df_filtered,
-            top_n=10,
+            df=df_filtered,
             dataset_names=DATASETS,
             models=MODELS,
+            top_n=10,
         )            
 
         for dataset_name in DATASETS:
