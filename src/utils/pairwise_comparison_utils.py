@@ -197,7 +197,8 @@ def perform_pairwise_comparisons(
 def plot_pvalue_heatmap(
         parquet_file: str, 
         save_dir: Optional[str]=None, 
-        format_dict: Optional[Dict]=None
+        format_dict: Optional[Dict]=None,
+        lower_triangle_only: bool=False
     ) -> None:
     """
     Plots a heatmap of raw p-values (Holm-Bonferroni corrected).
@@ -218,7 +219,6 @@ def plot_pvalue_heatmap(
     yticks = [_fmt(m, format_dict) for m in models]
 
     # 3. Create Matrices
-    # p_matrix stores the actual p-values for both color and text
     p_matrix = pd.DataFrame(np.ones((n_models, n_models)), index=models, columns=models)
 
     for _, row in df.iterrows():
@@ -236,6 +236,7 @@ def plot_pvalue_heatmap(
                 annot_labels.loc[m1, m2] = ""
                 continue
             p_val = p_matrix.loc[m1, m2]
+            
             # Smart Formatting
             if p_val < 0.001:
                 txt = "<.001"
@@ -248,57 +249,87 @@ def plot_pvalue_heatmap(
             
             annot_labels.loc[m1, m2] = txt
 
-    # 5. Plotting
+    # 5. Define Mask (If requested)
+    mask = None
+    if lower_triangle_only:
+        # CUT THE EDGES:
+        p_matrix = p_matrix.iloc[1:, :-1]
+        annot_labels = annot_labels.iloc[1:, :-1]
+        
+        # Adjust ticks
+        yticks = yticks[1:] # Remove first model from Y
+        xticks = xticks[:-1] # Remove last model from X
+        
+        # Create mask for the NEW shape
+        # We want to keep the diagonal of this new shape (which represents adjacent models)
+        # So we mask strictly above the diagonal (k=1)
+        mask = np.triu(np.ones_like(p_matrix, dtype=bool), k=1)
+
+    # 6. Plotting
     plt.figure(figsize=(9, 7))
     base_name = os.path.basename(parquet_file).replace('.parquet', '')
     clean_title = base_name.replace('bootstrap_comparison_', '').replace('_', ' ').title()
-    dataset = clean_title.split()[0]
-    model_family = clean_title.split()[1]
+    
+    # Safe title parsing
+    parts = clean_title.split()
+    dataset = parts[0] if len(parts) > 0 else "Dataset"
+    if dataset == "Coral-V2":
+        dataset = "CoRal-v2"
+    model_family = parts[1] if len(parts) > 1 else "Models"
 
-    # Heatmap of RAW P-VALUES
-    # vmin=0, vmax=1 ensure the full range is represented linearly
-    # cmap="Blues_r" means 0 is Dark Blue, 1 is Light/White
-    ax = sns.heatmap(p_matrix, annot=annot_labels, fmt="",
-    cmap="viridis_r",
-    vmin=0, vmax=1,
-    linewidths=1, linecolor='white',
-    xticklabels=xticks,
-    yticklabels=yticks,
-    cbar_kws={'label': 'Adjusted P-Value (Holm-Bonferroni)'})
+    ax = sns.heatmap(
+        p_matrix, 
+        annot=annot_labels, 
+        fmt="",
+        cmap="viridis_r",
+        vmin=0, vmax=1,
+        linewidths=1, linecolor='white',
+        xticklabels=xticks,
+        yticklabels=yticks,
+        mask=mask,  # <--- Apply the mask here
+        cbar_kws={'label': 'Adjusted P-Value (Holm-Bonferroni)'}
+    )
 
-    # 6. Format the text in the heatmap based on significance
+    # 7. Format the text styling
     for text in ax.texts:
         try:
             val_txt = text.get_text()
-            # We need the numerical value to decide styling
-            # Handle the "<.001" case
-            if "<" in val_txt or "*" in val_txt:
-                val_float = 0.0
-            else:
-                val_float = float(val_txt)
-            # Logic:
-            # 1. If not significant (> 0.05), make text Grey and Normal weight
-            # 2. If significant (<= 0.05), make text Black and Bold
-            # 3. If extremely significant (<= 0.005), make text White (for contrast on dark blue)
+            # Clean formatting characters
+            clean_val = val_txt.replace('*', '').replace('<', '')
+            
+            if clean_val == "" or clean_val == "nan": 
+                continue
+
+            val_float = float(clean_val)
+            
+            # Styling logic
             if val_float <= 0.05:
                 text.set_fontweight('bold')
-
+                
         except Exception as e:
             pass
 
-    plt.title(f"Pairwise WER Comparison for {model_family}-models on {dataset}", fontsize=14)
+    plt.title(f"Pairwise WER Comparison for {model_family} on {dataset}", fontsize=14)
     plt.ylabel("Model A")
     plt.xlabel("Model B")
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    # 7. Save
+    # 8. Save
     if save_dir is not None:
+        # add /plots/ to the path
+        save_dir = os.path.join(save_dir, "plots")
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f"{base_name}_pvalues.png")
+        filename = f"{base_name}_pvalues.png"
+        if lower_triangle_only:
+            filename = f"{base_name}_pvalues_lower.png"
+            
+        save_path = os.path.join(save_dir, filename)
         plt.savefig(save_path, dpi=300)
         print(f"Saved plot to: {save_path}")
         plt.close()
     else:
+        plt.show() # Interactive mode if no save dir
         plt.close()
 
 
@@ -333,3 +364,4 @@ def pairwise_comparison_pipeline():
 
     for file in files_to_process:
         plot_pvalue_heatmap(file, format_dict=expanded, save_dir=Path("reports/statistical_analysis/"))
+        plot_pvalue_heatmap(file, format_dict=expanded, save_dir=Path("reports/statistical_analysis/"), lower_triangle_only=True)
