@@ -1,15 +1,22 @@
 import ast
 import json
+import logging
 from pathlib import Path
 import re
 from typing import Dict, List
+import uuid
 
 from carbontracker import parser
+import datasets
+import evaluate
 from evaluate.loading import load as load_metric
 from loguru import logger
+from joblib import Parallel, delayed
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
+import transformers
 
 MODELS = [
     "whisper-large-v3",
@@ -41,6 +48,11 @@ SPLITS = {
 }
 
 SENTENCE_TRANSFORMER_MODEL = "KennethTM/MiniLM-L6-danish-encoder"
+
+transformers.logging.set_verbosity_error()
+datasets.logging.set_verbosity_error()
+evaluate.logging.set_verbosity_error()
+logging.getLogger("evaluate").setLevel(logging.ERROR)
 
 
 def provide_eval_combinations(
@@ -186,12 +198,6 @@ def load_latest_detailed_results_parsed(eval_combination: dict, base="experiment
         pitch_data = pitch_data.rename(columns={"id_recording": "id"})
 
         df = df.merge(pitch_data, on="id", how="left")
-
-    # compute number of words in label column
-    # df["num_words"] = df["label"].apply(lambda x: len(x.split()))
-
-    # compute number of words per second
-    # df["words_per_sec"] = df["num_words"] / df["clip_length"]
 
     return df
 
@@ -357,6 +363,54 @@ def compute_sentence_embeddings(df: pd.DataFrame, model_name: str) -> pd.DataFra
     return df
 
 
+def compute_single_bootstrap(references, predictions, n):
+    """Compute one bootstrap resample WER."""
+    # Load metric inside the worker to avoid pickle issues
+    wer_metric_local = load_metric("wer", experiment_id=uuid.uuid4().hex)
+    cer_metric_local = load_metric("cer", experiment_id=uuid.uuid4().hex)
+
+    idx = np.random.choice(n, n, replace=True)
+    sampled_refs = [references[i] for i in idx]
+    sampled_preds = [predictions[i] for i in idx]
+    wer = wer_metric_local.compute(references=sampled_refs, predictions=sampled_preds)
+    cer = cer_metric_local.compute(references=sampled_refs, predictions=sampled_preds)
+    return wer, cer
+
+
+def bootstrap_wer_parallel(
+    references,
+    predictions,
+    n_resamples=1000,
+    ci=0.95,
+    n_jobs=-1
+):
+    n = len(references)
+
+    # Parallel map
+    wers_cers = Parallel(n_jobs=n_jobs)(
+        delayed(compute_single_bootstrap)(references, predictions, n)
+        for _ in tqdm(range(n_resamples))
+    )
+
+    wers = [wc[0] for wc in wers_cers]
+    cers = [wc[1] for wc in wers_cers]
+
+    lower_wer = np.percentile(wers, (1 - ci) / 2 * 100)
+    upper_wer = np.percentile(wers, (1 + ci) / 2 * 100)
+
+    lower_cer = np.percentile(cers, (1 - ci) / 2 * 100)
+    upper_cer = np.percentile(cers, (1 + ci) / 2 * 100)
+
+    return {
+        "wer_mean": float(np.mean(wers)),
+        "wer_ci_lower": float(lower_wer),
+        "wer_ci_upper": float(upper_wer),
+        "cer_mean": float(np.mean(cers)),
+        "cer_ci_lower": float(lower_cer),
+        "cer_ci_upper": float(upper_cer),
+    }
+
+
 def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFrame:
     metrics = {}
 
@@ -369,6 +423,21 @@ def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFram
     metrics["CER"] = cer_metric.compute(
         predictions=df["prediction"].tolist(), references=df["label"].tolist()
     )
+
+    wer_results = bootstrap_wer_parallel(
+        references=df["label"].tolist(),
+        predictions=df["prediction"].tolist(),
+        n_resamples=1000,
+        ci=0.95,
+        n_jobs=-1,
+    )
+
+    metrics["WER_ci_lower"] = wer_results["wer_ci_lower"]
+    metrics["WER_ci_upper"] = wer_results["wer_ci_upper"]
+    metrics["WER_mean"] = wer_results["wer_mean"]
+    metrics["CER_ci_lower"] = wer_results["cer_ci_lower"]
+    metrics["CER_ci_upper"] = wer_results["cer_ci_upper"]
+    metrics["CER_mean"] = wer_results["cer_mean"]
 
     # compute median CER and WER
     metrics["CER_median"] = df["CER"].median()
@@ -423,7 +492,7 @@ def compute_average_metrics_for_detailed_results(
         Dictionary with average metrics.
     """
     avg_metrics_list = []
-    for eval_combination in eval_combinations:
+    for eval_combination in tqdm(eval_combinations):
         logger.info(f"Computing average metrics for {eval_combination}...")
         subset_df = df[
             (df["model"] == eval_combination["model"])

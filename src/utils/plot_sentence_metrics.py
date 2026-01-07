@@ -202,7 +202,7 @@ def _bootstrap_mean_ci(x, level=95, B=5000, rng=None):
     return x.mean(), low, high
 
 
-def plot_bar_metric(
+def plot_bar_metric_bootstrapped(
     df: pd.DataFrame,
     metric: str = "WER",
     ci_level: int = 95,
@@ -369,6 +369,155 @@ def plot_bar_metric(
     plt.close()
 
 
+def plot_bar_metric_pre_bootstrapped(
+    df: pd.DataFrame,
+    metric: str = "WER",
+    save_dir: Optional[str] = None,
+    width: int = 10,
+    height: int = 6,
+    separate_by_dataset: bool = False,
+    fontsize: int = 12,
+):
+
+    data = df.copy()
+    ds_categories = data["dataset_name"].cat.categories.tolist()
+    model_order = data["model"].cat.categories.tolist()
+
+    palette = dict(zip(ds_categories, sns.color_palette("deep", n_colors=len(ds_categories))))
+
+    if separate_by_dataset:
+        group_cols = ["dataset_name", "model"]
+    else:
+        group_cols = ["model", "dataset_name"]
+
+    if separate_by_dataset:
+        g = sns.catplot(
+            data=data,
+            x="model",
+            y=metric,
+            col="dataset_name",
+            kind="bar",
+            errorbar=None,
+            capsize=0.0,
+            height=height,
+            aspect=width / height / max(1, len(ds_categories)),
+            order=model_order,
+            saturation=1,
+        )
+
+        for ax, ds in zip(g.axes.flat, ds_categories):
+            subset = data[data["dataset_name"] == ds]
+
+            for i, model in enumerate(model_order):
+                bar = ax.patches[i]
+
+                row = subset[subset["model"] == model].iloc[0]
+
+                mean = row[metric]
+                low = row[f"{metric}_ci_lower"]
+                high = row[f"{metric}_ci_upper"]
+
+                x_center = bar.get_x() + bar.get_width() / 2
+
+                ax.errorbar(
+                    x_center,
+                    mean,
+                    yerr=[[mean - low], [high - mean]],
+                    fmt="none",
+                    ecolor="black",
+                    capsize=2,
+                    capthick=1.2,
+                    linewidth=1.2,
+                )
+
+            color = palette[ds]
+            for bar in ax.patches:
+                bar.set_facecolor(color)
+
+            ax.set_xlabel(_fmt("model"), fontsize=fontsize)
+            ax.set_ylabel(_fmt(metric), fontsize=fontsize)
+            ax.tick_params(axis="both", labelsize=fontsize)
+            _format_xtick_labels(ax, rotation=60, ha="right")
+            ax.set_title(_fmt(ds), fontsize=fontsize + 2)
+
+        g.fig.suptitle(
+            f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
+            y=1.02,
+            fontsize=fontsize + 3,
+        )
+
+        fig = g.fig
+
+    else:
+        plt.figure(figsize=(width, height))
+        ax = sns.barplot(
+            data=data,
+            x="model",
+            y=metric,
+            hue="dataset_name",
+            errorbar=None,
+            palette=palette,
+            order=model_order,
+            hue_order=ds_categories,
+            saturation=1,
+        )
+
+        # FIX: use containers instead of flat indexing
+        for ds_index, ds in enumerate(ds_categories):
+            container = ax.containers[ds_index]
+            subset = data[data["dataset_name"] == ds]
+
+            for bar, (_, row) in zip(container, subset.iterrows()):
+                mean = row[metric]
+                low = row[f"{metric}_ci_lower"]
+                high = row[f"{metric}_ci_upper"]
+
+                x_center = bar.get_x() + bar.get_width() / 2
+
+                ax.errorbar(
+                    x_center,
+                    mean,
+                    yerr=[[mean - low], [high - mean]],
+                    fmt="none",
+                    ecolor="black",
+                    capsize=2,
+                    capthick=1.2,
+                    linewidth=1.2,
+                )
+
+        ax.set_xlabel(_fmt("model"), fontsize=fontsize)
+        ax.set_ylabel(_fmt(metric), fontsize=fontsize)
+        ax.set_title(
+            f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
+            fontsize=fontsize + 3,
+        )
+        ax.tick_params(axis="both", labelsize=fontsize)
+        _format_xtick_labels(ax, rotation=60, ha="right")
+
+        if ax.legend_ is not None:
+            handles, _labels = ax.get_legend_handles_labels()
+            ax.legend_.remove()
+            ax.legend(
+                handles,
+                [_fmt(d) for d in ds_categories],
+                title=_fmt("dataset_name"),
+                loc="best",
+                fontsize=fontsize,
+                frameon=True,
+            )
+
+        fig = ax.get_figure()
+
+    fig.tight_layout()
+
+    if save_dir:
+        Path(save_dir).mkdir(parents=True, exist_ok=True)
+        fname = f"{metric}_bar_by_model{'_faceted' if separate_by_dataset else ''}.png"
+        fig.savefig(Path(save_dir) / fname, dpi=200, bbox_inches="tight")
+
+    plt.close()
+
+
 def plot_box_metric(
     df: pd.DataFrame,
     metric: str = "WER",
@@ -480,6 +629,7 @@ def plot_box_metric(
 
 def make_all_plots(
     data: pd.DataFrame,
+    summary_data: Optional[pd.DataFrame] = None,
     save_dir: Optional[str] = "figures_seaborn",
     ci: str = 95,
     width: int = 12,
@@ -489,30 +639,43 @@ def make_all_plots(
     Convenience wrapper that filters to your grid and emits all standard plots.
     """
 
-    plot_bar_metric(data, "CER", ci_level=ci, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(
-        data,
-        "CER",
-        ci_level=ci,
+    # CER plots
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="CER",
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="CER",
         separate_by_dataset=True,
         save_dir=save_dir,
         width=width,
         height=height,
     )
-    plot_bar_metric(data, "WER", ci_level=ci, save_dir=save_dir, width=width, height=height)
-    plot_bar_metric(
-        data,
-        "WER",
-        ci_level=ci,
+
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="WER",
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="WER",
         separate_by_dataset=True,
         save_dir=save_dir,
         width=width,
         height=height,
     )
-    plot_bar_metric(
+
+    plot_bar_metric_bootstrapped(
         data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
     )
-    plot_bar_metric(
+    plot_bar_metric_bootstrapped(
         data,
         "semantic_distance",
         ci_level=ci,

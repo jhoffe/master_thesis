@@ -58,9 +58,22 @@ def make_plots():
         splits=SPLITS,
     )
 
+    logger.info("Loading summary evaluation data...")
+    summary_df = load_from_parquet(Path("reports/metrics/average_metrics.parquet"))
+
+    logger.info("Filtering summary data to specified grid...")
+    summary_df = filter_eval_grid(
+        summary_df,
+        models=MODELS,
+        datasets=DATASETS,
+        subsets=SUBSETS,
+        splits=SPLITS,
+    )
+
     logger.info("Generating sentence level evaluation plots...")
     make_all_plots(
         sentence_df,
+        summary_data=summary_df,
         save_dir=Path("reports/plots/sentence_level"),
         width=12,
         height=7,
