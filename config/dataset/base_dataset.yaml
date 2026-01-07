@@ -1,6 +1,8 @@
 # Evaluation dataset parameters
 eval_split_name: test
 cache_dir: './data/huggingface/datasets'
+manifest_filepath: null
+dataset_dir: null
 
 # Filtering of the dataset
 filter: false

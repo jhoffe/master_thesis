@@ -1,0 +1,14 @@
+defaults:
+  - base_dataset
+
+name: 'lillelyd'
+
+dataset_id: 'jj/lillelyd'
+dataset_subset: 'test'
+id_column: 'audio_filepath'
+
+dataset_dir: data/processed/LilleLyd
+manifest_filepath: data/processed/LilleLyd/manifest_test.jsonl
+
+text_column: text
+audio_column: audio

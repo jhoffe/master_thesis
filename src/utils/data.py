@@ -1,5 +1,7 @@
 """Functions related to the data loading and processing."""
 
+from utils.manifest_to_hf import manifest_to_hf_dataset
+
 from collections.abc import Callable, Iterable
 from functools import partial
 import os
@@ -75,6 +77,29 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     Returns:
         A DatasetDict containing the validation and test datasets.
     """
+    print(config.dataset)
+    if config.dataset.manifest_filepath is not None and config.dataset.dataset_dir is not None:
+        logger.info(
+            "Loading dataset from manifest file "
+            f"{config.dataset.manifest_filepath} in directory {config.dataset.dataset_dir}..."
+        )
+        dataset = manifest_to_hf_dataset(
+            Path(config.dataset.dataset_dir),
+            Path(config.dataset.manifest_filepath),
+        )
+
+        processed_dataset = process_dataset(
+            dataset=dataset,
+            clean_text=config.dataset.clean_text,
+            lower_case=config.dataset.lower_case,
+            characters_to_keep=config.dataset.characters_to_keep,
+            text_column=config.dataset.text_column,
+            audio_column=config.dataset.audio_column,
+            remove_input_dataset_columns=False,
+            convert_numerals=True,
+        )
+
+        return processed_dataset
 
     dataset_id = config.dataset.dataset_id
     dataset_subset = config.dataset.dataset_subset

@@ -59,6 +59,9 @@ class DatasetConfigSchema:
     dataset_subset: str
     eval_split_name: str
 
+    dataset_dir: DirectoryPath | None = None
+    manifest_filepath: FilePath | None = None
+
     cache_dir: DirectoryPath | None = None
 
     id_column: str | None = None
