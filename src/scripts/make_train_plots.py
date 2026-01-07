@@ -190,7 +190,7 @@ def plot_train_loss(run_data: dict):
         steps, losses = zip(*run_data["train_loss"])
 
         # Plot training loss
-        ax.plot(steps, losses, linewidth=1.5, alpha=0.9, label="Train Loss")
+        ax.semilogy(steps, losses, linewidth=1.5, alpha=0.9, label="Train Loss")
 
         run_md = run_data["run_metadata"]
 
@@ -207,6 +207,46 @@ def plot_train_loss(run_data: dict):
     os.makedirs(SAVE_PATH, exist_ok=True)
     plt.savefig(
         os.path.join(SAVE_PATH, f"train_loss_{run_data['run_metadata']['job_name']}.png"), dpi=300
+    )
+
+
+def smooth_losses(losses: list[float], window_size: int = 10) -> list[float]:
+    """Smooth the loss values using a simple moving average."""
+    smoothed = []
+    for i in range(len(losses)):
+        start_idx = max(0, i - window_size + 1)
+        window = losses[start_idx : i + 1]
+        smoothed.append(sum(window) / len(window))
+    return smoothed
+
+
+def plot_train_loss_smoothed(run_data: dict):
+    with THEME:
+        fig, ax = plt.subplots(figsize=(10, 4))
+
+        steps, losses = zip(*run_data["train_loss"])
+
+        smoothed_losses = smooth_losses(losses, window_size=20)
+
+        # Plot training loss
+        ax.semilogy(steps, smoothed_losses, linewidth=1.5, alpha=0.9, label="Train Loss")
+
+        run_md = run_data["run_metadata"]
+
+        add_augmentations_legend(
+            ax, run_md["spec_augment"], run_md["pitch_shift"], run_md["speed_perturb"]
+        )
+
+        ax.set_title(f"Train Loss for {format(run_data['run_metadata']['model'])}")
+        ax.set_xlabel("Steps")
+        ax.set_ylabel("Loss")
+
+        plt.tight_layout()
+
+    os.makedirs(SAVE_PATH, exist_ok=True)
+    plt.savefig(
+        os.path.join(SAVE_PATH, f"train_loss_smoothed_{run_data['run_metadata']['job_name']}.png"),
+        dpi=300,
     )
 
 
@@ -335,13 +375,17 @@ def plot_val_wer_grid(processed_runs: list[dict]):
 
                 label = "+".join(augs) if augs else "No Augmentations"
 
+                # Use different lines for spec aug and non-spec aug
+                linestyle = "--" if run_data["run_metadata"]["spec_augment"] else "-"
+
                 # Plot validation WERs
                 line = ax.plot(
                     steps,
                     coral_wers if dataset == "coral" else fleurs_wers,
-                    linewidth=1.5,
-                    alpha=0.65,
+                    linewidth=1.2,
+                    alpha=0.7,
                     label=label,
+                    linestyle=linestyle,
                 )
 
                 # Store handle for legend (avoid duplicates)
@@ -397,6 +441,99 @@ def plot_val_wer_grid(processed_runs: list[dict]):
         plt.savefig(os.path.join(SAVE_PATH, "val_wer_grid.png"), dpi=300)
 
 
+def plot_train_loss_combined(processed_runs: list[dict]):
+    """Plot smoothed training losses for parakeet and canary in a 2x1 grid."""
+    with THEME:
+        fig, axes = plt.subplots(2, 1, figsize=(18, 10))
+
+        # Define the grid layout: (model, ax) pairs
+        plot_configs = [
+            ("parakeet", axes[0]),
+            ("canary", axes[1]),
+        ]
+
+        # Collect handles and labels for a single legend
+        handles_dict = {}
+
+        for model, ax in plot_configs:
+            for run_data in processed_runs:
+                if run_data["run_metadata"]["model"] != model:
+                    continue
+
+                steps, losses = zip(*run_data["train_loss"])
+                smoothed_losses = smooth_losses(losses, window_size=20)
+
+                augs = []
+                if run_data["run_metadata"]["spec_augment"]:
+                    augs.append("SpecAugment")
+                if run_data["run_metadata"]["pitch_shift"]:
+                    augs.append("Pitch Shift")
+                if run_data["run_metadata"]["speed_perturb"]:
+                    augs.append("Speed Perturbation")
+
+                label = "+".join(augs) if augs else "No Augmentations"
+
+                # Use different lines for spec aug and non-spec aug
+                linestyle = "--" if run_data["run_metadata"]["spec_augment"] else "-"
+
+                # Plot smoothed training loss
+                line = ax.semilogy(
+                    steps,
+                    smoothed_losses,
+                    linewidth=1.2,
+                    alpha=0.7,
+                    label=label,
+                    linestyle=linestyle,
+                )
+
+                # Store handle for legend (avoid duplicates)
+                if label not in handles_dict:
+                    handles_dict[label] = line[0]
+
+            ax.set_ylabel("Loss (log scale)")
+
+        # Set xlabel only for bottom plot
+        axes[1].set_xlabel("Steps")
+
+        # Add row titles (models) rotated 90 degrees on the left
+        fig.text(
+            0.02,
+            0.785,
+            format("parakeet"),
+            va="center",
+            ha="center",
+            rotation=90,
+            fontsize=14,
+            fontweight="bold",
+        )
+        fig.text(
+            0.02,
+            0.338,
+            format("canary"),
+            va="center",
+            ha="center",
+            rotation=90,
+            fontsize=14,
+            fontweight="bold",
+        )
+
+        # Create a single legend at the bottom with full width
+        fig.legend(
+            handles=handles_dict.values(),
+            labels=handles_dict.keys(),
+            bbox_to_anchor=(0.5, 0.02),
+            loc="lower center",
+            ncol=len(handles_dict) // 2,
+            frameon=True,
+            fontsize=13,
+        )
+
+        plt.tight_layout(rect=[0.03, 0.08, 1, 1])
+
+        os.makedirs(SAVE_PATH, exist_ok=True)
+        plt.savefig(os.path.join(SAVE_PATH, "train_loss_combined.png"), dpi=300)
+
+
 @app.command()
 def main(
     reset_cache: bool = typer.Option(
@@ -424,6 +561,7 @@ def main(
     # Plot training losses
     for run_data in processed_runs:
         plot_train_loss(run_data)
+        plot_train_loss_smoothed(run_data)
 
     # Plot individual validation WERs
     for run_data in processed_runs:
@@ -434,6 +572,9 @@ def main(
 
     # Plot validation WERs in 2x2 grid
     plot_val_wer_grid(processed_runs)
+
+    # Plot training losses combined by model
+    plot_train_loss_combined(processed_runs)
 
 
 if __name__ == "__main__":
