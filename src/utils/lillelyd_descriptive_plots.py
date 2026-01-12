@@ -31,6 +31,7 @@ FORMAT_DICT = {
     "voiced_ratio": "Voiced Ratio",
     "word_rate": "Word Rate (words/s)",
     "word_count": "Word Count",
+    "loudness": "Loudness (dB)",
 }
 
 
@@ -138,7 +139,7 @@ def age_plot_by_gender(dataset_name: str, base_path: str) -> None:
     save_plot(base_path=base_path, filename="age_distribution_by_gender.png")
 
 
-def distribution_by_gender(dataset_name: str, base_path: str) -> None:
+def distribution_by_gender(dataset_name: str, base_path: str, hue: str = "gender") -> None:
     """
     Generate and save distribution plots for each metric, split by gender.
     Expects a 'gender' column in the dataset summary parquet.
@@ -163,11 +164,17 @@ def distribution_by_gender(dataset_name: str, base_path: str) -> None:
             )
             continue
 
+        if hue == "emotion":
+            hue_order = ["neutral", "anger", "sadness", "happiness", "boredom"]
+        else:
+            hue_order = ["M", "F"]
+
         plt.figure(figsize=(10, 6))
         sns.histplot(
             data=df,
             x=metric,
-            hue="gender",
+            hue=hue,
+            hue_order=hue_order,
             bins=30,
             kde=True,
             stat="percent",  # y axis in percent
@@ -176,13 +183,13 @@ def distribution_by_gender(dataset_name: str, base_path: str) -> None:
             alpha=0.4,
         )
 
-        plt.title(f"{_fmt(metric)} distribution by gender for {_fmt(dataset_name)}")
+        plt.title(f"{_fmt(metric)} distribution by {hue} for {_fmt(dataset_name)}")
         plt.xlabel(_fmt(metric))
         plt.ylabel("Percentage")
         plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
 
         # Ensure output dir exists and save
-        save_plot(base_path=f"reports/plots/{dataset_name}", filename=f"{metric}_by_gender.png")
+        save_plot(base_path=f"reports/plots/{dataset_name}", filename=f"{metric}_by_{hue}.png")
 
 
 def make_lillelyd_plots() -> None:
@@ -202,4 +209,9 @@ def make_lillelyd_plots() -> None:
     age_plot_by_gender(dataset_name, base_path=f"reports/plots/{dataset_name}")
 
     logger.info(f"Generating gender distribution plots for {dataset_name}...")
-    distribution_by_gender(dataset_name, base_path=f"reports/plots/{dataset_name}")
+    distribution_by_gender(dataset_name, base_path=f"reports/plots/{dataset_name}", hue="gender")
+
+    logger.info(f"Generating emotion distribution plots for {dataset_name}...")
+    distribution_by_gender(dataset_name, base_path=f"reports/plots/{dataset_name}", hue="emotion")
+
+
