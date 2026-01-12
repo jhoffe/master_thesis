@@ -1,0 +1,13 @@
+manifest_filepath: '${oc.env:NEMO_DATASET_PROCESSED_PATH}/LilleLyd/manifest_train.jsonl'
+batch_size: 32
+shuffle: true
+
+sample_rate: 16000
+
+num_workers: 4
+prefetch_factor: 2
+pin_memory: true
+max_duration: 20
+min_duration: 0.1
+shuffle_seed: ${seed}
+seed: ${seed}

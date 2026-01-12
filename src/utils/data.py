@@ -77,15 +77,18 @@ def load_dataset_for_evaluation(config: ConfigSchema) -> Dataset:
     Returns:
         A DatasetDict containing the validation and test datasets.
     """
-    print(config.dataset)
     if config.dataset.manifest_filepath is not None and config.dataset.dataset_dir is not None:
+        path = os.getenv("NEMO_DATASET_PROCESSED_PATH")
+        base_path = Path(path) if path is not None else Path.cwd()
+        manifest_filepath = base_path / config.dataset.manifest_filepath
+        dataset_dir = base_path / config.dataset.dataset_dir
+
         logger.info(
-            "Loading dataset from manifest file "
-            f"{config.dataset.manifest_filepath} in directory {config.dataset.dataset_dir}..."
+            f"Loading dataset from manifest file {manifest_filepath} in directory {dataset_dir}..."
         )
         dataset = manifest_to_hf_dataset(
-            Path(config.dataset.dataset_dir),
-            Path(config.dataset.manifest_filepath),
+            dataset_dir,
+            manifest_filepath,
         )
 
         processed_dataset = process_dataset(
