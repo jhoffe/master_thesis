@@ -1,5 +1,7 @@
 """Evaluation of ASR models."""
 
+from utils.load_model import load_model_path
+
 import uuid
 
 import datasets
@@ -250,21 +252,10 @@ def load_nemo_asr_pipeline(config: ModelConfigSchema) -> nemo_asr.models.ASRMode
         device = torch.device("cpu")
 
     if config.restore_from is not None and config.model_id is None:
-        if config.restore_from.startswith("artifact://"):
-            logger.info(f"Restoring model from WandB artifact: {config.restore_from}...")
-
-            artifact_full_path = config.restore_from.split("://")[1]
-            artifact, artifact_file = artifact_full_path.split("/")
-
-            logger.info(f"Downloading WandB artifact: {artifact} (file: {artifact_file})...")
-
-            artifact = wandb.use_artifact(artifact, type="model")
-
-            config.restore_from = artifact.get_path(artifact_file).download()
-            logger.info(f"Downloaded model from WandB artifact: {config.restore_from}")
+        restore_from = load_model_path(config.restore_from)
 
         asr_model: nemo_asr.models.ASRModel = nemo_asr.models.ASRModel.restore_from(
-            restore_path=config.restore_from, map_location=device
+            restore_path=restore_from, map_location=device
         )
 
         if config.decoding_config is not None:

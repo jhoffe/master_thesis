@@ -62,11 +62,13 @@ import lightning.pytorch as pl
 from nemo.collections.asr.models import ASRModel
 from nemo.core.config import hydra_runner
 from nemo.utils import logging, model_utils
-from nemo.utils.exp_manager import exp_manager, clean_exp_ckpt
+from nemo.utils.exp_manager import clean_exp_ckpt, exp_manager
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 from omegaconf import OmegaConf
 import wandb
+
+from utils.load_model import load_model_path
 
 
 def get_base_model(trainer, cfg):
@@ -93,7 +95,8 @@ def get_base_model(trainer, cfg):
             "Both `init_from_nemo_model` and `init_from_pretrained_model cannot be None, should pass atleast one of them"
         )
     elif nemo_model_path is not None:
-        asr_model = ASRModel.restore_from(restore_path=nemo_model_path)
+        restore_from = load_model_path(nemo_model_path)
+        asr_model = ASRModel.restore_from(restore_path=restore_from)
     elif pretrained_name is not None:
         # Due to potential first time download of the model on the cluster, we need to make sure that only one
         # rank downloads the model and the others wait for the download to finish.
@@ -194,7 +197,8 @@ def setup_dataloaders(asr_model, cfg):
     """
     cfg = model_utils.convert_model_config_to_dict_config(cfg)
     asr_model.setup_training_data(cfg.model.train_ds)
-    asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
+    if cfg.model.validation_ds is not None:
+        asr_model.setup_multiple_validation_data(cfg.model.validation_ds)
 
     return asr_model
 
