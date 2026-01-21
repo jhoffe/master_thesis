@@ -17,7 +17,7 @@ seed: 15
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
 init_from_nemo_model: artifact://parakeet-finetune_spec-aug_27154169:latest/parakeet-finetune_spec-aug.nemo # path to nemo model
 trainer:
-  log_every_n_steps: 5
+  log_every_n_steps: 1
 
 model:
   optim:

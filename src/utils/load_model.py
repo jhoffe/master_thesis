@@ -18,7 +18,7 @@ def load_model_path(model_path: str) -> str:
 
         api = wandb.Api()
         artifact = api.artifact(f"{entity}/{project}/{artifact}")
-        artifact_dir = artifact.download()
+        artifact_dir = artifact.download(root=artifact_file)
 
         return os.path.join(artifact_dir, artifact_file)
 

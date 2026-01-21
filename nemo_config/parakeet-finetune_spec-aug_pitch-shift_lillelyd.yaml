@@ -1,0 +1,24 @@
+defaults:
+  - model: parakeet
+  - trainer: parakeet
+  - exp_manager: base_single
+  - optim@model.optim: adamw
+  - preprocessor@model.preprocessor: base
+  - spec_augment@model.spec_augment: disabled
+  - train_ds@model.train_ds: train_ds_parakeet_lillelyd
+  - validation_ds@model.validation_ds: base_validation_dataset
+  - test_ds@model.test_ds: base_test_dataset
+
+name: 'parakeet-finetune_lillelyd'
+
+seed: 15
+
+# use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
+# We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
+init_from_nemo_model: /work3/s204071/master_thesis/nemo_experiments/parakeet-finetune_spec-aug_pitch-shift/2025-11-21_20-42-26/checkpoints/parakeet-finetune_spec-aug_pitch-shift.nemo # path to nemo model
+trainer:
+  log_every_n_steps: 1
+
+model:
+  optim:
+    lr: 5e-6

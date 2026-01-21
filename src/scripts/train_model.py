@@ -256,6 +256,11 @@ def main(cfg):
     artifact.add_reference(f"file://{logging_path}/checkpoints")
     wandb.run.log_artifact(artifact)
 
+    with open(
+        f"{cfg.exp_manager.checkpoint_callback_params.filename}.artifact-reference", "w"
+    ) as f:
+        f.write(f"{logging_path}/checkpoints")
+
 
 if __name__ == "__main__":
     load_dotenv()

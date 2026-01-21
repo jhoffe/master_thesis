@@ -6,4 +6,4 @@ name: 'parakeet_finetune'
 # Evaluation parameters
 model_id: null
 restore_from: 'artifact://parakeet-finetune_27111641:latest/parakeet-finetune.nemo'
-nemo_model: true
+nemo_model: true"
