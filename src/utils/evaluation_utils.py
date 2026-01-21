@@ -457,6 +457,18 @@ def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFram
     metrics["semantic_distance_std"] = df["semantic_distance"].std()
     metrics["semantic_distance_sem"] = df["semantic_distance"].sem()
 
+    # bootstrap semantic distance
+    semantic_distances = df["semantic_distance"].tolist()
+    n = len(semantic_distances)
+    bootstrapped_semantic_distances = []
+    n_resamples = 1000
+    for _ in range(n_resamples):
+        idx = np.random.choice(n, n, replace=True)
+        sampled_semantic_distances = [semantic_distances[i] for i in idx]
+        bootstrapped_semantic_distances.append(np.mean(sampled_semantic_distances))
+    metrics["avg_semantic_distance_ci_lower"] = float(np.percentile(bootstrapped_semantic_distances, 2.5))
+    metrics["avg_semantic_distance_ci_upper"] = float(np.percentile(bootstrapped_semantic_distances, 97.5))
+
     # compute average clip length
     metrics["avg_clip_length"] = df["clip_length"].mean()
 
