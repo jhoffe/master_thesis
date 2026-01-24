@@ -31,8 +31,8 @@ METRICS = [
 
 FORMAT_DICT = {
     "dataset_name": "Dataset",
-    "coral-v2": "CoRal-v2 Read Aloud Testset",
-    "fleurs": "Fleurs da_dk Testset",
+    "coral-v2": "CoRal-v2 Read-aloud test set",
+    "fleurs": "FLEURS Danish test set",
     "clip_length": "Clip Length (s)",
     "mean_pitch_hz": "Mean Pitch (Hz)",
     "median_pitch_hz": "Median Pitch (Hz)",
