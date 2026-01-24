@@ -27,7 +27,7 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
         error_file=f"logs/{job_name}.%J.err",
         environment={
             "NUMBA_CUDA_USE_NVIDIA_BINDING": "0",
-            "WANDB_JOB_TYPE": "training",
+            "WANDB_JOB_TYPE": "finetune_csr",
         },
         email=os.environ.get("HPC_EMAIL_ADDRESS"),
         notify_on_start=os.environ.get("HPC_NOTIFY_ON_START") == "1",
@@ -59,8 +59,11 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
                 else f"{config_name}_cv-{i + 1}"
             )
 
-            if not parakeet:
-                name = name.replace("spec-aug", "SA").replace("speed-perturbations", "SP")
+            name = (
+                name.replace("spec-aug", "SA")
+                .replace("speed-perturbations", "SP")
+                .replace("pitch-shift", "PS")
+            )
 
             s.command(
                 [
@@ -72,8 +75,6 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
                     f"++name={name}",
                     f"++exp_manager.checkpoint_callback_params.filename={name}",
                     "~model.optim.sched",
-                    f"trainer.val_check_interval={'1.0' if parakeet else '27'}",
-                    "trainer.max_steps=675",
                 ]
             )
 
@@ -122,15 +123,15 @@ def main():
     """
     load_dotenv()
 
-    # submit_job("parakeet-finetune_spec-aug_lillelyd", "12:00")
-    # submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "12:00")
-    submit_job("canary-finetune_spec-aug_speed-perturbations_lillelyd", "12:00", parakeet=False)
+    submit_job("parakeet-finetune_spec-aug_lillelyd", "16:00")
+    submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "16:00")
+    submit_job("canary-finetune_spec-aug_speed-perturbations_lillelyd", "16:00", parakeet=False)
 
-    # submit_job("parakeet-finetune_spec-aug_lillelyd", "12:00", sentence_cv=True)
-    # submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "12:00", sentence_cv=True)
+    submit_job("parakeet-finetune_spec-aug_lillelyd", "16:00", sentence_cv=True)
+    submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "16:00", sentence_cv=True)
     submit_job(
         "canary-finetune_spec-aug_speed-perturbations_lillelyd",
-        "12:00",
+        "16:00",
         sentence_cv=True,
         parakeet=False,
     )

@@ -59,6 +59,7 @@ import time
 from dotenv import load_dotenv
 from lightning import seed_everything
 import lightning.pytorch as pl
+from loguru import logger
 from nemo.collections.asr.models import ASRModel
 from nemo.core.config import hydra_runner
 from nemo.utils import logging, model_utils
@@ -259,6 +260,7 @@ def main(cfg):
     with open(
         f"{cfg.exp_manager.checkpoint_callback_params.filename}.artifact-reference", "w"
     ) as f:
+        logger.info(f"Writing artifact reference to file: {logging_path}/checkpoints")
         f.write(f"{logging_path}/checkpoints")
 
 

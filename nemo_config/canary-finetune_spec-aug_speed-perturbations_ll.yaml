@@ -4,11 +4,11 @@ defaults:
   - exp_manager: base_finetune
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: base
-  - spec_augment@model.spec_augment: base
+  - spec_augment@model.spec_augment: disabled
   - train_ds@model.train_ds: train_ds_canary_lillelyd
   - validation_ds@model.validation_ds: lhotse_validation_dataset
 
-name: 'canary-finetune_spec-aug'
+name: 'canary-finetune_spec-aug_speed-perturbations_LL'
 
 seed: 15
 
@@ -16,7 +16,7 @@ seed: 15
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
 init_from_nemo_model: artifact://canary-finetune_spec-aug_speed-perturbations_27154105:latest/canary-finetune_spec-aug_speed-perturbations.nemo # path to nemo model
 trainer:
-  log_every_n_steps: 1
+  log_every_n_steps: 5
   val_check_interval: 25
   max_steps: 10000
   limit_train_batches: ${trainer.max_steps}
@@ -30,8 +30,8 @@ exp_manager:
   early_stopping_callback_params:
     monitor: 'coralval_wer'
     mode: 'min'
-    patience: 2
-    min_epochs: 2
+    patience: 3
+    min_epochs: 4
   checkpoint_callback_params:
     save_top_k: 1
     save_nemo_on_train_end: false
