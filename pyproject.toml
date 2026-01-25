@@ -50,6 +50,7 @@ dependencies = [
   "sentence-transformers>=5.1.1",
   "nvidia-ml-py>=13.580.82",
   "megatron>=0.5.1",
+  "nemo-toolkit[asr,tts]>=2.5.2",
   "requests>=2.32.5",
   "speechbrain>=1.0.3",
   "resampy>=0.4.3",
@@ -58,8 +59,7 @@ dependencies = [
   "scikit-posthocs>=0.11.4",
   "statsmodels>=0.14.5",
   "bitsandbytes>=0.46.0",
-  "praat-parselmouth",
-  "nemo-toolkit[asr,tts]>=2.5.2",
+  "praat-parselmouth>=0.4.7",
 ]
 requires-python = "~=3.10.0"
 
@@ -94,7 +94,7 @@ torchaudio = [
 torch = [
   { index = "pytorch-cu130", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo", branch = "thesis" }
+nemo-toolkit = { git = "ssh://git@github.com/jhoffe/NeMo", rev = "b7f93c984f9cc1fa9ce034442df31473a38b6494" }
 
 [tool.uv]
 package = true
