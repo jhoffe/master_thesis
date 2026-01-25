@@ -29,8 +29,8 @@ exp_manager:
   early_stopping_callback_params:
     monitor: 'val_wer'
     mode: 'min'
-    patience: 3
-    min_epochs: 18
+    patience: 2
+    min_epochs: 8
   checkpoint_callback_params:
     save_top_k: 1
     save_nemo_on_train_end: true

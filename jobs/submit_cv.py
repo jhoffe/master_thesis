@@ -123,14 +123,14 @@ def main():
     """
     load_dotenv()
 
-    submit_job("parakeet-finetune_spec-aug_lillelyd", "16:00")
-    # submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "16:00")
-    # submit_job("canary-finetune_spec-aug_speed-perturbations_lillelyd", "16:00", parakeet=False)
+    submit_job("parakeet-finetune_spec-aug_ll", "16:00")
+    # submit_job("parakeet-finetune_spec-aug_pitch-shift_ll", "16:00")
+    # submit_job("canary-finetune_spec-aug_speed-perturbations_ll", "16:00", parakeet=False)
 
-    # submit_job("parakeet-finetune_spec-aug_lillelyd", "16:00", sentence_cv=True)
-    # submit_job("parakeet-finetune_spec-aug_pitch-shift_lillelyd", "16:00", sentence_cv=True)
+    # submit_job("parakeet-finetune_spec-aug_ll", "16:00", sentence_cv=True)
+    # submit_job("parakeet-finetune_spec-aug_pitch-shift_ll", "16:00", sentence_cv=True)
     # submit_job(
-    #     "canary-finetune_spec-aug_speed-perturbations_lillelyd",
+    #     "canary-finetune_spec-aug_speed-perturbations_ll",
     #     "16:00",
     #     sentence_cv=True,
     #     parakeet=False,

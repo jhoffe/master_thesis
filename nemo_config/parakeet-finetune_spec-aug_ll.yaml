@@ -35,4 +35,5 @@ exp_manager:
     save_top_k: 1
     save_nemo_on_train_end: true
     save_best_model: true
+    always_save_nemo: true
     min_epochs: ${exp_manager.early_stopping_callback_params.min_epochs}
