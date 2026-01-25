@@ -27,7 +27,7 @@ _FORMAT_DICT: dict[Union[str, tuple[str, ...]], str] = {
     "dataset_name": "Dataset",
     "model": "Model",
     ("coral", "coral-v2"): "CoRal-v2",
-    "fleurs": "Fleurs",
+    "fleurs": "FLEURS",
     "roest-whisper-large-v1": "Røst-Whisper",
     ("parakeet", "parakeet-tdt-0.6b-v3"): "Parakeet-TDT",
     ("canary", "canary-1b-v2"): "Canary-1B",

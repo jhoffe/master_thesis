@@ -33,7 +33,7 @@ FORMAT_DICT = {
     "dataset_name": "Dataset",
     "model": "Model",
     "coral-v2": "CoRal-v2",
-    "fleurs": "Fleurs",
+    "fleurs": "FLEURS",
     "whisper-large-v3": "Whisper-L",
     "whisper-large-v3-turbo": "Whisper-L-Turbo",
     "roest-wav2vec2-315m-v2": "Røst-W2V2-315M",

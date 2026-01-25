@@ -31,26 +31,30 @@ FEATURE_METRICS = [
     "clip_length",
 ]
 
+BASELINE_MODEL = ["roest-whisper-large-v1"]
+
 BASE_MODELS = ["roest-whisper-large-v1", "parakeet-tdt-0.6b-v3", "canary-1b-v2"]
 
 FINETUNED_MODELS = [
-    "parakeet_finetune",
-    "parakeet_finetune_pitch-shift",
+    #"parakeet_finetune",
+    #"parakeet_finetune_pitch-shift",
     "parakeet_finetune_spec-aug",
-    "parakeet_finetune_speed-perturbations",
-    "parakeet_finetune_spec-aug_pitch-shift",
+    #"parakeet_finetune_speed-perturbations",
+    #"parakeet_finetune_spec-aug_pitch-shift",
     "parakeet_finetune_spec-aug_speed-perturbations",
-    "parakeet_finetune_speed-perturbations_pitch-shift",
-    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift",
-    "canary_finetune",
-    "canary_finetune_pitch-shift",
-    "canary_finetune_spec-aug",
-    "canary_finetune_speed-perturbations",
-    "canary_finetune_spec-aug_pitch-shift",
+    #"parakeet_finetune_speed-perturbations_pitch-shift",
+    #"parakeet_finetune_spec-aug_speed-perturbations_pitch-shift",
+    #"canary_finetune",
+    #"canary_finetune_pitch-shift",
+    #"canary_finetune_spec-aug",
+    #"canary_finetune_speed-perturbations",
+    #"canary_finetune_spec-aug_pitch-shift",
     "canary_finetune_spec-aug_speed-perturbations",
-    "canary_finetune_speed-perturbations_pitch-shift",
-    "canary_finetune_spec-aug_speed-perturbations_pitch-shift",
+    #"canary_finetune_speed-perturbations_pitch-shift",
+    #"canary_finetune_spec-aug_speed-perturbations_pitch-shift",
 ]
+
+ALL_MODELS = BASELINE_MODEL + FINETUNED_MODELS
 
 DATASETS = ["fleurs", "coral-v2"]
 
@@ -62,14 +66,16 @@ GROUPS = [
 ALPHA = 0.05
 
 
-def _get_models(finetuning: bool) -> list[str]:
+def _get_models(finetuning: bool, all_models: bool = False) -> list[str]:
+    if all_models:
+        return ALL_MODELS
     if finetuning:
         return FINETUNED_MODELS
     else:
         return BASE_MODELS
 
 
-def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False) -> None:
+def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_models: bool = False) -> None:
     """Perform deep evaluation analysis by loading evaluation data, getting top WER samples, and generating correlation plots."""
 
     logger.info("Loading evaluation data...")
@@ -77,7 +83,9 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False) -> No
         Path("reports/metrics/combined_detailed_results_with_embeddings.parquet")
     )
 
-    MODELS = _get_models(finetuning)
+    MODELS = _get_models(finetuning, all_models=all_models)
+
+    logger.info(f"Using models: {MODELS}")
 
     logger.info("Filtering evaluation data to specified grid...")
     df_filtered = df[df["model"].isin(MODELS) & df["dataset_name"].isin(DATASETS)]
