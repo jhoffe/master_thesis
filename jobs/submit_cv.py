@@ -40,10 +40,12 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
         else "../datasets/processed/LilleLyd/cv_folds"
     )
     train_manifest_paths = [
-        os.path.join(data_path, f"fold_{i}/train_manifest.jsonl") for i in range(1, 5)
+        os.path.join(data_path, f"fold_{i}/train_manifest.jsonl")
+        for i in range(1, 5 if not sentence_cv else 6)
     ]
     test_manifest_paths = [
-        os.path.join(data_path, f"fold_{i}/test_manifest.jsonl") for i in range(1, 5)
+        os.path.join(data_path, f"fold_{i}/test_manifest.jsonl")
+        for i in range(1, 5 if not sentence_cv else 6)
     ]
 
     with Submittor(opts) as s:

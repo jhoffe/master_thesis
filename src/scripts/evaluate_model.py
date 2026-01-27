@@ -30,9 +30,11 @@ def main(config: ConfigSchema) -> None:
             The Hydra configuration object.
     """
 
+    job_type = "evaluation" if "cv" in config.model.name else "csr_cv"
+
     with WandbSetup(
         config=config,
-        job_type="evaluation",
+        job_type=job_type,
         tags=(config.model.name, config.dataset.name),
     ):
         logger.info("Starting evaluation...")
