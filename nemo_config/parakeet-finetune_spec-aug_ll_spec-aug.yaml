@@ -4,12 +4,12 @@ defaults:
   - exp_manager: base_single
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: base
-  - spec_augment@model.spec_augment: disabled
+  - spec_augment@model.spec_augment: base
   - train_ds@model.train_ds: train_ds_parakeet_lillelyd
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-finetune_spec-aug_LL'
+name: 'parakeet-finetune_spec-aug_LL_spec-aug'
 
 seed: 15
 

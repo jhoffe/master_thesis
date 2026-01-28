@@ -1,3 +1,4 @@
+from time import sleep
 import os
 
 from dotenv import load_dotenv
@@ -34,11 +35,18 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
         notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
     )
 
-    data_path = (
-        "../datasets/processed/LilleLyd/cv_folds_sentence"
-        if sentence_cv
-        else "../datasets/processed/LilleLyd/cv_folds"
-    )
+    if "speed-perturbations" in config_name:
+        data_path = (
+            "../datasets/processed/LilleLyd_sp/cv_folds_sentence"
+            if sentence_cv
+            else "../datasets/processed/LilleLyd_sp/cv_folds"
+        )
+    else:
+        data_path = (
+            "../datasets/processed/LilleLyd/cv_folds_sentence"
+            if sentence_cv
+            else "../datasets/processed/LilleLyd/cv_folds"
+        )
     train_manifest_paths = [
         os.path.join(data_path, f"fold_{i}/train_manifest.jsonl")
         for i in range(1, 5 if not sentence_cv else 6)
@@ -125,18 +133,30 @@ def main():
     """
     load_dotenv()
 
-    submit_job("parakeet-finetune_spec-aug_ll", "16:00")
-    submit_job("parakeet-finetune_spec-aug_pitch-shift_ll", "16:00")
-    submit_job("canary-finetune_spec-aug_speed-perturbations_ll", "16:00", parakeet=False)
-
-    submit_job("parakeet-finetune_spec-aug_ll", "16:00", sentence_cv=True)
-    submit_job("parakeet-finetune_spec-aug_pitch-shift_ll", "16:00", sentence_cv=True)
-    submit_job(
+    original_models = [
+        "parakeet-finetune_spec-aug_ll",
+        "parakeet-finetune_spec-aug_pitch-shift_ll",
         "canary-finetune_spec-aug_speed-perturbations_ll",
-        "16:00",
-        sentence_cv=True,
-        parakeet=False,
-    )
+    ]
+
+    augmentation_combinations = [
+        "",
+        "_spec-aug",
+        "_pitch-shift",
+        "_speed-perturbations",
+        "_spec-aug_pitch-shift",
+        "_spec-aug_speed-perturbations",
+        "_pitch-shift_speed-perturbations",
+        "_spec-aug_pitch-shift_speed-perturbations",
+    ]
+
+    for base_model in original_models:
+        for aug_comb in augmentation_combinations:
+            config_name = base_model + aug_comb
+            submit_job(config_name, "16:00", parakeet=("parakeet" in base_model))
+            # submit_job(config_name, "16:00", sentence_cv=True, parakeet=("parakeet" in base_model))
+
+            sleep(2)  # To avoid overloading the submission system
 
 
 if __name__ == "__main__":

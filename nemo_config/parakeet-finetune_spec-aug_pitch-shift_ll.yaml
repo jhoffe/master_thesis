@@ -9,7 +9,7 @@ defaults:
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-finetune_pitch-shift_LL'
+name: 'parakeet-finetune_pitch-shift_LL_speed-perturbations'
 
 seed: 15
 
@@ -30,7 +30,7 @@ exp_manager:
     monitor: 'val_wer'
     mode: 'min'
     patience: 3
-    min_epochs: 17
+    min_epochs: 16
   checkpoint_callback_params:
     save_top_k: 1
     save_nemo_on_train_end: true

@@ -4,18 +4,18 @@ defaults:
   - exp_manager: base_single
   - optim@model.optim: adamw
   - preprocessor@model.preprocessor: base
-  - spec_augment@model.spec_augment: disabled
+  - spec_augment@model.spec_augment: base
   - train_ds@model.train_ds: train_ds_parakeet_lillelyd
   - validation_ds@model.validation_ds: base_validation_dataset
   - test_ds@model.test_ds: base_test_dataset
 
-name: 'parakeet-finetune_spec-aug_LL'
+name: 'parakeet-finetune_pitch-shift_LL_spec-aug_speed-perturbations'
 
 seed: 15
 
 # use `init_from_nemo_model` or `init_from_pretrained_model` to initialize the model
 # We do not currently support `init_from_ptl_ckpt` to create a single script for all types of models.
-init_from_nemo_model: artifact://parakeet-finetune_spec-aug_27154169:latest/parakeet-finetune_spec-aug.nemo # path to nemo model
+init_from_nemo_model: /work3/s204071/master_thesis/nemo_experiments/parakeet-finetune_spec-aug_pitch-shift/2025-11-21_20-42-26/checkpoints/parakeet-finetune_spec-aug_pitch-shift.nemo # path to nemo model
 trainer:
   log_every_n_steps: 5
   val_check_interval: 1.0
@@ -35,5 +35,4 @@ exp_manager:
     save_top_k: 1
     save_nemo_on_train_end: true
     save_best_model: true
-    always_save_nemo: true
     min_epochs: ${exp_manager.early_stopping_callback_params.min_epochs}
