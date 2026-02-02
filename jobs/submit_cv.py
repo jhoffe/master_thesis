@@ -35,24 +35,35 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
         notify_on_completion=os.environ.get("HPC_NOTIFY_ON_COMPLETION") == "1",
     )
 
-    if "speed-perturbations" in config_name:
-        data_path = (
+    train_augs = config_name.split("_ll_")
+    if len(train_augs) > 1:
+        train_augs = train_augs[-1]
+    else:
+        train_augs = ""
+    print(f"Conf Name={config_name}, Train augmentations: {train_augs}")
+
+    if "speed-perturbations" in train_augs:
+        print("Using LilleLyd_sp dataset for speed perturbations.")
+        train_data_path = (
             "../datasets/processed/LilleLyd_sp/cv_folds_sentence"
             if sentence_cv
             else "../datasets/processed/LilleLyd_sp/cv_folds"
         )
+        test_data_path = "LilleLyd_sp/cv_folds_sentence" if sentence_cv else "LilleLyd_sp/cv_folds"
     else:
-        data_path = (
+        print("Using LilleLyd dataset.")
+        train_data_path = (
             "../datasets/processed/LilleLyd/cv_folds_sentence"
             if sentence_cv
             else "../datasets/processed/LilleLyd/cv_folds"
         )
+        test_data_path = "LilleLyd/cv_folds_sentence" if sentence_cv else "LilleLyd/cv_folds"
     train_manifest_paths = [
-        os.path.join(data_path, f"fold_{i}/train_manifest.jsonl")
+        os.path.join(train_data_path, f"fold_{i}/train_manifest.jsonl")
         for i in range(1, 5 if not sentence_cv else 6)
     ]
     test_manifest_paths = [
-        os.path.join(data_path, f"fold_{i}/test_manifest.jsonl")
+        os.path.join(test_data_path, f"fold_{i}/test_manifest.jsonl")
         for i in range(1, 5 if not sentence_cv else 6)
     ]
 
@@ -100,7 +111,7 @@ def submit_job(config_name: str, walltime: str, sentence_cv: bool = False, parak
                     f"++model.name={name}",
                     f"++model.restore_from=$(cat {name}.artifact-reference)/{name}.nemo",
                     "dataset=lillelyd_full",
-                    f"++dataset.manifest_path={test_manifest_path}",
+                    f"++dataset.manifest_filepath={test_manifest_path}",
                 ]
             )
 
@@ -134,8 +145,7 @@ def main():
     load_dotenv()
 
     original_models = [
-        "parakeet-finetune_spec-aug_ll",
-        "parakeet-finetune_spec-aug_pitch-shift_ll",
+        # "parakeet-finetune_spec-aug_ll",
         "canary-finetune_spec-aug_speed-perturbations_ll",
     ]
 

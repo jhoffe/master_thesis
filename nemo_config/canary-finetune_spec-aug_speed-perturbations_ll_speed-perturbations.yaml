@@ -31,7 +31,7 @@ exp_manager:
     monitor: 'coralval_wer'
     mode: 'min'
     patience: 3
-    min_epochs: 3
+    min_epochs: 1
   checkpoint_callback_params:
     save_top_k: 1
     save_nemo_on_train_end: true
