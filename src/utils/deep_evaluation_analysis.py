@@ -12,6 +12,7 @@ from utils.deep_evaluation_analysis_utils import (
     kruskal_wallis,
     mean_wer_by_group,
     mean_wer_by_group_bootstrapped,
+    mean_semdist_by_group_bootstrapped,
     spearman_correlation_plot,
 )
 from utils.evaluation_utils import load_from_parquet
@@ -175,6 +176,13 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
         logger.info(f"Generating mean WER by {group_col} and model plot for CoRal-v2 dataset...")
         #mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
         mean_wer_by_group_bootstrapped(
+            df=df_filtered_coral, 
+            group_col=group_col, 
+            format_dict=FORMAT_DICT,
+            save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),
+        )
+        logger.info(f"Generating mean Semantic Distance by {group_col} and model plot for CoRal-v2 dataset...")
+        mean_semdist_by_group_bootstrapped(
             df=df_filtered_coral, 
             group_col=group_col, 
             format_dict=FORMAT_DICT,

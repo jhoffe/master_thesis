@@ -27,6 +27,7 @@ FORMAT_DICT = {
     "model": "Model",
     "coral-v2": "CoRal-v2",
     "fleurs": "FLEURS",
+    "lillelyd": "LilleLyd",
     "whisper-large-v3": "Whisper",
     "whisper-large-v3-turbo": "Whisper-Turbo",
     "roest-wav2vec2-315m-v2": "Røst-W2V2-315M",
@@ -54,6 +55,30 @@ FORMAT_DICT = {
     "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
     "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
     "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
+    "canary-finetune_spec-aug_speed-perturbations": "Canary-1B-Pre_FT",
+    "canary-finetune_SA_SP_ll": "Canary-1B-FT",
+    "canary-finetune_SA_SP_ll_SA": "Canary-1B-FT+SA",
+    "canary-finetune_SA_SP_ll_PS": "Canary-1B-FT+PS",
+    "canary-finetune_SA_SP_ll_SP": "Canary-1B-FT+SP",
+    "canary-finetune_SA_SP_ll_SA_PS": "Canary-1B-FT+SA+PS",
+    "canary-finetune_SA_SP_ll_SA_SP": "Canary-1B-FT+SA+SP",
+    "canary-finetune_SA_SP_ll_PS_SP": "Canary-1B-FT+PS+SP",
+    "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary-1B-FT+SA+PS+SP",
+    "parakeet-finetune_spec-aug": "Parakeet-TDT-Pre_FT",
+    "parakeet-finetune_SA_ll": "Parakeet-TDT-FT",
+    "parakeet-finetune_SA_ll_SA": "Parakeet-TDT-FT+SA",
+    "parakeet-finetune_SA_ll_PS": "Parakeet-TDT-FT+PS",
+    "parakeet-finetune_SA_ll_SP": "Parakeet-TDT-FT+SP",
+    "parakeet-finetune_SA_ll_SA_PS": "Parakeet-TDT-FT+SA+PS",
+    "parakeet-finetune_SA_ll_SA_SP": "Parakeet-TDT-FT+SA+SP",
+    "parakeet-finetune_SA_ll_PS_SP": "Parakeet-TDT-FT+PS+SP",
+    "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet-TDT-FT+SA+PS+SP",
+    "lillelyd cv-1": "LilleLyd CV-1",
+    "lillelyd cv-2": "LilleLyd CV-2",
+    "lillelyd cv-3": "LilleLyd CV-3",
+    "lillelyd cv-4": "LilleLyd CV-4",
+    "coral-v2 averaged": "CoRal-v2 Averaged",
+    "fleurs averaged": "FLEURS Averaged",
 }
 
 
@@ -61,14 +86,21 @@ def _fmt(label: str) -> str:
     return FORMAT_DICT.get(label, label)
 
 
-def _format_xtick_labels(ax, rotation: int = 60, ha: str = "right") -> None:
-    """Format current x-tick labels via FORMAT_DICT and apply rotation/alignment."""
+def _format_xtick_labels(ax, rotation: int = 60, ha: str = "right", font_size: int = 11) -> None:
     ticks = ax.get_xticklabels()
-    formatted = []
-    for t in ticks:
-        text = t.get_text()
-        formatted.append(_fmt(text))
-    ax.set_xticklabels(formatted, rotation=rotation, ha=ha)
+    formatted = [_fmt(t.get_text()) for t in ticks]
+    ax.set_xticklabels(formatted, rotation=rotation, ha=ha, fontsize=font_size)
+
+def _format_ytick_labels(ax, rotation: int = 0, ha: str = "right", font_size: int = 11) -> None:
+    ticks = ax.get_yticklabels()
+    formatted = [_fmt(t.get_text()) for t in ticks]
+    ax.set_yticklabels(formatted, rotation=rotation, ha=ha, fontsize=font_size)
+
+def _format_legend_labels(ax, font_size: int = 11) -> None:
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [_fmt(l) for l in labels]
+    ax.legend(handles, labels, fontsize=font_size)
+
 
 
 # =========================
@@ -627,6 +659,169 @@ def plot_box_metric(
     plt.close(fig)
 
 
+def mean_ci95(x: pd.Series):
+    x = x.dropna().to_numpy()
+    n = len(x)
+    if n == 0:
+        return np.nan, np.nan
+    m = float(np.mean(x))
+    if n == 1:
+        return m, 0.0
+    se = float(np.std(x, ddof=1) / np.sqrt(n))
+    return m, 1.96 * se
+
+def plot_models_all_datasets_by_fold(
+    df: pd.DataFrame,
+    models: list[str] | None = None,
+    title: str | None = None,
+    savepath: str | None = None,
+    font_size: int = 11,
+):
+    SERIES_LABELS = [
+        "lillelyd cv-1",
+        "lillelyd cv-2",
+        "lillelyd cv-3",
+        "lillelyd cv-4",
+        "coral-v2 averaged",
+        "fleurs averaged",
+    ]
+
+    COLORS = [
+        "#1f77b4",
+        "#2ca02c",
+        "#9467bd",
+        "#e377c2",
+        "#bcbd22",
+        "#17becf",
+    ]
+    color_map = dict(zip(SERIES_LABELS, COLORS))
+
+    required = {"dataset_name", "model", "cv_fold", "WER"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"df is missing required columns: {sorted(missing)}")
+
+    if models is None:
+        # keep stable ordering if caller does not pass a list
+        models = sorted(df["model"].dropna().unique().tolist())
+
+    d = df.copy()
+
+    series = [
+        ("lillelyd", "cv-1", "lillelyd cv-1"),
+        ("lillelyd", "cv-2", "lillelyd cv-2"),
+        ("lillelyd", "cv-3", "lillelyd cv-3"),
+        ("lillelyd", "cv-4", "lillelyd cv-4"),
+        ("coral-v2", "averaged", "coral-v2 averaged"),
+        ("fleurs", "averaged", "fleurs averaged"),
+    ]
+
+    keep = set((ds, fold) for ds, fold, _ in series)
+
+    print("Models passed in:")
+    print(sorted(models))
+
+    print("\nModels present in df:")
+    print(sorted(df["model"].dropna().unique().tolist()))
+
+    print("\nModels that will be DROPPED (in models but not in df):")
+    print(sorted(set(models) - set(df["model"].dropna().unique())))
+
+    print("\nModels present in df but NOT requested:")
+    print(sorted(set(df["model"].dropna().unique()) - set(models)))
+
+    d = d[d["model"].isin(models)].copy()
+    d = d[d.apply(lambda r: (r["dataset_name"], r["cv_fold"]) in keep, axis=1)].copy()
+
+    rows = []
+    for (m, ds, f), g in d.groupby(["model", "dataset_name", "cv_fold"]):
+        mean, ci95 = mean_ci95(g["WER"])
+        median = float(np.median(g["WER"].dropna())) if len(g["WER"].dropna()) else np.nan
+        rows.append({
+            "model": m,
+            "dataset_name": ds,
+            "cv_fold": f,
+            "mean": mean,
+            "ci95": ci95,
+            "median": median,
+            "n": int(g["WER"].dropna().shape[0]),
+        })
+
+    agg = pd.DataFrame(rows)
+    if len(agg) == 0:
+        raise ValueError("No rows left after filtering. Check dataset_name and cv_fold values in df.")
+
+    agg["model"] = pd.Categorical(agg["model"], categories=models, ordered=True)
+
+    label_map = {(ds, f): lab for ds, f, lab in series}
+    agg["series_label"] = agg.apply(lambda r: label_map[(r["dataset_name"], r["cv_fold"])], axis=1)
+    series_labels = [lab for _, _, lab in series]
+    agg["series_label"] = pd.Categorical(agg["series_label"], categories=series_labels, ordered=True)
+    agg = agg.sort_values(["model", "series_label"])
+
+    y = np.arange(len(models))
+    group_height = 0.86
+    k = len(series_labels)
+    bar_h = group_height / k
+    offsets = (np.arange(k) - (k - 1) / 2) * bar_h
+
+    fig_w = 11
+    fig_h = max(11.7, 1.6 * len(models))
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+
+    for i, lab in enumerate(series_labels):
+        sub = agg[agg["series_label"] == lab].set_index("model").reindex(models)
+
+        means = sub["mean"].to_numpy()
+        errs = sub["ci95"].to_numpy()
+        medians = sub["median"].to_numpy()
+
+        ypos = y + offsets[i]
+
+        ax.barh(
+            ypos,
+            means,
+            height=bar_h * 0.95,
+            xerr=errs,
+            capsize=4,
+            label=lab,
+            color=color_map[lab],
+        )
+
+        ax.scatter(
+            medians,
+            ypos,
+            marker="D",
+            s=26,
+            zorder=3,
+            label="Median WER" if i == 0 else None,
+            color="black",
+        )
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(models)
+
+    ax.set_xlabel(_fmt("WER"), fontsize=font_size)
+    ax.set_title(
+        _fmt(title) if title else _fmt("WER by Model, Dataset, and Fold"),
+        fontsize=font_size + 2,
+    )
+
+    ax.grid(True, axis="x", alpha=0.3)
+
+    # Apply formatting
+    _format_ytick_labels(ax, rotation=0, ha="right", font_size=font_size)
+    _format_xtick_labels(ax, rotation=0, ha="center", font_size=font_size)
+    _format_legend_labels(ax, font_size=font_size)
+
+    fig.tight_layout()
+
+    if savepath:
+        fig.savefig(savepath, dpi=200, bbox_inches="tight")
+
+    return fig, ax, agg
+
+
 def make_all_plots(
     data: pd.DataFrame,
     summary_data: Optional[pd.DataFrame] = None,
@@ -634,104 +829,122 @@ def make_all_plots(
     ci: str = 95,
     width: int = 12,
     height: int = 6,
+    font_size: Optional[int] = 12,
+    csr: bool = False,
+    df_folds: Optional[pd.DataFrame] = None,
+    models: list[str] | None = None,
 ) -> None:
     """
     Convenience wrapper that filters to your grid and emits all standard plots.
     """
 
     # CER plots
-    plot_bar_metric_pre_bootstrapped(
-        df=summary_data,
-        metric="CER",
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
-    plot_bar_metric_pre_bootstrapped(
-        df=summary_data,
-        metric="CER",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
+    # plot_bar_metric_pre_bootstrapped(
+    #     df=summary_data,
+    #     metric="CER",
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
+    # plot_bar_metric_pre_bootstrapped(
+    #     df=summary_data,
+    #     metric="CER",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
 
-    plot_bar_metric_pre_bootstrapped(
-        df=summary_data,
-        metric="WER",
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
-    plot_bar_metric_pre_bootstrapped(
-        df=summary_data,
-        metric="WER",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
+    # plot_bar_metric_pre_bootstrapped(
+    #     df=summary_data,
+    #     metric="WER",
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
+    # plot_bar_metric_pre_bootstrapped(
+    #     df=summary_data,
+    #     metric="WER",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
 
-    plot_bar_metric_bootstrapped(
-        data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
-    )
-    plot_bar_metric_bootstrapped(
-        data,
-        "semantic_distance",
-        ci_level=ci,
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
+    # plot_bar_metric_bootstrapped(
+    #     data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
+    # )
+    # plot_bar_metric_bootstrapped(
+    #     data,
+    #     "semantic_distance",
+    #     ci_level=ci,
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
 
-    plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(
-        data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
-    )
-    plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(
-        data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
-    )
-    plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
-    plot_box_metric(
-        data,
-        "semantic_distance",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-    )
+    # plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height)
+    # plot_box_metric(
+    #     data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
+    # )
+    # plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height)
+    # plot_box_metric(
+    #     data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
+    # )
+    # plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
+    # plot_box_metric(
+    #     data,
+    #     "semantic_distance",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    # )
 
-    plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(
-        data,
-        "CER",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-        showfliers=True,
-    )
-    plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
-    plot_box_metric(
-        data,
-        "WER",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-        showfliers=True,
-    )
-    plot_box_metric(
-        data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True
-    )
-    plot_box_metric(
-        data,
-        "semantic_distance",
-        separate_by_dataset=True,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-        showfliers=True,
-    )
+    # plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height, showfliers=True)
+    # plot_box_metric(
+    #     data,
+    #     "CER",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    #     showfliers=True,
+    # )
+    # plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
+    # plot_box_metric(
+    #     data,
+    #     "WER",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    #     showfliers=True,
+    # )
+    # plot_box_metric(
+    #     data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True
+    # )
+    # plot_box_metric(
+    #     data,
+    #     "semantic_distance",
+    #     separate_by_dataset=True,
+    #     save_dir=save_dir,
+    #     width=width,
+    #     height=height,
+    #     showfliers=True,
+    # )
+
+    if csr and df_folds is not None and models is not None:
+        print("Generating cross-validation WER by model and dataset plot...")
+        print(f"Saving to directory: {save_dir}")
+        print(f"Models: {models}")
+        print(f"DataFrame shape: {df_folds.shape}")
+        print(df_folds.head())
+        plot_models_all_datasets_by_fold(
+            df=df_folds,
+            models=models,
+            font_size=font_size,
+            title="Cross-Validation WER by Model and Dataset",
+            savepath=Path(save_dir) / "models_all_datasets_by_fold.png",
+        )

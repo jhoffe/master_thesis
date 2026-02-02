@@ -61,6 +61,22 @@ FORMAT_DICT = {
     "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
     "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
     "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
+    "canary-finetune_SA_ll": "Canary-1B-FT",
+    "canary-finetune_SA_ll_SA": "Canary-1B-FT+SA",
+    "canary-finetune_SA_ll_PS": "Canary-1B-FT+PS",
+    "canary-finetune_SA_ll_SP": "Canary-1B-FT+SP",
+    "canary-finetune_SA_ll_SA_PS": "Canary-1B-FT+SA+PS",
+    "canary-finetune_SA_ll_SA_SP": "Canary-1B-FT+SA+SP",
+    "canary-finetune_SA_ll_PS_SP": "Canary-1B-FT+PS+SP",
+    "canary-finetune_SA_ll_SA_PS_SP": "Canary-1B-FT+SA+PS+SP",
+    "parakeet-finetune_SA_ll": "Parakeet-TDT-FT",
+    "parakeet-finetune_SA_ll_SA": "Parakeet-TDT-FT+SA",
+    "parakeet-finetune_SA_ll_PS": "Parakeet-TDT-FT+PS",
+    "parakeet-finetune_SA_ll_SP": "Parakeet-TDT-FT+SP",
+    "parakeet-finetune_SA_ll_SA_PS": "Parakeet-TDT-FT+SA+PS",
+    "parakeet-finetune_SA_ll_SA_SP": "Parakeet-TDT-FT+SA+SP",
+    "parakeet-finetune_SA_ll_PS_SP": "Parakeet-TDT-FT+PS+SP",
+    "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet-TDT-FT+SA+PS+SP",
 }
 
 
@@ -297,38 +313,39 @@ def make_all_summary_plots(
     """
     summary_df = df.copy()
 
-    # WER vs CO2
-    logger.info("Plotting WER vs energy in same facet...")
-    plot_summary_scatter(
-        summary_df,
-        models=models,
-        x="energy_kWh",
-        y="WER",
-        fontsize=fontsize,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-        alpha=alpha,
-        point_size=point_size,
-        separate_by_dataset=False,
-        models_order=models_order,
-    )
-
-    logger.info("Plotting WER vs energy faceted by dataset...")
-    plot_summary_scatter(
-        summary_df,
-        models=models,
-        x="energy_kWh",
-        y="WER",
-        fontsize=fontsize,
-        save_dir=save_dir,
-        width=width,
-        height=height,
-        alpha=alpha,
-        point_size=point_size,
-        separate_by_dataset=True,
-        models_order=models_order,
-    )
+    # only plot energy_kWh if it exists
+    if "energy_kWh" in summary_df.columns:
+        logger.info("Plotting WER vs energy in same facet...")
+        plot_summary_scatter(
+            summary_df,
+            models=models,
+            x="energy_kWh",
+            y="WER",
+            fontsize=fontsize,
+            save_dir=save_dir,
+            width=width,
+            height=height,
+            alpha=alpha,
+            point_size=point_size,
+            separate_by_dataset=False,
+            models_order=models_order,
+        )
+        
+        logger.info("Plotting WER vs energy faceted by dataset...")
+        plot_summary_scatter(
+            summary_df,
+            models=models,
+            x="energy_kWh",
+            y="WER",
+            fontsize=fontsize,
+            save_dir=save_dir,
+            width=width,
+            height=height,
+            alpha=alpha,
+            point_size=point_size,
+            separate_by_dataset=True,
+            models_order=models_order,
+        )
     # WER vs RTFx
     logger.info("Plotting WER vs RTFx...")
     plot_summary_scatter(

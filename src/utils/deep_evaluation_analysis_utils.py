@@ -191,6 +191,49 @@ def get_samples(
     return df_samples
 
 
+def get_samples_lillelyd(
+    dataset: Dataset, dataframe: pd.DataFrame, model: str, ids: Dict[str, Dict[str, float]]
+) -> None:
+    """Get a sample from the dataset by its ID.
+
+    Args:
+        dataset:
+            The dataset to search in.
+        sample_id:
+            The ID of the sample to retrieve.
+        dataframe:
+            The DataFrame containing the samples.
+    Returns:
+        None
+    """
+
+    logger.info(f"Getting samples for model: {model}")
+    dataset_entries = []
+    entry_dict = {}
+    for sample_id in ids[model]:
+        for entry in dataset:
+            if entry["audio_filepath"] == sample_id:
+                dataset_entries.append(entry)
+                break
+    for i, sample_id in enumerate(ids[model]):
+        df_entry = dataframe[(dataframe["id"] == sample_id) & (dataframe["model"] == model)]
+        wer = df_entry["WER"].values[0]
+        sem_dist = df_entry["semantic_distance"].values[0]
+        prediction = df_entry["prediction"].values[0]
+        label = df_entry["label"].values[0]
+        # add to dict
+        entry_dict[i] = {
+            "id_recording": sample_id,
+            "WER": wer,
+            "Semantic Distance": sem_dist,
+            "Prediction": prediction,
+            "Label": label,
+        }
+
+    df_samples = pd.DataFrame.from_dict(entry_dict, orient="index")
+    return df_samples
+
+
 def star_from_p(p):
     if p < 0.001:
         return "***"
@@ -587,6 +630,141 @@ def mean_wer_by_group_bootstrapped(
     save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(
         save_path / f"mean_wer_by_{group_col}_and_model_coral_v2.png",
+        bbox_inches="tight",
+    )
+    plt.close()
+
+def mean_semdist_by_group_bootstrapped(
+    df: pd.DataFrame,
+    format_dict: Dict[str, str],
+    group_col: str,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
+) -> None:
+    """Plot mean semantic distance by group for CoRal-v2 dataset with bootstrap CIs."""
+    rng = np.random.default_rng()
+
+    # Order groups
+    if group_col == "dialect_group":
+        group_order = df.groupby(group_col)["semantic_distance"].mean().sort_values().index
+    else:
+        group_order = df.groupby(group_col)["semantic_distance"].mean().index
+
+    models = list(df["model"].unique())
+
+    # ---------- bootstrap summary: one row per (group, model) ----------
+    summary_rows = []
+    for (grp, model), sub in df.groupby([group_col, "model"], observed=True):
+        mean, ci_low, ci_high = _bootstrap_mean_ci(
+            sub["semantic_distance"].to_numpy(), level=95, B=5000, rng=rng
+        )
+        summary_rows.append(
+            {
+                group_col: grp,
+                "model": model,
+                "mean": mean,
+                "ci_low": ci_low,
+                "ci_high": ci_high,
+            }
+        )
+    summary = pd.DataFrame(summary_rows)
+    summary[group_col] = pd.Categorical(summary[group_col],
+                                        categories=group_order,
+                                        ordered=True)
+    summary["model"] = pd.Categorical(summary["model"],
+                                      categories=models,
+                                      ordered=True)
+    summary = summary.sort_values([group_col, "model"])
+
+    # ---------- barplot of means ----------
+    plt.figure(figsize=(12, 7))
+    ax = sns.barplot(
+        data=summary,
+        y=group_col,
+        x="mean",
+        hue="model",
+        order=group_order,
+        orient="h",
+        ci=None,          # we add CIs manually
+    )
+
+    # ---------- bootstrap CIs, aligned by reading tick positions ----------
+    yticks = np.array(ax.get_yticks())
+    yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+
+    for model_index, model in enumerate(models):
+        container = ax.containers[model_index]          # bars for this model
+
+        for bar in container:
+            y_center = bar.get_y() + bar.get_height() / 2
+            # find nearest tick to this bar and its label
+            idx = int(np.argmin(np.abs(yticks - y_center)))
+            grp_label = yticklabels[idx]
+
+            row = summary[
+                (summary[group_col] == grp_label) &
+                (summary["model"] == model)
+            ].iloc[0]
+
+            mean = row["mean"]
+            ci_low = row["ci_low"]
+            ci_high = row["ci_high"]
+
+            ax.errorbar(
+                mean,
+                y_center,
+                xerr=[[mean - ci_low], [ci_high - mean]],
+                fmt="none",
+                ecolor="black",
+                capsize=4,
+                capthick=1.2,
+                linewidth=1.2,
+            )
+
+    # ---------- median diamonds (your original logic) ----------
+    median_df = df.groupby([group_col, "model"])["semantic_distance"].median().reset_index()
+
+    for i, row in median_df.iterrows():
+        group_value = row[group_col]
+        model = row["model"]
+        median_semantic_distance = row["semantic_distance"]
+
+        group_index = list(group_order).index(group_value)
+        model_index = models.index(model)
+
+        num_models = len(models)
+        total_bar_height = 0.8  # seaborn default
+        bar_height = total_bar_height / num_models
+
+        x_pos = median_semantic_distance
+        y_pos = (
+            group_index
+            - total_bar_height / 2
+            + bar_height / 2
+            + model_index * bar_height
+        )
+
+        plt.plot(
+            x_pos,
+            y_pos,
+            marker="D",
+            color="black",
+            markersize=6,
+            label="Median Semantic Distance" if i == 0 else "",
+        )
+
+    # ---------- labels, legend, save ----------
+    plt.title(f"Mean Semantic Distance by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
+    plt.xlabel("Mean Semantic Distance")
+    plt.ylabel(_fmt(format_dict, group_col))
+
+    handles, labels = ax.get_legend_handles_labels()
+    full_labels = [_fmt(format_dict, label) for label in labels]
+    plt.legend(handles, full_labels, title="Model")
+
+    plt.tight_layout()
+    save_path.mkdir(parents=True, exist_ok=True)
+    plt.savefig(
+        save_path / f"mean_semantic_distance_by_{group_col}_and_model_coral_v2.png",
         bbox_inches="tight",
     )
     plt.close()
