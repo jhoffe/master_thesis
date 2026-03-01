@@ -19,6 +19,7 @@ from utils.evaluation_utils import save_to_parquet, load_from_parquet
 ###################
 MODELS = {
     "Canary": [
+        "canary-1b-v2",
         "canary_finetune",
         "canary_finetune_pitch-shift",
         "canary_finetune_spec-aug",
@@ -29,6 +30,7 @@ MODELS = {
         "canary_finetune_spec-aug_speed-perturbations_pitch-shift",
     ],
     "Parakeet": [
+        "parakeet-tdt-0.6b-v3",
         "parakeet_finetune",
         "parakeet_finetune_pitch-shift",
         "parakeet_finetune_spec-aug",
@@ -42,6 +44,7 @@ MODELS = {
 
 
 FORMAT_DICT = {
+    ("canary-1b-v2", "parakeet-tdt-0.6b-v3"): "BL",
     ('parakeet_finetune', 'canary_finetune'): 'FT',
     ('parakeet_finetune_spec-aug', 'canary_finetune_spec-aug'): 'FT+SA',
     ('parakeet_finetune_speed-perturbations', 'canary_finetune_speed-perturbations'): 'FT+SP',
@@ -92,7 +95,7 @@ def build_scores_dict(df: pd.DataFrame, datasets: List[str], models: Dict[str, L
     return complete_dict
 
 
-def get_bootstrap_p_value(diffs, n_iterations=10000, use_normal_approximation=True):
+def get_bootstrap_p_value_OLD(diffs, n_iterations=10000, use_normal_approximation=True):
     """
     Calculates a two-sided p-value from a bootstrap distribution.
     """
@@ -123,6 +126,32 @@ def get_bootstrap_p_value(diffs, n_iterations=10000, use_normal_approximation=Tr
     # Two-sided p-value calculation
     # We add 1 to avoid p=0 (standard practice in permutation/bootstrap tests)
     p_value = (2 * tail_count + 1) / (n_iterations + 1)
+    
+    # Cap p-value at 1.0
+    return min(p_value, 1.0)
+
+def get_bootstrap_p_value(diffs, n_iterations=10000, use_normal_approximation=False):
+    """
+    Calculates a two-sided p-value from a bootstrap distribution.
+    """
+    n_samples = len(diffs)
+    # Fast vectorized resampling
+    rng = np.random.default_rng(seed=42)
+    random_indices = rng.integers(0, n_samples, size=(n_iterations, n_samples))
+    resampled_diffs = diffs[random_indices]
+    means = np.mean(resampled_diffs, axis=1)
+
+    if use_normal_approximation:
+        # Normal approximation for two-sided p-value
+        std_error = np.std(diffs, ddof=1) / np.sqrt(n_samples)
+        z_score = np.mean(diffs) / std_error
+        p_value = 2 * (1 - stats.norm.cdf(abs(z_score)))
+        return min(p_value, 1.0)
+    
+    # Two sided p value from bootstrap distribution, no symmetry assumption
+    p_left = (np.sum(means <= 0) + 1) / (n_iterations + 1)
+    p_right = (np.sum(means >= 0) + 1) / (n_iterations + 1)
+    p_value = 2 * min(p_left, p_right)
     
     # Cap p-value at 1.0
     return min(p_value, 1.0)

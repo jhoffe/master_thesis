@@ -411,6 +411,86 @@ def bootstrap_wer_parallel(
     }
 
 
+# def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFrame:
+#     metrics = {}
+
+#     # compute WER and CER again (load from evaluate to be sure)
+#     wer_metric = load_metric("wer")
+#     cer_metric = load_metric("cer")
+#     metrics["WER"] = wer_metric.compute(
+#         predictions=df["prediction"].tolist(), references=df["label"].tolist()
+#     )
+#     metrics["CER"] = cer_metric.compute(
+#         predictions=df["prediction"].tolist(), references=df["label"].tolist()
+#     )
+
+#     wer_results = bootstrap_wer_parallel(
+#         references=df["label"].tolist(),
+#         predictions=df["prediction"].tolist(),
+#         n_resamples=1000,
+#         ci=0.95,
+#         n_jobs=-1,
+#     )
+
+#     metrics["WER_ci_lower"] = wer_results["wer_ci_lower"]
+#     metrics["WER_ci_upper"] = wer_results["wer_ci_upper"]
+#     metrics["WER_mean"] = wer_results["wer_mean"]
+#     metrics["CER_ci_lower"] = wer_results["cer_ci_lower"]
+#     metrics["CER_ci_upper"] = wer_results["cer_ci_upper"]
+#     metrics["CER_mean"] = wer_results["cer_mean"]
+
+#     # compute median CER and WER
+#     metrics["CER_median"] = df["CER"].median()
+#     metrics["WER_median"] = df["WER"].median()
+
+#     # compute stddev CER and WER
+#     metrics["CER_std"] = df["CER"].std()
+#     metrics["WER_std"] = df["WER"].std()
+
+#     # compuute standard error of the mean (SEM) for CER and WER
+#     metrics["CER_sem"] = df["CER"].sem()
+#     metrics["WER_sem"] = df["WER"].sem()
+
+#     # compute average semantic distance (cosine similarity)
+#     metrics["avg_semantic_distance"] = df["semantic_distance"].mean()
+#     metrics["semantic_distance_median"] = df["semantic_distance"].median()
+#     metrics["semantic_distance_std"] = df["semantic_distance"].std()
+#     metrics["semantic_distance_sem"] = df["semantic_distance"].sem()
+
+#     # bootstrap semantic distance
+#     semantic_distances = df["semantic_distance"].tolist()
+#     n = len(semantic_distances)
+#     bootstrapped_semantic_distances = []
+#     n_resamples = 1000
+#     for _ in range(n_resamples):
+#         idx = np.random.choice(n, n, replace=True)
+#         sampled_semantic_distances = [semantic_distances[i] for i in idx]
+#         bootstrapped_semantic_distances.append(np.mean(sampled_semantic_distances))
+#     metrics["avg_semantic_distance_ci_lower"] = float(np.percentile(bootstrapped_semantic_distances, 2.5))
+#     metrics["avg_semantic_distance_ci_upper"] = float(np.percentile(bootstrapped_semantic_distances, 97.5))
+
+#     # compute average clip length
+#     metrics["avg_clip_length"] = df["clip_length"].mean()
+
+#     # add values from results.json for this config, if present
+#     results_json = load_results_json_for_config(eval_combination)
+#     if results_json:
+#         if "rtf" in results_json:
+#             metrics["RTF"] = float(results_json["rtf"])
+#         if "rtfx" in results_json:
+#             metrics["RTFx"] = float(results_json["rtfx"])
+
+#     # add values from carbon log, if present
+#     carbon_log = load_carbon_log(eval_combination)
+#     if carbon_log:
+#         metrics["co2_g"] = carbon_log["actual"]["co2eq (g)"]
+#         metrics["energy_kWh"] = carbon_log["actual"]["energy (kWh)"]
+#         metrics["duration_s"] = carbon_log["actual"]["duration (s)"]
+
+#     metrics_df = pd.DataFrame([metrics])
+#     return metrics_df
+
+
 def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFrame:
     metrics = {}
 
@@ -424,21 +504,6 @@ def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFram
         predictions=df["prediction"].tolist(), references=df["label"].tolist()
     )
 
-    wer_results = bootstrap_wer_parallel(
-        references=df["label"].tolist(),
-        predictions=df["prediction"].tolist(),
-        n_resamples=1000,
-        ci=0.95,
-        n_jobs=-1,
-    )
-
-    metrics["WER_ci_lower"] = wer_results["wer_ci_lower"]
-    metrics["WER_ci_upper"] = wer_results["wer_ci_upper"]
-    metrics["WER_mean"] = wer_results["wer_mean"]
-    metrics["CER_ci_lower"] = wer_results["cer_ci_lower"]
-    metrics["CER_ci_upper"] = wer_results["cer_ci_upper"]
-    metrics["CER_mean"] = wer_results["cer_mean"]
-
     # compute median CER and WER
     metrics["CER_median"] = df["CER"].median()
     metrics["WER_median"] = df["WER"].median()
@@ -451,23 +516,17 @@ def compute_avg_metrics(df: pd.DataFrame, eval_combination: dict) -> pd.DataFram
     metrics["CER_sem"] = df["CER"].sem()
     metrics["WER_sem"] = df["WER"].sem()
 
+    # compute {metric}_ci_lower and {metric}_ci_upper for CER and WER
+    metrics["CER_ci_lower"] = metrics["CER"] - 1.96 * metrics["CER_sem"]
+    metrics["CER_ci_upper"] = metrics["CER"] + 1.96 * metrics["CER_sem"]
+    metrics["WER_ci_lower"] = metrics["WER"] - 1.96 * metrics["WER_sem"]
+    metrics["WER_ci_upper"] = metrics["WER"] + 1.96 * metrics["WER_sem"]
+
     # compute average semantic distance (cosine similarity)
     metrics["avg_semantic_distance"] = df["semantic_distance"].mean()
     metrics["semantic_distance_median"] = df["semantic_distance"].median()
     metrics["semantic_distance_std"] = df["semantic_distance"].std()
     metrics["semantic_distance_sem"] = df["semantic_distance"].sem()
-
-    # bootstrap semantic distance
-    semantic_distances = df["semantic_distance"].tolist()
-    n = len(semantic_distances)
-    bootstrapped_semantic_distances = []
-    n_resamples = 1000
-    for _ in range(n_resamples):
-        idx = np.random.choice(n, n, replace=True)
-        sampled_semantic_distances = [semantic_distances[i] for i in idx]
-        bootstrapped_semantic_distances.append(np.mean(sampled_semantic_distances))
-    metrics["avg_semantic_distance_ci_lower"] = float(np.percentile(bootstrapped_semantic_distances, 2.5))
-    metrics["avg_semantic_distance_ci_upper"] = float(np.percentile(bootstrapped_semantic_distances, 97.5))
 
     # compute average clip length
     metrics["avg_clip_length"] = df["clip_length"].mean()

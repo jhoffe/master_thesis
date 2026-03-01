@@ -15,7 +15,29 @@ from utils.evaluation_csr_utils import (
     load_from_parquet,
 )
 
-MODELS = [
+SPEAKER_MODELS = [
+    "roest-whisper-large-v1",
+    "canary-finetune_spec-aug_speed-perturbations",
+    "canary-finetune_SA_SP_ll",
+    "canary-finetune_SA_SP_ll_SA",
+    "canary-finetune_SA_SP_ll_PS",
+    "canary-finetune_SA_SP_ll_SP",
+    "canary-finetune_SA_SP_ll_SA_PS",
+    "canary-finetune_SA_SP_ll_SA_SP",
+    "canary-finetune_SA_SP_ll_PS_SP",
+    "canary-finetune_SA_SP_ll_SA_PS_SP",
+    "parakeet-finetune_spec-aug",
+    "parakeet-finetune_SA_ll",
+    "parakeet-finetune_SA_ll_SA",
+    "parakeet-finetune_SA_ll_PS",
+    "parakeet-finetune_SA_ll_SP",
+    "parakeet-finetune_SA_ll_SA_PS",
+    "parakeet-finetune_SA_ll_SA_SP",
+    "parakeet-finetune_SA_ll_PS_SP",
+    "parakeet-finetune_SA_ll_SA_PS_SP",
+]
+
+SENTENCE_MODELS = [
     "canary-finetune_spec-aug_speed-perturbations",
     "canary-finetune_SA_SP_ll",
     "canary-finetune_SA_SP_ll_SA",
@@ -48,11 +70,19 @@ SUBSETS = {
     "lillelyd": "full",
 }
 
-CV_FOLDS = {
+SPEAKER_CV_FOLDS = {
     "cv-1",
     "cv-2",
     "cv-3",
     "cv-4",
+}
+
+SENTENCE_CV_FOLDS = {
+    "sentence_cv-1",
+    "sentence_cv-2",
+    "sentence_cv-3",
+    "sentence_cv-4",
+    "sentence_cv-5",
 }
 
 SPLITS = {
@@ -61,13 +91,13 @@ SPLITS = {
     "lillelyd": "test",
 }
 
-def provide_combinations(include_folds: bool = True):
+def provide_combinations(models: list, folds: set, include_folds: bool = True):
     combinations = []
     if include_folds:
-        for m in MODELS:
+        for m in models:
             for d in DATASETS:
                 if "ll" in m:
-                    for f in CV_FOLDS:
+                    for f in folds:
                         combinations.append(
                             {
                                 "model": m,
@@ -79,7 +109,7 @@ def provide_combinations(include_folds: bool = True):
                         )
                 else:
                     if d == "lillelyd":
-                        for f in CV_FOLDS:
+                        for f in folds:
                             combinations.append(
                                 {
                                     "model": m,
@@ -100,7 +130,7 @@ def provide_combinations(include_folds: bool = True):
                             }
                         )
     else:
-        for m in MODELS:
+        for m in models:
             for d in DATASETS:
                 combinations.append(
                     {
@@ -112,10 +142,30 @@ def provide_combinations(include_folds: bool = True):
                 )
     return combinations
 
-EVALUATION_COMBINATIONS_FOLDS = provide_combinations()
-EVALUATION_COMBINATIONS = provide_combinations(include_folds=False)
+SPEAKER_EVALUATION_COMBINATIONS_FOLDS = provide_combinations(
+    models=SPEAKER_MODELS, 
+    folds=SPEAKER_CV_FOLDS, 
+    include_folds=True
+)
+SPEAKER_EVALUATION_COMBINATIONS = provide_combinations(
+    models=SPEAKER_MODELS, 
+    folds=SPEAKER_CV_FOLDS, 
+    include_folds=False
+)
 
-def prepare_evaluation_data() -> None:
+SENTENCE_EVALUATION_COMBINATIONS_FOLDS = provide_combinations(
+    models=SENTENCE_MODELS, 
+    folds=SENTENCE_CV_FOLDS, 
+    include_folds=True
+)
+
+SENTENCE_EVALUATION_COMBINATIONS = provide_combinations(
+    models=SENTENCE_MODELS, 
+    folds=SENTENCE_CV_FOLDS, 
+    include_folds=False
+)
+
+def prepare_evaluation_data(type: str) -> None:
     """
     Prepare evaluation data by processing results and computing metrics.
 
@@ -125,39 +175,59 @@ def prepare_evaluation_data() -> None:
     base_path = Path("reports/metrics")
     base_path.mkdir(parents=True, exist_ok=True)
 
-    logger.info(f"Combining detailed results from all evaluations (total of {len(EVALUATION_COMBINATIONS_FOLDS)} combinations)...")
-    detailed_results_df = combine_all_detailed_results_lillelyd(combinations=EVALUATION_COMBINATIONS_FOLDS, base="experiments/evaluate_model")
+    if type == "speaker":
+        evaluation_combinations_folds = SPEAKER_EVALUATION_COMBINATIONS_FOLDS
+        evaluation_combinations = SPEAKER_EVALUATION_COMBINATIONS
+    elif type == "sentence":
+        evaluation_combinations_folds = SENTENCE_EVALUATION_COMBINATIONS_FOLDS
+        evaluation_combinations = SENTENCE_EVALUATION_COMBINATIONS
+    else:
+        raise ValueError(f"Invalid type: {type}. Must be 'speaker' or 'sentence'.")
+
+    logger.info(f"Preparing {type} evaluation data...")
+
+    logger.info(f"Combining detailed results from all evaluations (total of {len(evaluation_combinations_folds)} combinations)...")
+    detailed_results_df = combine_all_detailed_results_lillelyd(
+        combinations=evaluation_combinations_folds, 
+        base="experiments/evaluate_model"
+        )
 
     logger.info("Saving combined detailed results to parquet...")
     save_to_parquet(
-        df=detailed_results_df, base_path=base_path, file_name="lillelyd_finetune_combined_detailed_results_with_folds.parquet"
+        df=detailed_results_df, 
+        base_path=base_path, 
+        file_name=f"lillelyd_finetune_{type}_combined_detailed_results_with_folds.parquet"
     )
     logger.info(f"Saved {len(detailed_results_df)} rows of detailed results.")
 
-    logger.info("Creating stitched dataframe plotting...")
+    logger.info(f"Creating stitched dataframe plotting for {type}...")
     stitched_df = make_stitched_lillelyd_df(combined_df=detailed_results_df)
-    logger.info("Saving stitched detailed results to parquet...")
+    
+    logger.info(f"Saving stitched detailed results to parquet for {type}...")
     save_to_parquet(
-        df=stitched_df, base_path=base_path, file_name="lillelyd_finetune_stitched_detailed_results.parquet"
+        df=stitched_df, 
+        base_path=base_path, 
+        file_name=f"lillelyd_finetune_{type}_stitched_detailed_results.parquet"
     )
     logger.info(f"Saved {len(stitched_df)} rows of stitched detailed results.")
 
-    logger.info("Loading combined detailed results from parquet...")
+    logger.info(f"Loading combined detailed results from parquet for {type}...")
     stitched_df = load_from_parquet(
-        Path("reports/metrics/lillelyd_finetune_stitched_detailed_results.parquet")
+        Path(f"reports/metrics/lillelyd_finetune_{type}_stitched_detailed_results.parquet")
     )
 
-    logger.info(f"Computing average metrics for stitched detailed results (total of {len(EVALUATION_COMBINATIONS)} combinations)...")
+    logger.info(f"Computing average metrics for stitched detailed results (total of {len(evaluation_combinations)} combinations)...")
     average_metrics_df = compute_average_metrics_for_detailed_results(
         df=stitched_df,
-        eval_combinations=EVALUATION_COMBINATIONS,
+        eval_combinations=evaluation_combinations,
     )
 
     logger.info("Saving average metrics to parquet...")
     save_to_parquet(
-        df=average_metrics_df, base_path=base_path, file_name="lillelyd_finetune_average_metrics.parquet"
+        df=average_metrics_df, 
+        base_path=base_path, 
+        file_name=f"lillelyd_finetune_{type}_average_metrics.parquet"
     )
     logger.info(f"Saved {len(average_metrics_df)} rows of average metrics.")
-
 
     logger.info("Evaluation data preparation complete.")

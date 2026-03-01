@@ -14,6 +14,7 @@ from utils.deep_evaluation_analysis_utils_csr import (
     mean_wer_by_group_bootstrapped,
     mean_semdist_by_group_bootstrapped,
     spearman_correlation_plot,
+    spearman_correlation_plot_pair
 )
 
 from utils.evaluation_utils import load_from_parquet
@@ -24,7 +25,12 @@ from utils.manifest_to_hf import manifest_to_hf_dataset
 # Configuration
 # ==============================
 
-TARGET_METRICS = ["WER", "CER", "semantic_distance"]
+TARGET_METRICS = [
+    "WER",
+#    "CER",
+    "semantic_distance"
+]
+
 FEATURE_METRICS = [
     "mean_pitch_hz",
     "median_pitch_hz",
@@ -40,25 +46,30 @@ BASELINE_MODEL = ["roest-whisper-large-v1"]
 BASE_MODELS = ["roest-whisper-large-v1", "parakeet-tdt-0.6b-v3", "canary-1b-v2"]
 
 FINETUNED_MODELS = [
-    # "canary-finetune_spec-aug_speed-perturbations",
-    "canary-finetune_SA_SP_ll",
-    # "canary-finetune_SA_SP_ll_SA",
+    "canary-finetune_spec-aug_speed-perturbations",
+    "parakeet-finetune_spec-aug",
+    # "canary-finetune_SA_SP_ll",
+    "canary-finetune_SA_SP_ll_SA",
     # "canary-finetune_SA_SP_ll_PS",
     # "canary-finetune_SA_SP_ll_SP",
     # "canary-finetune_SA_SP_ll_SA_PS",
     # "canary-finetune_SA_SP_ll_SA_SP",
     # "canary-finetune_SA_SP_ll_PS_SP",
     # "canary-finetune_SA_SP_ll_SA_PS_SP",
-    # "parakeet-finetune_spec-aug",
     # "parakeet-finetune_SA_ll",
     # "parakeet-finetune_SA_ll_SA",
     # "parakeet-finetune_SA_ll_PS",
     # "parakeet-finetune_SA_ll_SP",
-    # "parakeet-finetune_SA_ll_SA_PS",
-    # "parakeet-finetune_SA_ll_SA_SP",
+    #"parakeet-finetune_SA_ll_SA_PS",
+     "parakeet-finetune_SA_ll_SA_SP",
     # "parakeet-finetune_SA_ll_PS_SP",
     # "parakeet-finetune_SA_ll_SA_PS_SP",
 ]
+
+MODEL_FAMILIES = {
+    "parakeet": [model for model in FINETUNED_MODELS if "parakeet" in model],
+    "canary": [model for model in FINETUNED_MODELS if "canary" in model],
+}
 
 ALL_MODELS = BASELINE_MODEL + FINETUNED_MODELS
 
@@ -66,14 +77,12 @@ DATASETS = ["fleurs", "coral-v2", "lillelyd"]
 
 CORAL_GROUPS = [
     "dialect_group",
-    "age_group",
-    "emotion"
-    "text"
+    "age_group"
 ]
 
 LILLELYD_GROUPS = [
     "emotion",
-    "text",
+    "sentence_id",
 ]
 
 ALPHA = 0.05
@@ -88,7 +97,7 @@ def _get_models(finetuning: bool, all_models: bool = False) -> list[str]:
         return BASE_MODELS
 
 
-def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_models: bool = False) -> None:
+def deep_evaluation_analysis_csr(skip_samples: bool, finetuning: bool = False, all_models: bool = False) -> None:
     """Perform deep evaluation analysis by loading evaluation data, getting top WER samples, and generating correlation plots."""
 
     logger.info("Loading evaluation data...")
@@ -96,7 +105,7 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
         Path("reports/metrics/lillelyd_finetune_stitched_detailed_results.parquet")
     )
 
-    MODELS = _get_models(finetuning, all_models=all_models)
+    MODELS = _get_models(finetuning=finetuning, all_models=all_models)
 
     logger.info(f"Using models: {MODELS}")
 
@@ -152,12 +161,30 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
             )
             spearman_correlation_plot(
                 df_filtered=df_filtered,
-                target_metrics=TARGET_METRICS,
-                feature_metrics=FEATURE_METRICS,
+                # target_metrics=TARGET_METRICS,
+                target_metrics=FEATURE_METRICS,
+                # feature_metrics=FEATURE_METRICS,
+                feature_metrics=TARGET_METRICS,
                 model=model,
                 dataset=dataset,
                 format_dict=FORMAT_DICT,
-                save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+                save_path=Path("reports/csr_finetuning_deep_analysis/")
+            )
+
+    for dataset in DATASETS:
+        for family, family_models in MODEL_FAMILIES.items():
+            logger.info(
+                f"Generating Spearman correlation plot for family {family} on dataset {dataset}..."
+            )
+            spearman_correlation_plot_pair(
+                df_filtered=df_filtered,
+                target_metrics=FEATURE_METRICS,
+                feature_metrics=TARGET_METRICS,
+                model_left=family_models[0],
+                model_right=family_models[-1],
+                dataset=dataset,
+                format_dict=FORMAT_DICT,
+                save_path=Path("reports/csr_finetuning_deep_analysis/")
             )
 
     # Focus on CoRal-v2
@@ -200,25 +227,28 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
         #mean_wer_by_group(df=df_filtered_coral, group_col=group_col, format_dict=FORMAT_DICT)
         mean_wer_by_group_bootstrapped(
             df=df_filtered_coral, 
+            dataset_name="coral_v2",
             group_col=group_col, 
             format_dict=FORMAT_DICT,
-            save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+            save_path=Path("reports/csr_finetuning_deep_analysis/")
         )
         logger.info(f"Generating mean Semantic Distance by {group_col} and model plot for CoRal-v2 dataset...")
         mean_semdist_by_group_bootstrapped(
             df=df_filtered_coral, 
+            dataset_name="coral_v2",
             group_col=group_col, 
             format_dict=FORMAT_DICT,
-            save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+            save_path=Path("reports/csr_finetuning_deep_analysis/")
         )
         for model_name, df_model in df_filtered_coral.groupby("model"):
             logger.info(f"Kruskal-Wallis test for model {model_name} on CoRal-v2 dataset...")
             kruskal_wallis(
                 df=df_model, 
+                dataset_name="coral_v2",
                 model_name=model_name, 
                 format_dict=FORMAT_DICT, 
                 group_col=group_col,
-                save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+                save_path=Path("reports/csr_finetuning_deep_analysis/")
             )
 
     # Focus on LilleLyd
@@ -226,31 +256,51 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
     # --- Filter to LilleLyd ---
     df_filtered_lillelyd = df_filtered[df_filtered["dataset_name"].str.lower() == "lillelyd"].copy()
 
-    print(LILLELYD_GROUPS)
-    dø
+    # Rename emotion labels if needed
+    emotion_mapping = {
+        "anger": "Anger",
+        "neutral": "Neutral",
+        "boredom": "Boredom",
+        "happiness": "Happiness",
+        "sadness": "Sadness",
+    }
+    df_filtered_lillelyd["emotion"] = df_filtered_lillelyd["emotion"].map(emotion_mapping)
 
+    # Map text to simpler labels
+    text_mapping = {
+        "Dugen ligger på køleskabet.": "1",
+        "Det sorte ark papir er placeret deroppe ved siden af tømmerstykket.": "2",
+        "De bar det ovenpå og nu skal de ned igen.": "3",
+        "det vil være på det sted, hvor vi altid opbevarer det.": "4",
+        "Om syv timer er det morgen.": "5",
+    }
+    df_filtered_lillelyd["sentence_id"] = df_filtered_lillelyd["text"].map(text_mapping)
+    
     for group_col in LILLELYD_GROUPS:
         logger.info(f"Generating mean WER by {group_col} and model plot for LilleLyd dataset...")
         #mean_wer_by_group(df=df_filtered_lillelyd, group_col=group_col, format_dict=FORMAT_DICT)
         mean_wer_by_group_bootstrapped(
             df=df_filtered_lillelyd, 
+            dataset_name="lillelyd",
             group_col=group_col, 
             format_dict=FORMAT_DICT,
-            save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+            save_path=Path("reports/csr_finetuning_deep_analysis/")
         )
         logger.info(f"Generating mean Semantic Distance by {group_col} and model plot for LilleLyd dataset...")
         mean_semdist_by_group_bootstrapped(
             df=df_filtered_lillelyd, 
+            dataset_name="lillelyd",
             group_col=group_col, 
             format_dict=FORMAT_DICT,
-            save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+            save_path=Path("reports/csr_finetuning_deep_analysis/")
         )
         for model_name, df_model in df_filtered_lillelyd.groupby("model"):
-            logger.info(f"Kruskal-Wallis test for model {model_name} on LilleLyd dataset...")
+            logger.info(f"Kruskal-Wallis test for model {model_name} on LilleLyd dataset on {group_col}...")
             kruskal_wallis(
                 df=df_model, 
+                dataset_name="lillelyd",
                 model_name=model_name, 
                 format_dict=FORMAT_DICT, 
                 group_col=group_col,
-                save_path=Path("reports/csr_finetuning_plots/deep_analysis/")
+                save_path=Path("reports/csr_finetuning_deep_analysis/")
             )

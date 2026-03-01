@@ -30,7 +30,7 @@ download-specs:
     rsync -av ${HPC_HOST}:${HPC_PATH}/specs specs/
 
 download-jonas-results:
-	rsync -av "${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/canary-finetune_SA*" \
+	rsync -av "${HPC_HOST}:${HPC_PATH_JONAS}/experiments/evaluate_model/parakeet-finetune_spec-aug_sentence*" \
 	  experiments/evaluate_model/
 
 # Downloads a specific path from HPC to local machine

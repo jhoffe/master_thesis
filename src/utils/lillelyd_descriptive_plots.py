@@ -54,9 +54,9 @@ def distribution_plot(dataset_name: str, metric: str, base_path: str) -> None:
     """
     df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(5, 3))
     sns.histplot(df[metric], bins=30, kde=True, stat="percent", common_norm=False, element="step")
-    plt.title(f"{_fmt(metric)} distribution for {_fmt(dataset_name)}")
+    # plt.title(f"{_fmt(metric)} distribution for {_fmt(dataset_name)}")
     plt.xlabel(_fmt(metric))
     plt.ylabel("Percentage")
     plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
@@ -69,26 +69,26 @@ def age_plot(dataset_name: str, base_path: str) -> None:
     """
     df = load_from_parquet(f"reports/metrics/{dataset_name}-summary.parquet")
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(5, 3))
     sns.countplot(x="age", data=df, stat="percent")
-    plt.title(f"Age distribution for {_fmt(dataset_name)}", fontsize=14)
-    plt.xlabel("Age Group", fontsize=12)
-    plt.ylabel("Percentage", fontsize=12)
+    # plt.title(f"Age distribution for {_fmt(dataset_name)}", fontsize=14)
+    plt.xlabel("Age Group")
+    plt.ylabel("Percentage")
 
     # make ticks show percentage
-    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
-    for p in plt.gca().patches:
-        height = p.get_height()
-        plt.gca().annotate(
-            f"{height:.1f}%",
-            (p.get_x() + p.get_width() / 2.0, height),
-            ha="center",
-            va="bottom",
-            fontsize=12,
-            color="black",
-            xytext=(0, 5),
-            textcoords="offset points",
-        )
+    # plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
+    # for p in plt.gca().patches:
+    #     height = p.get_height()
+    #     plt.gca().annotate(
+    #         f"{height:.1f}%",
+    #         (p.get_x() + p.get_width() / 2.0, height),
+    #         ha="center",
+    #         va="bottom",
+    #         fontsize=12,
+    #         color="black",
+    #         xytext=(0, 5),
+    #         textcoords="offset points",
+    #     )
     save_plot(base_path=base_path, filename="age_distribution.png")
 
 
@@ -111,31 +111,31 @@ def age_plot_by_gender(dataset_name: str, base_path: str) -> None:
     # Drop missing genders and bin ages
     df = df[df["gender"].notna()].copy()
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(5, 3))
     ax = sns.countplot(x="age", hue="gender", data=df, stat="percent")
-    plt.title(f"Age distribution by gender for {_fmt(dataset_name)}", fontsize=14)
-    plt.xlabel("Age Group", fontsize=12)
-    plt.ylabel("Percentage", fontsize=12)
+    # plt.title(f"Age distribution by gender for {_fmt(dataset_name)}", fontsize=14)
+    plt.xlabel("Age Group")
+    plt.ylabel("Percentage")
 
     # Format y-axis as percent
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
 
     # Annotate each bar with its percentage
-    for p in ax.patches:
-        height = p.get_height()
-        if height > 0:
-            ax.annotate(
-                f"{height:.1f}%",
-                (p.get_x() + p.get_width() / 2.0, height),
-                ha="center",
-                va="bottom",
-                fontsize=10,
-                color="black",
-                xytext=(0, 4),
-                textcoords="offset points",
-            )
+    # for p in ax.patches:
+    #     height = p.get_height()
+    #     if height > 0:
+    #         ax.annotate(
+    #             f"{height:.1f}%",
+    #             (p.get_x() + p.get_width() / 2.0, height),
+    #             ha="center",
+    #             va="bottom",
+    #             fontsize=10,
+    #             color="black",
+    #             xytext=(0, 4),
+    #             textcoords="offset points",
+    #         )
 
-    plt.legend(title="Gender")
+    # plt.legend(title="Gender")
     save_plot(base_path=base_path, filename="age_distribution_by_gender.png")
 
 
@@ -169,7 +169,7 @@ def distribution_by_gender(dataset_name: str, base_path: str, hue: str = "gender
         else:
             hue_order = ["M", "F"]
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(5, 3))
         sns.histplot(
             data=df,
             x=metric,
@@ -183,7 +183,7 @@ def distribution_by_gender(dataset_name: str, base_path: str, hue: str = "gender
             alpha=0.4,
         )
 
-        plt.title(f"{_fmt(metric)} distribution by {hue} for {_fmt(dataset_name)}")
+        # plt.title(f"{_fmt(metric)} distribution by {hue} for {_fmt(dataset_name)}")
         plt.xlabel(_fmt(metric))
         plt.ylabel("Percentage")
         plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0f}%"))
@@ -194,7 +194,7 @@ def distribution_by_gender(dataset_name: str, base_path: str, hue: str = "gender
 
 def make_lillelyd_plots() -> None:
     """
-    Generate and save distribution plots for CoRal v2 dataset descriptive statistics.
+    Generate and save distribution plots for Lillelyd dataset descriptive statistics.
     """
     dataset_name = "lillelyd"
     for metric in METRICS:

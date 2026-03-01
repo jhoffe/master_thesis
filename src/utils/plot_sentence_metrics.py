@@ -19,10 +19,10 @@ ignore_warnings()
 # =========================
 FORMAT_DICT = {
     "co2_g": "$CO_2$ Emissions (g)",
-    "RTFx": "Inverse Real-Time Factor (RTFx)",
-    "WER": "Word Error Rate (WER)",
-    "CER": "Character Error Rate (CER)",
-    "semantic_distance": "Semantic Distance",
+    "RTFx": "RTFx",
+    "WER": "WER",
+    "CER": "CER",
+    "semantic_distance": "SemDist",
     "dataset_name": "Dataset",
     "model": "Model",
     "coral-v2": "CoRal-v2",
@@ -55,28 +55,50 @@ FORMAT_DICT = {
     "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
     "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
     "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
-    "canary-finetune_spec-aug_speed-perturbations": "Canary-1B-Pre_FT",
-    "canary-finetune_SA_SP_ll": "Canary-1B-FT",
-    "canary-finetune_SA_SP_ll_SA": "Canary-1B-FT+SA",
-    "canary-finetune_SA_SP_ll_PS": "Canary-1B-FT+PS",
-    "canary-finetune_SA_SP_ll_SP": "Canary-1B-FT+SP",
-    "canary-finetune_SA_SP_ll_SA_PS": "Canary-1B-FT+SA+PS",
-    "canary-finetune_SA_SP_ll_SA_SP": "Canary-1B-FT+SA+SP",
-    "canary-finetune_SA_SP_ll_PS_SP": "Canary-1B-FT+PS+SP",
-    "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary-1B-FT+SA+PS+SP",
-    "parakeet-finetune_spec-aug": "Parakeet-TDT-Pre_FT",
-    "parakeet-finetune_SA_ll": "Parakeet-TDT-FT",
-    "parakeet-finetune_SA_ll_SA": "Parakeet-TDT-FT+SA",
-    "parakeet-finetune_SA_ll_PS": "Parakeet-TDT-FT+PS",
-    "parakeet-finetune_SA_ll_SP": "Parakeet-TDT-FT+SP",
-    "parakeet-finetune_SA_ll_SA_PS": "Parakeet-TDT-FT+SA+PS",
-    "parakeet-finetune_SA_ll_SA_SP": "Parakeet-TDT-FT+SA+SP",
-    "parakeet-finetune_SA_ll_PS_SP": "Parakeet-TDT-FT+PS+SP",
-    "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet-TDT-FT+SA+PS+SP",
+    # LONG ABBREVIATIONS
+    # "canary-finetune_spec-aug_speed-perturbations": "Canary-1B-Pre_FT",
+    # "canary-finetune_SA_SP_ll": "Canary-1B-FT",
+    # "canary-finetune_SA_SP_ll_SA": "Canary-1B-FT+SA",
+    # "canary-finetune_SA_SP_ll_PS": "Canary-1B-FT+PS",
+    # "canary-finetune_SA_SP_ll_SP": "Canary-1B-FT+SP",
+    # "canary-finetune_SA_SP_ll_SA_PS": "Canary-1B-FT+SA+PS",
+    # "canary-finetune_SA_SP_ll_SA_SP": "Canary-1B-FT+SA+SP",
+    # "canary-finetune_SA_SP_ll_PS_SP": "Canary-1B-FT+PS+SP",
+    # "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary-1B-FT+SA+PS+SP",
+    # "parakeet-finetune_spec-aug": "Parakeet-TDT-Pre_FT",
+    # "parakeet-finetune_SA_ll": "Parakeet-TDT-FT",
+    # "parakeet-finetune_SA_ll_SA": "Parakeet-TDT-FT+SA",
+    # "parakeet-finetune_SA_ll_PS": "Parakeet-TDT-FT+PS",
+    # "parakeet-finetune_SA_ll_SP": "Parakeet-TDT-FT+SP",
+    # "parakeet-finetune_SA_ll_SA_PS": "Parakeet-TDT-FT+SA+PS",
+    # "parakeet-finetune_SA_ll_SA_SP": "Parakeet-TDT-FT+SA+SP",
+    # "parakeet-finetune_SA_ll_PS_SP": "Parakeet-TDT-FT+PS+SP",
+    # "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet-TDT-FT+SA+PS+SP",
+    # SHORT ABBREVIATIONS
+    "canary-finetune_spec-aug_speed-perturbations": "Canary SA+SP",
+    "canary-finetune_SA_SP_ll": "Canary SA+SP / -",
+    "canary-finetune_SA_SP_ll_SA": "Canary SA+SP / SA",
+    "canary-finetune_SA_SP_ll_PS": "Canary SA+SP / PS",
+    "canary-finetune_SA_SP_ll_SP": "Canary SA+SP / SP",
+    "canary-finetune_SA_SP_ll_SA_PS": "Canary SA+SP / SA+PS",
+    "canary-finetune_SA_SP_ll_SA_SP": "Canary SA+SP / SA+SP",
+    "canary-finetune_SA_SP_ll_PS_SP": "Canary SA+SP / PS+SP",
+    "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary SA+SP / SA+PS+SP",
+    "parakeet-finetune_spec-aug": "Parakeet SA",
+    "parakeet-finetune_SA_ll": "Parakeet SA / -",
+    "parakeet-finetune_SA_ll_SA": "Parakeet SA / SA",
+    "parakeet-finetune_SA_ll_PS": "Parakeet SA / PS",
+    "parakeet-finetune_SA_ll_SP": "Parakeet SA / SP",
+    "parakeet-finetune_SA_ll_SA_PS": "Parakeet SA / SA+PS",
+    "parakeet-finetune_SA_ll_SA_SP": "Parakeet SA / SA+SP",
+    "parakeet-finetune_SA_ll_PS_SP": "Parakeet SA / PS+SP",
+    "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet SA / SA+PS+SP",
+
     "lillelyd cv-1": "LilleLyd CV-1",
     "lillelyd cv-2": "LilleLyd CV-2",
     "lillelyd cv-3": "LilleLyd CV-3",
     "lillelyd cv-4": "LilleLyd CV-4",
+    "lillelyd cv-5": "LilleLyd CV-5",
     "coral-v2 averaged": "CoRal-v2 Averaged",
     "fleurs averaged": "FLEURS Averaged",
 }
@@ -86,20 +108,37 @@ def _fmt(label: str) -> str:
     return FORMAT_DICT.get(label, label)
 
 
-def _format_xtick_labels(ax, rotation: int = 60, ha: str = "right", font_size: int = 11) -> None:
+def _format_xtick_labels(ax, rotation: int = 60, ha: str = "right") -> None:
     ticks = ax.get_xticklabels()
     formatted = [_fmt(t.get_text()) for t in ticks]
-    ax.set_xticklabels(formatted, rotation=rotation, ha=ha, fontsize=font_size)
+    ax.set_xticklabels(formatted, rotation=rotation, ha=ha)
 
-def _format_ytick_labels(ax, rotation: int = 0, ha: str = "right", font_size: int = 11) -> None:
+def _format_ytick_labels(ax, rotation: int = 0, ha: str = "right") -> None:
     ticks = ax.get_yticklabels()
     formatted = [_fmt(t.get_text()) for t in ticks]
-    ax.set_yticklabels(formatted, rotation=rotation, ha=ha, fontsize=font_size)
+    ax.set_yticklabels(formatted, rotation=rotation, ha=ha)
 
-def _format_legend_labels(ax, font_size: int = 11) -> None:
+def _format_legend_labels(ax) -> None:
     handles, labels = ax.get_legend_handles_labels()
     labels = [_fmt(l) for l in labels]
-    ax.legend(handles, labels, fontsize=font_size)
+    # make legend outside of plot area on the right
+    ax.legend(handles, labels, frameon=True, loc="center left", bbox_to_anchor=(1, 0.5))
+    #ax.legend(handles, labels, fontsize=font_size, frameon=True)
+
+def _format_legend_labels(ax) -> None:
+    handles, labels = ax.get_legend_handles_labels()
+
+    leg = ax.legend(
+        handles,
+        labels,  # keep originals here
+        frameon=True,
+        loc="center left",
+        bbox_to_anchor=(1, 0.5),
+    )
+
+    # Now only change displayed text
+    for txt in leg.get_texts():
+        txt.set_text(_fmt(txt.get_text()))
 
 
 
@@ -161,9 +200,9 @@ def plot_bar_metric(
         for ax, ds in zip(g.axes.flat, ds_categories):
             ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
-        g.fig.suptitle(
-            f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
-        )
+        # g.fig.suptitle(
+        #     f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
+        # )
 
         # single color per facet
         for ax, ds in zip(g.axes.flat, ds_categories):
@@ -191,9 +230,9 @@ def plot_bar_metric(
         # labels/titles
         ax.set_xlabel(x_lab, fontsize=fontsize)
         ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(
-            f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
-        )
+        # ax.set_title(
+        #     f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
+        # )
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
 
@@ -323,11 +362,11 @@ def plot_bar_metric_bootstrapped(
             _format_xtick_labels(ax, rotation=60, ha="right")
             ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
-        g.fig.suptitle(
-            f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
-            y=1.02,
-            fontsize=fontsize + 3,
-        )
+        # g.fig.suptitle(
+        #     f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
+        #     y=1.02,
+        #     fontsize=fontsize + 3,
+        # )
 
         fig = g.fig
 
@@ -370,10 +409,10 @@ def plot_bar_metric_bootstrapped(
 
         ax.set_xlabel(_fmt("model"), fontsize=fontsize)
         ax.set_ylabel(_fmt(metric), fontsize=fontsize)
-        ax.set_title(
-            f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
-            fontsize=fontsize + 3,
-        )
+        # ax.set_title(
+        #     f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
+        #     fontsize=fontsize + 3,
+        # )
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
 
@@ -472,11 +511,11 @@ def plot_bar_metric_pre_bootstrapped(
             _format_xtick_labels(ax, rotation=60, ha="right")
             ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
-        g.fig.suptitle(
-            f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
-            y=1.02,
-            fontsize=fontsize + 3,
-        )
+        # g.fig.suptitle(
+        #     f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
+        #     y=1.02,
+        #     fontsize=fontsize + 3,
+        # )
 
         fig = g.fig
 
@@ -519,10 +558,10 @@ def plot_bar_metric_pre_bootstrapped(
 
         ax.set_xlabel(_fmt("model"), fontsize=fontsize)
         ax.set_ylabel(_fmt(metric), fontsize=fontsize)
-        ax.set_title(
-            f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
-            fontsize=fontsize + 3,
-        )
+        # ax.set_title(
+        #     f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
+        #     fontsize=fontsize + 3,
+        # )
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
 
@@ -590,12 +629,12 @@ def plot_box_metric(
             showfliers=showfliers,
             saturation=1,
         )
-        ax.set_xlabel(x_lab, fontsize=fontsize)
-        ax.set_ylabel(y_lab, fontsize=fontsize)
-        ax.set_title(
-            f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
-        )
-        ax.tick_params(axis="both", labelsize=fontsize)
+        ax.set_xlabel(x_lab)
+        ax.set_ylabel(y_lab)
+        # ax.set_title(
+        #     f"{y_lab} by {_fmt('model')} and {_fmt('dataset_name')}", fontsize=fontsize + 3
+        # )
+        ax.tick_params(axis="both")
         _format_xtick_labels(ax, rotation=60, ha="right")
 
         # format legend labels + title
@@ -607,7 +646,7 @@ def plot_box_metric(
                 [_fmt(d) for d in ds_categories],
                 title=_fmt("dataset_name"),
                 loc="best",
-                fontsize=fontsize,
+                # fontsize=fontsize,
                 frameon=True,
             )
 
@@ -640,15 +679,22 @@ def plot_box_metric(
             for line in ax.lines:
                 line.set_color("black")
 
-            ax.set_title(_fmt(ds), fontsize=fontsize + 2)  # formatted facet title
-            ax.set_xlabel(x_lab, fontsize=fontsize)
-            ax.set_ylabel(y_lab, fontsize=fontsize)
-            ax.tick_params(axis="both", labelsize=fontsize)
+            ax.set_title(_fmt(ds))  # formatted facet title
+            ax.set_xlabel(x_lab)
+            ax.set_ylabel(y_lab)
+            ax.tick_params(axis="both")
             _format_xtick_labels(ax, rotation=60, ha="right")
 
-        fig.suptitle(
-            f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
-        )
+        # fig.suptitle(
+        #     f"{y_lab} by {_fmt('model')} per {_fmt('dataset_name')}", y=1.02, fontsize=fontsize + 3
+        # )
+
+    # format y-ticks to be percentage if metric is WER or CER
+    if metric in {"WER", "CER"}:
+        for ax in (axes if separate_by_dataset else [ax]):
+            ticks = ax.get_yticks()
+            ax.set_yticklabels([f"{t:.0%}" for t in ticks])
+    
 
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -675,9 +721,11 @@ def plot_models_all_datasets_by_fold(
     models: list[str] | None = None,
     title: str | None = None,
     savepath: str | None = None,
-    font_size: int = 11,
+    type: str = "speaker",
 ):
-    SERIES_LABELS = [
+    assert type in {"speaker", "sentence"}, "type must be 'speaker' or 'sentence'"
+
+    SPEAKER_SERIES_LABELS = [
         "lillelyd cv-1",
         "lillelyd cv-2",
         "lillelyd cv-3",
@@ -686,7 +734,17 @@ def plot_models_all_datasets_by_fold(
         "fleurs averaged",
     ]
 
-    COLORS = [
+    SENTENCE_SERIES_LABELS = [
+        "lillelyd cv-1",
+        "lillelyd cv-2",
+        "lillelyd cv-3",
+        "lillelyd cv-4",
+        "lillelyd cv-5",
+        "coral-v2 averaged",
+        "fleurs averaged",
+    ]
+
+    SPEAKER_COLORS = [
         "#1f77b4",
         "#2ca02c",
         "#9467bd",
@@ -694,7 +752,23 @@ def plot_models_all_datasets_by_fold(
         "#bcbd22",
         "#17becf",
     ]
-    color_map = dict(zip(SERIES_LABELS, COLORS))
+
+    SENTENCE_COLORS = [
+        "#1f77b4",
+        "#2ca02c",
+        "#9467bd",
+        "#e377c2",
+        "#ff7f0e",
+        "#bcbd22",
+        "#17becf",
+    ]
+
+    if type == "speaker":
+        COLORS = SPEAKER_COLORS
+    else:
+        COLORS = SENTENCE_COLORS
+
+    color_map = dict(zip(SPEAKER_SERIES_LABELS if type == "speaker" else SENTENCE_SERIES_LABELS, COLORS))
 
     required = {"dataset_name", "model", "cv_fold", "WER"}
     missing = required - set(df.columns)
@@ -707,7 +781,7 @@ def plot_models_all_datasets_by_fold(
 
     d = df.copy()
 
-    series = [
+    speaker_series = [
         ("lillelyd", "cv-1", "lillelyd cv-1"),
         ("lillelyd", "cv-2", "lillelyd cv-2"),
         ("lillelyd", "cv-3", "lillelyd cv-3"),
@@ -716,19 +790,19 @@ def plot_models_all_datasets_by_fold(
         ("fleurs", "averaged", "fleurs averaged"),
     ]
 
+    sentence_series = [
+        ("lillelyd", "sentence_cv-1", "lillelyd cv-1"),
+        ("lillelyd", "sentence_cv-2", "lillelyd cv-2"),
+        ("lillelyd", "sentence_cv-3", "lillelyd cv-3"),
+        ("lillelyd", "sentence_cv-4", "lillelyd cv-4"),
+        ("lillelyd", "sentence_cv-5", "lillelyd cv-5"),
+        ("coral-v2", "averaged", "coral-v2 averaged"),
+        ("fleurs", "averaged", "fleurs averaged")
+    ]
+
+    series = speaker_series if type == "speaker" else sentence_series
+
     keep = set((ds, fold) for ds, fold, _ in series)
-
-    print("Models passed in:")
-    print(sorted(models))
-
-    print("\nModels present in df:")
-    print(sorted(df["model"].dropna().unique().tolist()))
-
-    print("\nModels that will be DROPPED (in models but not in df):")
-    print(sorted(set(models) - set(df["model"].dropna().unique())))
-
-    print("\nModels present in df but NOT requested:")
-    print(sorted(set(df["model"].dropna().unique()) - set(models)))
 
     d = d[d["model"].isin(models)].copy()
     d = d[d.apply(lambda r: (r["dataset_name"], r["cv_fold"]) in keep, axis=1)].copy()
@@ -763,10 +837,11 @@ def plot_models_all_datasets_by_fold(
     group_height = 0.86
     k = len(series_labels)
     bar_h = group_height / k
-    offsets = (np.arange(k) - (k - 1) / 2) * bar_h
+    offsets = (((k - 1) / 2) - np.arange(k)) * bar_h
+
 
     fig_w = 11
-    fig_h = max(11.7, 1.6 * len(models))
+    fig_h = max(4, 1.6 * len(models))
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
 
     for i, lab in enumerate(series_labels):
@@ -801,18 +876,18 @@ def plot_models_all_datasets_by_fold(
     ax.set_yticks(y)
     ax.set_yticklabels(models)
 
-    ax.set_xlabel(_fmt("WER"), fontsize=font_size)
-    ax.set_title(
-        _fmt(title) if title else _fmt("WER by Model, Dataset, and Fold"),
-        fontsize=font_size + 2,
-    )
+    ax.set_xlabel(_fmt("WER"))
+    
+    # format x-ticks to be percentage
+    ticks = ax.get_xticks()
+    ax.set_xticklabels([f"{t:.0%}" for t in ticks])
 
     ax.grid(True, axis="x", alpha=0.3)
 
     # Apply formatting
-    _format_ytick_labels(ax, rotation=0, ha="right", font_size=font_size)
-    _format_xtick_labels(ax, rotation=0, ha="center", font_size=font_size)
-    _format_legend_labels(ax, font_size=font_size)
+    _format_ytick_labels(ax, rotation=0, ha="right")
+    _format_xtick_labels(ax, rotation=0, ha="center")
+    _format_legend_labels(ax)
 
     fig.tight_layout()
 
@@ -829,10 +904,10 @@ def make_all_plots(
     ci: str = 95,
     width: int = 12,
     height: int = 6,
-    font_size: Optional[int] = 12,
     csr: bool = False,
     df_folds: Optional[pd.DataFrame] = None,
     models: list[str] | None = None,
+    type: Optional[str] = None,
 ) -> None:
     """
     Convenience wrapper that filters to your grid and emits all standard plots.
@@ -855,52 +930,55 @@ def make_all_plots(
     #     height=height,
     # )
 
-    # plot_bar_metric_pre_bootstrapped(
-    #     df=summary_data,
-    #     metric="WER",
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    # )
-    # plot_bar_metric_pre_bootstrapped(
-    #     df=summary_data,
-    #     metric="WER",
-    #     separate_by_dataset=True,
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    # )
+    # before we use the data, we clip the "semantic_distance" metric between 0 and 1
+    data["semantic_distance"] = data["semantic_distance"].clip(lower=0, upper=1)
 
-    # plot_bar_metric_bootstrapped(
-    #     data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
-    # )
-    # plot_bar_metric_bootstrapped(
-    #     data,
-    #     "semantic_distance",
-    #     ci_level=ci,
-    #     separate_by_dataset=True,
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    # )
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="WER",
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
+    plot_bar_metric_pre_bootstrapped(
+        df=summary_data,
+        metric="WER",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
+
+    plot_bar_metric_bootstrapped(
+        data, "semantic_distance", ci_level=ci, save_dir=save_dir, width=width, height=height
+    )
+    plot_bar_metric_bootstrapped(
+        data,
+        "semantic_distance",
+        ci_level=ci,
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
 
     # plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height)
     # plot_box_metric(
     #     data, "CER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
     # )
-    # plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height)
-    # plot_box_metric(
-    #     data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
-    # )
-    # plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
-    # plot_box_metric(
-    #     data,
-    #     "semantic_distance",
-    #     separate_by_dataset=True,
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    # )
+    plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height)
+    plot_box_metric(
+        data, "WER", separate_by_dataset=True, save_dir=save_dir, width=width, height=height
+    )
+    plot_box_metric(data, "semantic_distance", save_dir=save_dir, width=width, height=height)
+    plot_box_metric(
+        data,
+        "semantic_distance",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+    )
 
     # plot_box_metric(data, "CER", save_dir=save_dir, width=width, height=height, showfliers=True)
     # plot_box_metric(
@@ -912,39 +990,34 @@ def make_all_plots(
     #     height=height,
     #     showfliers=True,
     # )
-    # plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
-    # plot_box_metric(
-    #     data,
-    #     "WER",
-    #     separate_by_dataset=True,
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    #     showfliers=True,
-    # )
-    # plot_box_metric(
-    #     data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True
-    # )
-    # plot_box_metric(
-    #     data,
-    #     "semantic_distance",
-    #     separate_by_dataset=True,
-    #     save_dir=save_dir,
-    #     width=width,
-    #     height=height,
-    #     showfliers=True,
-    # )
+    plot_box_metric(data, "WER", save_dir=save_dir, width=width, height=height, showfliers=True)
+    plot_box_metric(
+        data,
+        "WER",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+        showfliers=True,
+    )
+    plot_box_metric(
+        data, "semantic_distance", save_dir=save_dir, width=width, height=height, showfliers=True
+    )
+    plot_box_metric(
+        data,
+        "semantic_distance",
+        separate_by_dataset=True,
+        save_dir=save_dir,
+        width=width,
+        height=height,
+        showfliers=True,
+    )
 
     if csr and df_folds is not None and models is not None:
-        print("Generating cross-validation WER by model and dataset plot...")
-        print(f"Saving to directory: {save_dir}")
-        print(f"Models: {models}")
-        print(f"DataFrame shape: {df_folds.shape}")
-        print(df_folds.head())
         plot_models_all_datasets_by_fold(
             df=df_folds,
             models=models,
-            font_size=font_size,
             title="Cross-Validation WER by Model and Dataset",
             savepath=Path(save_dir) / "models_all_datasets_by_fold.png",
+            type=type,
         )

@@ -14,6 +14,7 @@ from utils.deep_evaluation_analysis_utils import (
     mean_wer_by_group_bootstrapped,
     mean_semdist_by_group_bootstrapped,
     spearman_correlation_plot,
+    spearman_correlation_plot_pair
 )
 from utils.evaluation_utils import load_from_parquet
 
@@ -21,7 +22,12 @@ from utils.evaluation_utils import load_from_parquet
 # Configuration
 # ==============================
 
-TARGET_METRICS = ["WER", "CER", "semantic_distance"]
+TARGET_METRICS = [
+    "WER", 
+    #"CER", 
+    "semantic_distance"
+]
+
 FEATURE_METRICS = [
     "mean_pitch_hz",
     "median_pitch_hz",
@@ -42,7 +48,7 @@ FINETUNED_MODELS = [
     "parakeet_finetune_spec-aug",
     #"parakeet_finetune_speed-perturbations",
     #"parakeet_finetune_spec-aug_pitch-shift",
-    "parakeet_finetune_spec-aug_speed-perturbations",
+    #"parakeet_finetune_spec-aug_speed-perturbations",
     #"parakeet_finetune_speed-perturbations_pitch-shift",
     #"parakeet_finetune_spec-aug_speed-perturbations_pitch-shift",
     #"canary_finetune",
@@ -55,7 +61,12 @@ FINETUNED_MODELS = [
     #"canary_finetune_spec-aug_speed-perturbations_pitch-shift",
 ]
 
-ALL_MODELS = BASELINE_MODEL + FINETUNED_MODELS
+MODEL_FAMILIES = {
+    "parakeet": [model for model in BASE_MODELS + FINETUNED_MODELS if "parakeet" in model],
+    "canary": [model for model in BASE_MODELS + FINETUNED_MODELS if "canary" in model],
+}
+
+ALL_MODELS = BASE_MODELS + FINETUNED_MODELS
 
 DATASETS = ["fleurs", "coral-v2"]
 
@@ -135,9 +146,29 @@ def deep_evaluation_analysis(skip_samples: bool, finetuning: bool = False, all_m
             )
             spearman_correlation_plot(
                 df_filtered=df_filtered,
-                target_metrics=TARGET_METRICS,
-                feature_metrics=FEATURE_METRICS,
+                #target_metrics=TARGET_METRICS,
+                target_metrics=FEATURE_METRICS,
+                #feature_metrics=FEATURE_METRICS,
+                feature_metrics=TARGET_METRICS,
                 model=model,
+                dataset=dataset,
+                format_dict=FORMAT_DICT,
+                save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),
+            )
+
+    for dataset in DATASETS:
+        for family, family_models in MODEL_FAMILIES.items():
+            logger.info(
+                f"Generating Spearman correlation plot for family {family} on dataset {dataset}..."
+            )
+            spearman_correlation_plot_pair(
+                df_filtered=df_filtered,
+                #target_metrics=TARGET_METRICS,
+                target_metrics=FEATURE_METRICS,
+                #feature_metrics=FEATURE_METRICS,
+                feature_metrics=TARGET_METRICS,
+                model_left=family_models[0],
+                model_right=family_models[-1],
                 dataset=dataset,
                 format_dict=FORMAT_DICT,
                 save_path=Path("reports/finetuning_plots/deep_analysis/") if finetuning else Path("reports/plots/deep_analysis/"),

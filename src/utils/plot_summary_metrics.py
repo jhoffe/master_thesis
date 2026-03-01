@@ -26,10 +26,10 @@ MODELS = [
 
 FORMAT_DICT = {
     "co2_g": "$CO_2$ Emissions (g)",
-    "energy_kWh": "Energy Consumption (kWh)",
-    "RTFx": "Inverse Real-Time Factor (RTFx)",
-    "WER": "Word Error Rate (WER)",
-    "CER": "Character Error Rate (CER)",
+    "energy_kWh": "kWh",
+    "RTFx": "RTFx",
+    "WER": "WER",
+    "CER": "CER",
     "dataset_name": "Dataset",
     "model": "Model",
     "coral-v2": "CoRal-v2",
@@ -42,7 +42,7 @@ FORMAT_DICT = {
     "hviske-v3-conversation": "Hviske-v3-Conv",
     "hviske-v2": "Hviske-v2",
     "seamless-m4t-v2-large": "Seamless-M4T-L",
-    "roest-whisper-large-v1": "Røst-Whisper-L",
+    "roest-whisper-large-v1": "Røst-Whisper",
     "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
     "canary-1b-v2": "Canary-1B",
     "parakeet_finetune": "Parakeet-TDT-FT",
@@ -124,7 +124,6 @@ def plot_summary_scatter(
     height: int = 6,
     alpha: float = 0.9,
     point_size: int = 100,
-    fontsize: int = 12,
     separate_by_dataset: bool = False,
     add_labels: bool = False,
     models_order: Optional[Sequence[str]] = None,
@@ -184,17 +183,16 @@ def plot_summary_scatter(
             legend=False,
         )
 
-        ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize + 3)
-        ax.set_xlabel(x_label, fontsize=fontsize)
-        ax.set_ylabel(y_label, fontsize=fontsize)
-        ax.tick_params(axis="both", labelsize=fontsize)
+        # ax.set_title(f"{y_label} vs {x_label}", fontsize=fontsize + 3)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.tick_params(axis="both")
 
         # Model legend (formatted labels)
         leg_model = ax.legend(
             handles=build_model_handles(model_order=model_order, model_palette=model_palette),
             labels=[_fmt(m) for m in model_order],
             title=model_title,
-            fontsize=fontsize,
             frameon=True,
         )
         ax.add_artist(leg_model)
@@ -204,16 +202,15 @@ def plot_summary_scatter(
             handles=build_dataset_handles(ds_order=ds_order, ds_markers=ds_markers),
             labels=[_fmt(d) for d in ds_order],
             title=dataset_title,
-            fontsize=fontsize,
             frameon=True,
         )
         ax.add_artist(leg_dataset)
-        plt.setp(leg_model.get_title(), fontsize=fontsize + 1)  # for legend title
-        plt.setp(leg_dataset.get_title(), fontsize=fontsize + 1)  # for legend title
+        #plt.setp(leg_model.get_title())  # for legend title
+        #plt.setp(leg_dataset.get_title())  # for legend title
 
         if add_labels:
             for _, r in data.iterrows():
-                ax.text(r[x], r[y], _fmt(r["model"]), fontsize=fontsize, alpha=0.75)
+                ax.text(r[x], r[y], _fmt(r["model"]), alpha=0.75)
 
         fig = ax.get_figure()
 
@@ -254,16 +251,16 @@ def plot_summary_scatter(
                 ax=ax,
             )
             # axis labels and facet title
-            ax.set_xlabel(x_label, fontsize=fontsize)
-            ax.set_ylabel(y_label, fontsize=fontsize)
-            ax.tick_params(axis="both", labelsize=fontsize)
-            ax.set_title(_fmt(ds), fontsize=fontsize + 2)
+            ax.set_xlabel(x_label)
+            ax.set_ylabel(y_label)
+            ax.tick_params(axis="both")
+            ax.set_title(_fmt(ds))
 
             if add_labels:
                 for _, r in sub.iterrows():
-                    ax.text(r[x], r[y], _fmt(r["model"]), fontsize=7, alpha=0.75)
+                    ax.text(r[x], r[y], _fmt(r["model"]), alpha=0.75)
 
-        g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize + 3)
+        # g.fig.suptitle(f"{y_label} vs {x_label} by {dataset_title}", y=1.03, fontsize=fontsize + 3)
 
         # model legend on last facet
         ax0 = g.axes.flat[-1]
@@ -271,19 +268,22 @@ def plot_summary_scatter(
             handles=build_model_handles(model_order=model_order, model_palette=model_palette),
             labels=[_fmt(m) for m in model_order],
             title=model_title,
-            fontsize=fontsize,
             frameon=True,
         )
         ax0.add_artist(leg_model)
 
         fig = g.fig
-        plt.setp(leg_model.get_title(), fontsize=fontsize + 1)  # for legend title
+        
+    # format y-axis as percentage if it's WER or CER
+    if y in ["WER", "CER"]:
+        for ax in fig.axes:
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v*100:.0f}%"))
 
     fig.tight_layout()
     if save_dir:
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         filename = f"{y}_vs_{x}{'_faceted' if separate_by_dataset else ''}.png"
-        fig.savefig(Path(save_dir) / filename, dpi=200, bbox_inches="tight")
+        fig.savefig(Path(save_dir) / filename, bbox_inches="tight", dpi=200)
     plt.close()
 
 
@@ -296,8 +296,7 @@ def make_all_summary_plots(
     alpha: float = 0.9,
     point_size: int = 100,
     separate_by_dataset: bool = False,
-    models_order: Optional[Sequence[str]] = None,
-    fontsize: int = 14,
+    models_order: Optional[Sequence[str]] = None
 ) -> None:
     """
     Make all summary plots for given metrics.
@@ -321,7 +320,6 @@ def make_all_summary_plots(
             models=models,
             x="energy_kWh",
             y="WER",
-            fontsize=fontsize,
             save_dir=save_dir,
             width=width,
             height=height,
@@ -337,7 +335,6 @@ def make_all_summary_plots(
             models=models,
             x="energy_kWh",
             y="WER",
-            fontsize=fontsize,
             save_dir=save_dir,
             width=width,
             height=height,
@@ -353,7 +350,6 @@ def make_all_summary_plots(
         models=models,
         x="RTFx",
         y="WER",
-        fontsize=fontsize,
         save_dir=save_dir,
         width=width,
         height=height,

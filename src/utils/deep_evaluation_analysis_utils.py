@@ -30,12 +30,15 @@ _FORMAT_DICT: dict[Union[str, tuple[str, ...]], str] = {
     "fleurs": "FLEURS",
     "roest-whisper-large-v1": "Røst-Whisper",
     ("parakeet", "parakeet-tdt-0.6b-v3"): "Parakeet-TDT",
+    # ("parakeet", "parakeet-tdt-0.6b-v3"): "Baseline",
     ("canary", "canary-1b-v2"): "Canary-1B",
+    # ("canary", "canary-1b-v2"): "Baseline",
     "dialect_group": "Dialect Group",
     "age_group": "Age Group",
     "parakeet_finetune": "Parakeet-TDT-FT",
     "parakeet_finetune_pitch-shift": "Parakeet-TDT-FT+PS",
     "parakeet_finetune_spec-aug": "Parakeet-TDT-FT+SA",
+    # "parakeet_finetune_spec-aug": "FT (SA)",
     "parakeet_finetune_speed-perturbations": "Parakeet-TDT-FT+SP",
     "parakeet_finetune_spec-aug_pitch-shift": "Parakeet-TDT-FT+SA+PS",
     "parakeet_finetune_spec-aug_speed-perturbations": "Parakeet-TDT-FT+SA+SP",
@@ -47,6 +50,7 @@ _FORMAT_DICT: dict[Union[str, tuple[str, ...]], str] = {
     "canary_finetune_speed-perturbations": "Canary-1B-FT+SP",
     "canary_finetune_spec-aug_pitch-shift": "Canary-1B-FT+SA+PS",
     "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
+    # "canary_finetune_spec-aug_speed-perturbations": "FT (SA+SP)",
     "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
     "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
 }
@@ -283,7 +287,7 @@ def spearman_correlation_plot(
     corr = df_md[subset].corr(method="spearman")
     corr_rect = corr.loc[valid_targets, valid_features]
 
-    plt.figure(figsize=(8, 4 + 0.4 * len(valid_targets)))
+    plt.figure(figsize=(4, 6))
     ax = sns.heatmap(
         corr_rect,
         annot=True,
@@ -294,11 +298,12 @@ def spearman_correlation_plot(
         yticklabels=[_fmt(format_dict, m) for m in valid_targets],
         cbar_kws={"label": "Spearman $\\rho$"},
     )
-    plt.title(
-        f"Spearman Correlation: Sentence Measures vs Acoustic Features\nModel: {_fmt(format_dict, model)}, Dataset: {_fmt(format_dict, dataset)}"
-    )
+    # plt.title(
+    #     f"Spearman Correlation: Sentence Measures vs Acoustic Features\nModel: {_fmt(format_dict, model)}, Dataset: {_fmt(format_dict, dataset)}"
+    # )
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
+    #ax.tick_params(axis='both', which='major', labelsize=16)
     plt.tight_layout()
 
     # gather all p values for this matrix
@@ -339,18 +344,155 @@ def spearman_correlation_plot(
             # put stars in top right corner of each cell
             ax.text(j + 0.85, i + 0.25, tag, color="black", ha="right", va="center", fontsize=11)
 
-    # optional: add a caption about FDR
-    ax.figure.text(
-        0.5,
-        -0.02,
-        "Stars reflect Benjamini-Hochberg FDR-adjusted two-sided p-values per model dataset matrix.",
-        ha="center",
-        va="top",
-        fontsize=9,
-    )
     save_path.mkdir(parents=True, exist_ok=True)
     plt.savefig(save_path / f"spearman_correlation_{model}_{dataset}.png", bbox_inches="tight")
     plt.close()
+
+
+def _spearman_corr_and_pvals(
+    df_md: pd.DataFrame,
+    valid_targets: List[str],
+    valid_features: List[str],
+    alpha: float,
+):
+    subset = valid_targets + valid_features
+    corr = df_md[subset].corr(method="spearman")
+    corr_rect = corr.loc[valid_targets, valid_features]
+
+    pairs, pvals = [], []
+    for target in valid_targets:
+        for feature in valid_features:
+            xy = df_md[[target, feature]].dropna()
+            if len(xy) < 3:
+                p = np.nan
+            else:
+                _, p = stats.spearmanr(xy[target], xy[feature])
+            pairs.append((target, feature))
+            pvals.append(p)
+
+    pvals = np.array(pvals, dtype=float)
+    mask_valid = ~np.isnan(pvals)
+    pvals_adj = np.full_like(pvals, np.nan, dtype=float)
+
+    if mask_valid.sum() > 0:
+        _, p_corrected, _, _ = multipletests(pvals[mask_valid], alpha=alpha, method="fdr_bh")
+        pvals_adj[mask_valid] = p_corrected
+
+    p_adj_dict = {pairs[i]: pvals_adj[i] for i in range(len(pairs))}
+    return corr_rect, p_adj_dict
+
+
+def spearman_correlation_plot_pair(
+    df_filtered: pd.DataFrame,
+    model_left: str,
+    model_right: str,
+    dataset: str,
+    format_dict: Dict[str, str],
+    target_metrics: List[str],
+    feature_metrics: List[str],
+    alpha: float = 0.05,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
+) -> None:
+
+    def _prep(model: str):
+        df_md = df_filtered[(df_filtered["model"] == model) & (df_filtered["dataset_name"] == dataset)]
+        if len(df_md) < 2:
+            return None, None, None, None
+
+        valid_targets = [m for m in target_metrics if m in df_md.columns and df_md[m].notna().sum() > 1]
+        valid_features = [m for m in feature_metrics if m in df_md.columns and df_md[m].notna().sum() > 1]
+        if not valid_targets or not valid_features:
+            return None, None, None, None
+
+        corr_rect, p_adj_dict = _spearman_corr_and_pvals(
+            df_md=df_md,
+            valid_targets=valid_targets,
+            valid_features=valid_features,
+            alpha=alpha,
+        )
+        return corr_rect, p_adj_dict, valid_targets, valid_features
+
+    left = _prep(model_left)
+    right = _prep(model_right)
+    if left[0] is None or right[0] is None:
+        return
+
+    corr_left, p_left, vt_left, vf_left = left
+    corr_right, p_right, vt_right, vf_right = right
+
+    # Enforce identical row/col order. If they differ, intersect and align.
+    vt = [m for m in vt_left if m in vt_right]
+    vf = [m for m in vf_left if m in vf_right]
+    if len(vt) == 0 or len(vf) == 0:
+        return
+
+    corr_left = corr_left.loc[vt, vf]
+    corr_right = corr_right.loc[vt, vf]
+
+    # Build figure with fixed layout: left heatmap, right heatmap, one shared colorbar
+    fig = plt.figure(figsize=(4, 6), dpi=150)
+    gs = fig.add_gridspec(nrows=1, ncols=3, width_ratios=[1, 1, 0.1], wspace=0.15)
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    cax = fig.add_subplot(gs[0, 2])
+
+    # Common tick labels
+    xt = [_fmt(format_dict, m) for m in vf]
+    yt = [_fmt(format_dict, m) for m in vt]
+
+    sns.heatmap(
+        corr_left,
+        ax=ax1,
+        cbar=True,
+        cbar_ax=cax,
+        annot=True,
+        fmt=".2f",
+        vmin=-1,
+        vmax=1,
+        xticklabels=xt,
+        yticklabels=yt,
+        cbar_kws={"label": "Spearman $\\rho$"},
+    )
+
+    sns.heatmap(
+        corr_right,
+        ax=ax2,
+        cbar=False,  # only one shared colorbar
+        annot=True,
+        fmt=".2f",
+        vmin=-1,
+        vmax=1,
+        xticklabels=xt,
+        yticklabels=yt,
+    )
+
+    # Titles per panel (optional but usually useful)
+    ax1.set_title(_fmt(format_dict, model_left))
+    ax2.set_title(_fmt(format_dict, model_right))
+
+    for ax in (ax1, ax2):
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+
+    # Hide y labels on the right to save space (keeps same size)
+    ax2.tick_params(left=False, labelleft=False)
+
+    # Star annotations (top right of each cell)
+    for i, target in enumerate(vt):
+        for j, feature in enumerate(vf):
+            tag1 = star_from_p(p_left.get((target, feature), np.nan))
+            tag2 = star_from_p(p_right.get((target, feature), np.nan))
+            ax1.text(j + 0.85, i + 0.25, tag1, color="black", ha="right", va="center")
+            ax2.text(j + 0.85, i + 0.25, tag2, color="black", ha="right", va="center")
+
+    #fig.suptitle(f"Spearman correlations on {_fmt(format_dict, dataset)}", y=0.98)
+    #fig.subplots_adjust(left=0.22, right=0.94, top=0.90, bottom=0.14)
+
+    save_path.mkdir(parents=True, exist_ok=True)
+    fig.savefig(save_path / f"spearman_pair_{model_left}_vs_{model_right}_{dataset}.png", bbox_inches="tight")
+    plt.close(fig)
+
 
 
 def epsilon_squared(H, n, k):
@@ -398,10 +540,10 @@ def kruskal_wallis(
         annot=True,
         fmt=".4f",
     )
-    plt.title(
-        f"Pairwise Dunn Test: WER Differences by CoRal-v2 {_fmt(format_dict, group_col)} for {_fmt(format_dict, model_name)}",
-        pad=20,
-    )
+    # plt.title(
+    #     f"Pairwise Dunn Test: WER Differences by CoRal-v2 {_fmt(format_dict, group_col)} for {_fmt(format_dict, model_name)}",
+    #     pad=20,
+    # )
     plt.xticks(rotation=45, ha="right")
     plt.yticks(rotation=0)
     plt.tight_layout()
@@ -427,7 +569,7 @@ def mean_wer_by_group(
     else:
         group_order = df.groupby(group_col)["WER"].mean().index
 
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(9, 5))
     sns.barplot(
         data=df,
         y=group_col,
@@ -441,7 +583,7 @@ def mean_wer_by_group(
         err_kws={"linewidth": 2},  # style of error bars
     )
 
-    plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
+    # plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
     plt.xlabel("Mean WER")
     plt.ylabel(_fmt(format_dict, group_col))
     plt.legend(title="Model")
@@ -499,6 +641,7 @@ def _bootstrap_mean_ci(x, level=95, B=5000, rng=None):
     return x.mean(), low, high
 
 
+
 def mean_wer_by_group_bootstrapped(
     df: pd.DataFrame,
     format_dict: Dict[str, str],
@@ -518,7 +661,7 @@ def mean_wer_by_group_bootstrapped(
 
     # ---------- bootstrap summary: one row per (group, model) ----------
     summary_rows = []
-    for (grp, model), sub in df.groupby([group_col, "model"], observed=True):
+    for (grp, model), sub in df.groupby([group_col, "model"]):
         mean, ci_low, ci_high = _bootstrap_mean_ci(
             sub["WER"].to_numpy(), level=95, B=5000, rng=rng
         )
@@ -532,16 +675,24 @@ def mean_wer_by_group_bootstrapped(
             }
         )
     summary = pd.DataFrame(summary_rows)
-    summary[group_col] = pd.Categorical(summary[group_col],
-                                        categories=group_order,
-                                        ordered=True)
-    summary["model"] = pd.Categorical(summary["model"],
-                                      categories=models,
-                                      ordered=True)
+    summary[group_col] = pd.Categorical(summary[group_col], categories=group_order, ordered=True)
+    summary["model"] = pd.Categorical(summary["model"], categories=models, ordered=True)
     summary = summary.sort_values([group_col, "model"])
 
+    # Pre-calculate medians
+    median_df = df.groupby([group_col, "model"])["WER"].median().reset_index()
+
+    # ---------- Dynamic Height Calculation ----------
+    # Matching the "wider and shorter" logic from semdist
+    n_groups = len(group_order)
+    n_models = len(models)
+    base_bar_height = 0.24 
+    calc_height = max(5, n_groups * n_models * base_bar_height + 1.5)
+
+    # Width set to 16
+    plt.figure(figsize=(8, calc_height))
+
     # ---------- barplot of means ----------
-    plt.figure(figsize=(12, 7))
     ax = sns.barplot(
         data=summary,
         y=group_col,
@@ -549,82 +700,98 @@ def mean_wer_by_group_bootstrapped(
         hue="model",
         order=group_order,
         orient="h",
-        ci=None,          # we add CIs manually
+        errorbar=None,
     )
 
-    # ---------- bootstrap CIs, aligned by reading tick positions ----------
+    # ---------- Combine CIs and Diamonds ----------
     yticks = np.array(ax.get_yticks())
     yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+    median_label_added = False
 
     for model_index, model in enumerate(models):
-        container = ax.containers[model_index]          # bars for this model
+        container = ax.containers[model_index]
 
         for bar in container:
             y_center = bar.get_y() + bar.get_height() / 2
-            # find nearest tick to this bar and its label
             idx = int(np.argmin(np.abs(yticks - y_center)))
             grp_label = yticklabels[idx]
 
+            # 1. Plot Bootstrap CI
             row = summary[
-                (summary[group_col] == grp_label) &
+                (summary[group_col] == grp_label) & 
                 (summary["model"] == model)
-            ].iloc[0]
+            ]
 
-            mean = row["mean"]
-            ci_low = row["ci_low"]
-            ci_high = row["ci_high"]
+            if not row.empty:
+                row = row.iloc[0]
+                mean = row["mean"]
+                ci_low = row["ci_low"]
+                ci_high = row["ci_high"]
 
-            ax.errorbar(
-                mean,
-                y_center,
-                xerr=[[mean - ci_low], [ci_high - mean]],
-                fmt="none",
-                ecolor="black",
-                capsize=4,
-                capthick=1.2,
-                linewidth=1.2,
-            )
+                ax.errorbar(
+                    mean,
+                    y_center,
+                    xerr=[[mean - ci_low], [ci_high - mean]],
+                    fmt="none",
+                    ecolor="black",
+                    capsize=4,
+                    capthick=1.2,
+                    linewidth=1.2,
+                )
 
-    # ---------- median diamonds (your original logic) ----------
-    median_df = df.groupby([group_col, "model"])["WER"].median().reset_index()
+            # 2. Plot Median Diamond
+            med_row = median_df[
+                (median_df[group_col] == grp_label) & 
+                (median_df["model"] == model)
+            ]
+            
+            if not med_row.empty:
+                median_val = med_row.iloc[0]["WER"]
+                label = ""
+                if not median_label_added:
+                    label = "Median WER"
+                    median_label_added = True
 
-    for i, row in median_df.iterrows():
-        group_value = row[group_col]
-        model = row["model"]
-        median_wer = row["WER"]
+                ax.plot(
+                    median_val,
+                    y_center,
+                    marker="D",
+                    color="black",
+                    markersize=6,
+                    linestyle='None',
+                    label=label,
+                    zorder=10
+                )
 
-        group_index = list(group_order).index(group_value)
-        model_index = models.index(model)
+    # ---------- STYLING ----------
+    plt.xlabel("Mean WER", fontsize=16)
+    #plt.ylabel(_fmt(format_dict, group_col))#, fontsize=16)
+    # blacnk y-axis label for better aesthetics, since group names are on the y-ticks
+    plt.ylabel("")
 
-        num_models = len(models)
-        total_bar_height = 0.8  # seaborn default
-        bar_height = total_bar_height / num_models
-
-        x_pos = median_wer
-        y_pos = (
-            group_index
-            - total_bar_height / 2
-            + bar_height / 2
-            + model_index * bar_height
-        )
-
-        plt.plot(
-            x_pos,
-            y_pos,
-            marker="D",
-            color="black",
-            markersize=6,
-            label="Median WER" if i == 0 else "",
-        )
-
-    # ---------- labels, legend, save ----------
-    plt.title(f"Mean WER by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
-    plt.xlabel("Mean WER")
-    plt.ylabel(_fmt(format_dict, group_col))
+    ax.tick_params(axis='both', which='major', labelsize=16)
 
     handles, labels = ax.get_legend_handles_labels()
-    full_labels = [_fmt(format_dict, label) for label in labels]
-    plt.legend(handles, full_labels, title="Model")
+    new_labels = []
+    for lbl in labels:
+        if lbl == "Median WER":
+            new_labels.append(lbl)
+        else:
+            new_labels.append(_fmt(format_dict, lbl))
+
+    # Legend placed inside (lower right is usually best for WER plots)
+    plt.legend(
+        handles, 
+        new_labels, 
+        title="Model", 
+        title_fontsize=15, 
+        fontsize=13,
+        framealpha=0.95  # Slightly opaque background to ensure readability
+    )
+
+    # format x-axis as percentage
+    ticks = ax.get_xticks()
+    ax.set_xticklabels([f"{t:.0%}" for t in ticks])
 
     plt.tight_layout()
     save_path.mkdir(parents=True, exist_ok=True)
@@ -634,7 +801,7 @@ def mean_wer_by_group_bootstrapped(
     )
     plt.close()
 
-def mean_semdist_by_group_bootstrapped(
+def mean_semdist_by_group_bootstrapped_OLD(
     df: pd.DataFrame,
     format_dict: Dict[str, str],
     group_col: str,
@@ -653,7 +820,7 @@ def mean_semdist_by_group_bootstrapped(
 
     # ---------- bootstrap summary: one row per (group, model) ----------
     summary_rows = []
-    for (grp, model), sub in df.groupby([group_col, "model"], observed=True):
+    for (grp, model), sub in df.groupby([group_col, "model"]):
         mean, ci_low, ci_high = _bootstrap_mean_ci(
             sub["semantic_distance"].to_numpy(), level=95, B=5000, rng=rng
         )
@@ -676,6 +843,7 @@ def mean_semdist_by_group_bootstrapped(
     summary = summary.sort_values([group_col, "model"])
 
     # ---------- barplot of means ----------
+    # 
     plt.figure(figsize=(12, 7))
     ax = sns.barplot(
         data=summary,
@@ -684,7 +852,7 @@ def mean_semdist_by_group_bootstrapped(
         hue="model",
         order=group_order,
         orient="h",
-        ci=None,          # we add CIs manually
+        errorbar=None,          # we add CIs manually
     )
 
     # ---------- bootstrap CIs, aligned by reading tick positions ----------
@@ -715,7 +883,7 @@ def mean_semdist_by_group_bootstrapped(
                 xerr=[[mean - ci_low], [ci_high - mean]],
                 fmt="none",
                 ecolor="black",
-                capsize=4,
+                capsize=3,
                 capthick=1.2,
                 linewidth=1.2,
             )
@@ -748,18 +916,172 @@ def mean_semdist_by_group_bootstrapped(
             y_pos,
             marker="D",
             color="black",
-            markersize=6,
-            label="Median Semantic Distance" if i == 0 else "",
+            markersize=4,
+            label="Median SemDist" if i == 0 else "",
         )
 
     # ---------- labels, legend, save ----------
-    plt.title(f"Mean Semantic Distance by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
-    plt.xlabel("Mean Semantic Distance")
+    # plt.title(f"Mean Semantic Distance by {_fmt(format_dict, group_col)} and Model (CoRal-v2)")
+    plt.xlabel("Mean SemDist")
     plt.ylabel(_fmt(format_dict, group_col))
 
     handles, labels = ax.get_legend_handles_labels()
     full_labels = [_fmt(format_dict, label) for label in labels]
     plt.legend(handles, full_labels, title="Model")
+
+    plt.tight_layout()
+    save_path.mkdir(parents=True, exist_ok=True)
+    plt.savefig(
+        save_path / f"mean_semantic_distance_by_{group_col}_and_model_coral_v2.png",
+        bbox_inches="tight",
+    )
+    plt.close()
+
+def mean_semdist_by_group_bootstrapped(
+    df: pd.DataFrame,
+    format_dict: Dict[str, str],
+    group_col: str,
+    save_path: Path = Path("reports/plots/deep_analysis/"),
+) -> None:
+    """Plot mean semantic distance by group for CoRal-v2 dataset with bootstrap CIs."""
+    rng = np.random.default_rng()
+
+    # Order groups
+    if group_col == "dialect_group":
+        group_order = df.groupby(group_col)["semantic_distance"].mean().sort_values().index
+    else:
+        group_order = df.groupby(group_col)["semantic_distance"].mean().index
+
+    models = list(df["model"].unique())
+
+    # ---------- bootstrap summary: one row per (group, model) ----------
+    summary_rows = []
+    for (grp, model), sub in df.groupby([group_col, "model"]):
+        mean, ci_low, ci_high = _bootstrap_mean_ci(
+            sub["semantic_distance"].to_numpy(), level=95, B=5000, rng=rng
+        )
+        summary_rows.append(
+            {
+                group_col: grp,
+                "model": model,
+                "mean": mean,
+                "ci_low": ci_low,
+                "ci_high": ci_high,
+            }
+        )
+    summary = pd.DataFrame(summary_rows)
+    summary[group_col] = pd.Categorical(summary[group_col], categories=group_order, ordered=True)
+    summary["model"] = pd.Categorical(summary["model"], categories=models, ordered=True)
+    summary = summary.sort_values([group_col, "model"])
+
+    # Pre-calculate medians
+    median_df = df.groupby([group_col, "model"])["semantic_distance"].median().reset_index()
+
+    # ---------- Dynamic Height Calculation (Adjusted) ----------
+    # Reduced base_bar_height to 0.24 to make it shorter (more compact vertically)
+    n_groups = len(group_order)
+    n_models = len(models)
+    base_bar_height = 0.24 
+    calc_height = max(6, n_groups * n_models * base_bar_height + 1.5)
+
+    # Increased width to 16 to make it wider
+    plt.figure(figsize=(8, calc_height))
+
+    # ---------- barplot of means ----------
+    ax = sns.barplot(
+        data=summary,
+        y=group_col,
+        x="mean",
+        hue="model",
+        order=group_order,
+        orient="h",
+        errorbar=None,
+    )
+
+    # ---------- Combine CIs and Diamonds ----------
+    yticks = np.array(ax.get_yticks())
+    yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+    median_label_added = False
+
+    for model_index, model in enumerate(models):
+        container = ax.containers[model_index]
+
+        for bar in container:
+            y_center = bar.get_y() + bar.get_height() / 2
+            idx = int(np.argmin(np.abs(yticks - y_center)))
+            grp_label = yticklabels[idx]
+
+            # 1. Plot Bootstrap CI
+            row = summary[
+                (summary[group_col] == grp_label) & 
+                (summary["model"] == model)
+            ]
+
+            if not row.empty:
+                row = row.iloc[0]
+                mean = row["mean"]
+                ci_low = row["ci_low"]
+                ci_high = row["ci_high"]
+
+                ax.errorbar(
+                    mean,
+                    y_center,
+                    xerr=[[mean - ci_low], [ci_high - mean]],
+                    fmt="none",
+                    ecolor="black",
+                    capsize=4,
+                    capthick=1.2,
+                    linewidth=1.2,
+                )
+
+            # 2. Plot Median Diamond
+            med_row = median_df[
+                (median_df[group_col] == grp_label) & 
+                (median_df["model"] == model)
+            ]
+            
+            if not med_row.empty:
+                median_val = med_row.iloc[0]["semantic_distance"]
+                label = ""
+                if not median_label_added:
+                    label = "Median Semantic Distance"
+                    median_label_added = True
+
+                ax.plot(
+                    median_val,
+                    y_center,
+                    marker="D",
+                    color="black",
+                    markersize=6,
+                    linestyle='None',
+                    label=label,
+                    zorder=10
+                )
+
+    # ---------- STYLING ----------
+    plt.xlabel("Mean SemDist", fontsize=16)
+    #plt.ylabel(_fmt(format_dict, group_col), fontsize=16)
+    # blank y-axis label for better aesthetics, since group names are on the y-ticks
+    plt.ylabel("")
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = []
+    for lbl in labels:
+        if lbl == "Median SemDist":
+            new_labels.append(lbl)
+        else:
+            new_labels.append(_fmt(format_dict, lbl))
+
+    plt.legend(
+        handles, 
+        new_labels, 
+        title="Model", 
+        title_fontsize=15, 
+        fontsize=13,
+        framealpha=0.65  # Slightly opaque background to ensure readability
+    )
 
     plt.tight_layout()
     save_path.mkdir(parents=True, exist_ok=True)

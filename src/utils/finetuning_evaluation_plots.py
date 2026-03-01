@@ -18,8 +18,8 @@ from utils.plot_summary_metrics import (
 # =========================
 MODELS = [
     "roest-whisper-large-v1",
-    #"parakeet-tdt-0.6b-v3",
-    #"canary-1b-v2",
+    # "parakeet-tdt-0.6b-v3",
+    # "canary-1b-v2",
     "parakeet_finetune",
     "parakeet_finetune_pitch-shift",
     "parakeet_finetune_spec-aug",
@@ -83,8 +83,8 @@ def make_plots():
         sentence_df,
         summary_data=summary_df,
         save_dir=Path("reports/finetuning_plots/sentence_level"),
-        width=12,
-        height=7,
+        width=5,
+        height=4,
     )
 
     logger.info("Loading summary evaluation data...")
@@ -95,8 +95,8 @@ def make_plots():
         summary_df,
         models=MODELS,
         save_dir=Path("reports/finetuning_plots/summary"),
-        width=12,
-        height=7,
+        width=10,
+        height=6,
     )
 
     logger.info("All plots generated.")

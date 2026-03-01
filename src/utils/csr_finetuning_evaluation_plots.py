@@ -37,6 +37,14 @@ MODELS = [
     "parakeet-finetune_SA_ll_SA_PS_SP",
 ]
 
+SUBSET_MODELS = [
+    "canary-finetune_spec-aug_speed-perturbations",
+    "canary-finetune_SA_SP_ll_SA",
+    #"canary-finetune_SA_SP_ll_SA_PS",
+    "parakeet-finetune_spec-aug",
+    "parakeet-finetune_SA_ll_SA_SP",
+]
+
 PARAKEET_MODELS = [model for model in MODELS if model.startswith("parakeet")]
 CANARY_MODELS = [model for model in MODELS if model.startswith("canary")]
 
@@ -71,60 +79,83 @@ SPLITS = {
 }
 
 
-def make_plots():
-    logger.info("Loading sentence wise evaluation data with cross-validation folds...")
+def make_plots(type: str = "speaker") -> None:
+    logger.info(f"Loading sentence wise evaluation data with {type} cross-validation folds...")
+    if type not in ["speaker", "sentence"]:
+        raise ValueError(f"Invalid type: {type}. Must be 'speaker' or 'sentence'.")
+    
     sentence_df_folds = load_from_parquet(
-        Path("reports/metrics/lillelyd_finetune_combined_detailed_results_with_folds.parquet")
+        Path(f"reports/metrics/lillelyd_finetune_{type}_combined_detailed_results_with_folds.parquet")
     )
 
     logger.info("Loading stitched sentence wise evaluation data...")
     sentence_df = load_from_parquet(
-        Path("reports/metrics/lillelyd_finetune_stitched_detailed_results.parquet")
+        Path(f"reports/metrics/lillelyd_finetune_{type}_stitched_detailed_results.parquet")
     )
 
     logger.info("Loading summary evaluation data...")
-    summary_df = load_from_parquet(Path("reports/metrics/lillelyd_finetune_average_metrics.parquet"))
+    summary_df = load_from_parquet(Path(f"reports/metrics/lillelyd_finetune_{type}_average_metrics.parquet"))
 
-    for family_name, models in MODEL_FAMILIES.items():
+    logger.info("Generating evaluation plots for each model family...")
+    
+    # for family_name, models in MODEL_FAMILIES.items():
 
-        logger.info(f"Filtering evaluation data to {family_name} grid...")
-        sentence_df_filtered = filter_eval_grid(
-            sentence_df,
-            models=models,
-            datasets=DATASETS,
-            subsets=SUBSETS,
-            splits=SPLITS,
-        )
+    #     logger.info(f"Filtering evaluation data to {family_name} grid...")
+    #     sentence_df_filtered = filter_eval_grid(
+    #         sentence_df,
+    #         models=models,
+    #         datasets=DATASETS,
+    #         subsets=SUBSETS,
+    #         splits=SPLITS,
+    #     )
 
-        logger.info(f"Filtering summary data to {family_name} grid...")
-        summary_df_filtered = filter_eval_grid(
-            summary_df,
-            models=models,
-            datasets=DATASETS,
-            subsets=SUBSETS,
-            splits=SPLITS,
-        )
+    #     logger.info(f"Filtering summary data to {family_name} grid...")
+    #     summary_df_filtered = filter_eval_grid(
+    #         summary_df,
+    #         models=models,
+    #         datasets=DATASETS,
+    #         subsets=SUBSETS,
+    #         splits=SPLITS,
+    #     )
 
-        logger.info(f"Generating sentence level evaluation plots for {family_name}...")
-        make_all_plots(
-            sentence_df_filtered,
-            summary_data=summary_df_filtered,
-            save_dir=Path(f"reports/csr_finetuning_plots/sentence_level_{family_name.lower()}"),
-            width=12,
-            height=7,
-            font_size=14,
-            csr=True,
-            models=models,
-            df_folds=sentence_df_folds,
-        )
+    #     logger.info(f"Generating sentence level evaluation plots for {family_name}...")
+    #     make_all_plots(
+    #         sentence_df_filtered,
+    #         summary_data=summary_df_filtered,
+    #         save_dir=Path(f"reports/csr_finetuning_plots_{type}/sentence_level_{family_name.lower()}"),
+    #         width=12,
+    #         height=7,
+    #         csr=True,
+    #         models=models,
+    #         df_folds=sentence_df_folds,
+    #         type=type,
+    #     )
 
-        # logger.info(f"Generating summary evaluation plots for {family_name}...")
-        # make_all_summary_plots(
-        #     summary_df_filtered,
-        #     models=models,
-        #     save_dir=Path(f"reports/csr_finetuning_plots/summary_{family_name.lower()}"),
-        #     width=12,
-        #     height=7,
-        # )
+    logger.info("Generating evaluation plots for subset models...")
+    sentence_df_subset = filter_eval_grid(
+        sentence_df,
+        models=SUBSET_MODELS,
+        datasets=DATASETS,
+        subsets=SUBSETS,
+        splits=SPLITS,
+    )
+    summary_df_subset = filter_eval_grid(
+        summary_df,
+        models=SUBSET_MODELS,
+        datasets=DATASETS,
+        subsets=SUBSETS,
+        splits=SPLITS,
+    )
+    make_all_plots(
+        sentence_df_subset,
+        summary_data=summary_df_subset,
+        save_dir=Path(f"reports/csr_finetuning_plots_{type}/sentence_level_subset"),
+        width=5,
+        height=4,
+        csr=True,
+        models=SUBSET_MODELS,
+        df_folds=sentence_df_folds,
+        type=type
+    )
 
     logger.info("All plots generated.")

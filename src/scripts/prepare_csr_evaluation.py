@@ -25,7 +25,8 @@ def main() -> None:
 
     logger.info("Starting processing of results data...")
 
-    prepare_evaluation_data()
+    #prepare_evaluation_data(type="speaker")
+    prepare_evaluation_data(type="sentence")
 
     logger.info("Processing complete.")
 
