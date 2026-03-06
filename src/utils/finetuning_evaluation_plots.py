@@ -82,9 +82,11 @@ def make_plots():
     make_all_plots(
         sentence_df,
         summary_data=summary_df,
-        save_dir=Path("reports/finetuning_plots/sentence_level"),
-        width=5,
-        height=4,
+        save_dir=Path("reports/finetuning_plots/sentence_level_presentation"),
+        # width=5,
+        width=12,
+        # height=4,
+        height=7,
     )
 
     logger.info("Loading summary evaluation data...")
@@ -94,9 +96,9 @@ def make_plots():
     make_all_summary_plots(
         summary_df,
         models=MODELS,
-        save_dir=Path("reports/finetuning_plots/summary"),
-        width=10,
-        height=6,
+        save_dir=Path("reports/finetuning_plots/summary_presentation"),
+        width=12,
+        height=7,
     )
 
     logger.info("All plots generated.")

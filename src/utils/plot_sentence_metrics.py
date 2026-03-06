@@ -37,25 +37,25 @@ FORMAT_DICT = {
     "hviske-v2": "Hviske-v2",
     "seamless-m4t-v2-large": "SeamlessM4T",
     "roest-whisper-large-v1": "Røst-Whisper",
-    "parakeet-tdt-0.6b-v3": "Parakeet-TDT",
-    "canary-1b-v2": "Canary-1B",
-    "parakeet_finetune": "Parakeet-TDT-FT",
-    "parakeet_finetune_pitch-shift": "Parakeet-TDT-FT+PS",
-    "parakeet_finetune_spec-aug": "Parakeet-TDT-FT+SA",
-    "parakeet_finetune_speed-perturbations": "Parakeet-TDT-FT+SP",
-    "parakeet_finetune_spec-aug_pitch-shift": "Parakeet-TDT-FT+SA+PS",
-    "parakeet_finetune_spec-aug_speed-perturbations": "Parakeet-TDT-FT+SA+SP",
-    "parakeet_finetune_speed-perturbations_pitch-shift": "Parakeet-TDT-FT+SP+PS",
-    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift": "Parakeet-TDT-FT+SA+SP+PS",
-    "canary_finetune": "Canary-1B-FT",
-    "canary_finetune_pitch-shift": "Canary-1B-FT+PS",
-    "canary_finetune_spec-aug": "Canary-1B-FT+SA",
-    "canary_finetune_speed-perturbations": "Canary-1B-FT+SP",
-    "canary_finetune_spec-aug_pitch-shift": "Canary-1B-FT+SA+PS",
-    "canary_finetune_spec-aug_speed-perturbations": "Canary-1B-FT+SA+SP",
-    "canary_finetune_speed-perturbations_pitch-shift": "Canary-1B-FT+SP+PS",
-    "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "Canary-1B-FT+SA+SP+PS",
-    # LONG ABBREVIATIONS
+    "parakeet-tdt-0.6b-v3": "P-TDT",
+    "canary-1b-v2": "C-1B",
+    "parakeet_finetune": "P-TDT-FT",
+    "parakeet_finetune_pitch-shift": "P-TDT-FT+PS",
+    "parakeet_finetune_spec-aug": "P-TDT-FT+SA",
+    "parakeet_finetune_speed-perturbations": "P-TDT-FT+SP",
+    "parakeet_finetune_spec-aug_pitch-shift": "P-TDT-FT+SA+PS",
+    "parakeet_finetune_spec-aug_speed-perturbations": "P-TDT-FT+SA+SP",
+    "parakeet_finetune_speed-perturbations_pitch-shift": "P-TDT-FT+SP+PS",
+    "parakeet_finetune_spec-aug_speed-perturbations_pitch-shift": "P-TDT-FT+SA+SP+PS",
+    "canary_finetune": "C-1B-FT",
+    "canary_finetune_pitch-shift": "C-1B-FT+PS",
+    "canary_finetune_spec-aug": "C-1B-FT+SA",
+    "canary_finetune_speed-perturbations": "C-1B-FT+SP",
+    "canary_finetune_spec-aug_pitch-shift": "C-1B-FT+SA+PS",
+    "canary_finetune_spec-aug_speed-perturbations": "C-1B-FT+SA+SP",
+    "canary_finetune_speed-perturbations_pitch-shift": "C-1B-FT+SP+PS",
+    "canary_finetune_spec-aug_speed-perturbations_pitch-shift": "C-1B-FT+SA+SP+PS",
+    # LONG ABBREVIATIONS for CSR
     # "canary-finetune_spec-aug_speed-perturbations": "Canary-1B-Pre_FT",
     # "canary-finetune_SA_SP_ll": "Canary-1B-FT",
     # "canary-finetune_SA_SP_ll_SA": "Canary-1B-FT+SA",
@@ -74,25 +74,25 @@ FORMAT_DICT = {
     # "parakeet-finetune_SA_ll_SA_SP": "Parakeet-TDT-FT+SA+SP",
     # "parakeet-finetune_SA_ll_PS_SP": "Parakeet-TDT-FT+PS+SP",
     # "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet-TDT-FT+SA+PS+SP",
-    # SHORT ABBREVIATIONS
-    "canary-finetune_spec-aug_speed-perturbations": "Canary SA+SP",
-    "canary-finetune_SA_SP_ll": "Canary SA+SP / -",
-    "canary-finetune_SA_SP_ll_SA": "Canary SA+SP / SA",
-    "canary-finetune_SA_SP_ll_PS": "Canary SA+SP / PS",
-    "canary-finetune_SA_SP_ll_SP": "Canary SA+SP / SP",
-    "canary-finetune_SA_SP_ll_SA_PS": "Canary SA+SP / SA+PS",
-    "canary-finetune_SA_SP_ll_SA_SP": "Canary SA+SP / SA+SP",
-    "canary-finetune_SA_SP_ll_PS_SP": "Canary SA+SP / PS+SP",
-    "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary SA+SP / SA+PS+SP",
-    "parakeet-finetune_spec-aug": "Parakeet SA",
-    "parakeet-finetune_SA_ll": "Parakeet SA / -",
-    "parakeet-finetune_SA_ll_SA": "Parakeet SA / SA",
-    "parakeet-finetune_SA_ll_PS": "Parakeet SA / PS",
-    "parakeet-finetune_SA_ll_SP": "Parakeet SA / SP",
-    "parakeet-finetune_SA_ll_SA_PS": "Parakeet SA / SA+PS",
-    "parakeet-finetune_SA_ll_SA_SP": "Parakeet SA / SA+SP",
-    "parakeet-finetune_SA_ll_PS_SP": "Parakeet SA / PS+SP",
-    "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet SA / SA+PS+SP",
+    # SHORT ABBREVIATIONS for CSR
+    # "canary-finetune_spec-aug_speed-perturbations": "Canary SA+SP",
+    # "canary-finetune_SA_SP_ll": "Canary SA+SP / -",
+    # "canary-finetune_SA_SP_ll_SA": "Canary SA+SP / SA",
+    # "canary-finetune_SA_SP_ll_PS": "Canary SA+SP / PS",
+    # "canary-finetune_SA_SP_ll_SP": "Canary SA+SP / SP",
+    # "canary-finetune_SA_SP_ll_SA_PS": "Canary SA+SP / SA+PS",
+    # "canary-finetune_SA_SP_ll_SA_SP": "Canary SA+SP / SA+SP",
+    # "canary-finetune_SA_SP_ll_PS_SP": "Canary SA+SP / PS+SP",
+    # "canary-finetune_SA_SP_ll_SA_PS_SP": "Canary SA+SP / SA+PS+SP",
+    # "parakeet-finetune_spec-aug": "Parakeet SA",
+    # "parakeet-finetune_SA_ll": "Parakeet SA / -",
+    # "parakeet-finetune_SA_ll_SA": "Parakeet SA / SA",
+    # "parakeet-finetune_SA_ll_PS": "Parakeet SA / PS",
+    # "parakeet-finetune_SA_ll_SP": "Parakeet SA / SP",
+    # "parakeet-finetune_SA_ll_SA_PS": "Parakeet SA / SA+PS",
+    # "parakeet-finetune_SA_ll_SA_SP": "Parakeet SA / SA+SP",
+    # "parakeet-finetune_SA_ll_PS_SP": "Parakeet SA / PS+SP",
+    # "parakeet-finetune_SA_ll_SA_PS_SP": "Parakeet SA / SA+PS+SP",
 
     "lillelyd cv-1": "LilleLyd CV-1",
     "lillelyd cv-2": "LilleLyd CV-2",
@@ -409,12 +409,10 @@ def plot_bar_metric_bootstrapped(
 
         ax.set_xlabel(_fmt("model"), fontsize=fontsize)
         ax.set_ylabel(_fmt(metric), fontsize=fontsize)
-        # ax.set_title(
-        #     f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
-        #     fontsize=fontsize + 3,
-        # )
+        
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
+
 
         if ax.legend_ is not None:
             handles, _labels = ax.get_legend_handles_labels()
@@ -511,11 +509,7 @@ def plot_bar_metric_pre_bootstrapped(
             _format_xtick_labels(ax, rotation=60, ha="right")
             ax.set_title(_fmt(ds), fontsize=fontsize + 2)
 
-        # g.fig.suptitle(
-        #     f"{_fmt(metric)} by {_fmt('model')} per {_fmt('dataset_name')}",
-        #     y=1.02,
-        #     fontsize=fontsize + 3,
-        # )
+        
 
         fig = g.fig
 
@@ -558,12 +552,14 @@ def plot_bar_metric_pre_bootstrapped(
 
         ax.set_xlabel(_fmt("model"), fontsize=fontsize)
         ax.set_ylabel(_fmt(metric), fontsize=fontsize)
-        # ax.set_title(
-        #     f"{_fmt(metric)} by {_fmt('model')} and {_fmt('dataset_name')}",
-        #     fontsize=fontsize + 3,
-        # )
+        
         ax.tick_params(axis="both", labelsize=fontsize)
         _format_xtick_labels(ax, rotation=60, ha="right")
+
+        if metric in {"WER", "CER"}:
+            for ax in (plt.axes if separate_by_dataset else [ax]):
+                ticks = ax.get_yticks()
+                ax.set_yticklabels([f"{t:.0%}" for t in ticks])
 
         if ax.legend_ is not None:
             handles, _labels = ax.get_legend_handles_labels()

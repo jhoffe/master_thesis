@@ -74,9 +74,11 @@ def make_plots():
     make_all_plots(
         sentence_df,
         summary_data=summary_df,
-        save_dir=Path("reports/plots/sentence_level"),
-        width=8,
-        height=3,
+        save_dir=Path("reports/plots/sentence_level_presentation"),
+        #width=8,
+        width=12,
+        #height=3,
+        height=7
     )
 
     logger.info("Loading summary evaluation data...")
@@ -86,9 +88,9 @@ def make_plots():
     make_all_summary_plots(
         summary_df,
         models=MODELS,
-        save_dir=Path("reports/plots/summary"),
-        width=8,
-        height=5,
+        save_dir=Path("reports/plots/summary_presentation"),
+        width=12,
+        height=7,
     )
 
     logger.info("All plots generated.")
